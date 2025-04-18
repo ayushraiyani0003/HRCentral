@@ -12,6 +12,14 @@
 /server/.env
 /server/.env.*
 
+# Environment variables
+.env
+client/.env
+server/.env
+
+# VS Code history plugin
+.history/
+
 # Node.js dependencies
 node_modules/
 npm-debug.log*
