@@ -1,0 +1,242 @@
+/* datePickerStyles.css */
+.date-picker-container {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    margin-bottom: 1.5rem;
+    width: 300px; /*Added to ensure container is full width */
+}
+
+.date-picker-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.react-datepicker-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+/* Custom input button */
+.date-input {
+    position: relative;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    color: #111827;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Date value and icons container layout */
+.date-value {
+    flex: 1;
+}
+
+.date-input-icons {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Add spacing between icons */
+}
+
+/* Clear button styles */
+.clear-date-button {
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.clear-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: #9ca3af;
+}
+
+/* Calendar icon styles */
+.calendar-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: #6366f1;
+}
+
+/* Modified hover rule */
+.date-input:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Add this rule to prevent hover effect on days within range */
+.react-datepicker__day--in-range:hover {
+    background-color: #6366f1 !important; /* Keep the original background color */
+    box-shadow: none !important;
+    border-color: transparent !important;
+}
+
+.date-input:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+/* Calendar container */
+.modern-calendar {
+    position: relative;
+    width: 100%;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    border: none !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+    overflow: hidden !important;
+    margin-top: 0.5rem !important;
+}
+
+/* Header styles */
+.react-datepicker__header {
+    background-color: #f9fafb !important;
+    border-bottom: 1px solid #f3f4f6 !important;
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+}
+
+.react-datepicker__current-month {
+    font-weight: 600 !important;
+    font-size: 1rem !important;
+    color: #111827 !important;
+    margin-bottom: 0.5rem !important;
+    text-align: center !important; /* Added for proper alignment */
+}
+
+.react-datepicker__day-name {
+    color: #6b7280 !important;
+    font-weight: 500 !important;
+    font-size: 0.75rem !important;
+    width: 2.25rem !important;
+    margin: 0.1rem !important;
+    text-align: center !important; /* Added for proper alignment */
+}
+
+/* Day styles */
+.react-datepicker__day {
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+    line-height: 2.25rem !important;
+    margin: 0.1rem !important;
+    border-radius: 8px !important;
+    color: #4b5563 !important;
+    font-size: 0.875rem !important;
+    text-align: center !important; /* Added for proper alignment */
+}
+
+.react-datepicker__day:hover {
+    background-color: #f3f4f6 !important;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--in-selecting-range,
+.react-datepicker__day--in-range {
+    background-color: #6366f1 !important;
+    color: white !important;
+}
+
+.react-datepicker__day--keyboard-selected {
+    background-color: rgba(99, 102, 241, 0.2) !important;
+    color: #6366f1 !important;
+}
+
+.react-datepicker__day--in-selecting-range:not(
+        .react-datepicker__day--in-range
+    ) {
+    background-color: rgba(99, 102, 241, 0.5) !important;
+}
+
+.react-datepicker__day--disabled {
+    color: #d1d5db !important;
+}
+
+/* Current day highlight */
+.current-day {
+    border: 1px solid #6366f1 !important;
+    color: #6366f1 !important;
+}
+
+/* Navigation styles */
+.react-datepicker__navigation {
+    top: 0.75rem !important;
+}
+
+/* Month container styling */
+.react-datepicker__month-container {
+    margin: 0.5rem !important;
+}
+
+/* Time container styling if needed */
+.react-datepicker__time-container {
+    border-left: 1px solid #f3f4f6 !important;
+}
+
+/* Add this rule to prevent hover effect on days within range */
+.react-datepicker__day--in-range:hover {
+    background-color: #898bff !important; /* Keep the original background color */
+    box-shadow: none !important;
+    border-color: transparent !important;
+}
+
+/* Fix for datepicker positioning */
+.react-datepicker-popper {
+    width: auto !important;
+    z-index: 100 !important;
+}
+
+.react-datepicker {
+    display: inline-block !important;
+}
+
+.react-datepicker__month {
+    margin: 0.4rem !important;
+    text-align: center !important; /* Added for proper alignment */
+}
+
+.react-datepicker__week {
+    display: flex !important;
+    justify-content: center !important; /* Added for proper alignment */
+}
+
+.react-datepicker__day-names {
+    display: flex !important;
+    justify-content: center !important; /* Added for proper alignment */
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 640px) {
+    .react-datepicker {
+        width: 100% !important;
+    }
+
+    .react-datepicker__month-container {
+        width: 100% !important;
+    }
+
+    .react-datepicker-popper {
+        width: 100% !important;
+        left: 0 !important;
+    }
+
+    /* Ensure single month view on mobile */
+    .react-datepicker__month-container + .react-datepicker__month-container {
+        display: none !important;
+    }
+}
