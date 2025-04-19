@@ -17,6 +17,11 @@ module.exports = (sequelize) => {
                 type: DataTypes.INTEGER,
                 allowNull: false,
             },
+            is_pf: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                defaultValue: false,
+            },
             month_year: {
                 type: DataTypes.STRING,
                 allowNull: false,

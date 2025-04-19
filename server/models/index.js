@@ -109,12 +109,10 @@ const models = {
     PendingHrSalary: hrModels.PendingHrSalary,
     TotalHrSalary: hrModels.TotalHrSalary,
     Expense: hrModels.Expense,
-    ShoesAddLess: hrModels.ShoesAddLess,
     AllDeduction: hrModels.AllDeduction,
     TotalEarningDeduct: hrModels.TotalEarningDeduct,
     NetTotalPay: hrModels.NetTotalPay,
     SlipInfo: hrModels.SlipInfo,
-    PfInfo: hrModels.PfInfo,
 
     // Employee models
     Employee: employeeModels.Employee,

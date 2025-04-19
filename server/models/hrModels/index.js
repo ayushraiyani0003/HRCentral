@@ -7,13 +7,12 @@ const FestivalTourHrSalary = require("./festivalTourHrSalary")(hrDb);
 const PendingHrSalary = require("./pendingHrSalary")(hrDb);
 const TotalHrSalary = require("./totalHrSalary")(hrDb);
 const Expense = require("./expense")(hrDb);
-const ShoesAddLess = require("./shoesAddLess")(hrDb);
 const AllDeduction = require("./allDeduction")(hrDb);
 const TotalEarningDeduct = require("./totalEarningDeduct")(hrDb);
 const NetTotalPay = require("./netTotalPay")(hrDb);
 const SlipInfo = require("./slipInfo")(hrDb);
-const PfInfo = require("./pfInfo")(hrDb);
 const ExpenseAdd = require("./expenseAdd")(hrDb);
+const DeductionAdd = require("./deductionAdd")(hrDb);
 
 // Define associations between HR models if needed
 // For example:
@@ -28,11 +27,10 @@ module.exports = {
     PendingHrSalary,
     TotalHrSalary,
     Expense,
-    ShoesAddLess,
     AllDeduction,
     TotalEarningDeduct,
     NetTotalPay,
     SlipInfo,
-    PfInfo,
     ExpenseAdd,
+    DeductionAdd,
 };

@@ -13,36 +13,6 @@ module.exports = (sequelize) => {
                 type: DataTypes.INTEGER,
                 allowNull: false,
             },
-            fine: {
-                type: DataTypes.FLOAT,
-                allowNull: true,
-                defaultValue: 0,
-            },
-            canteen: {
-                type: DataTypes.FLOAT,
-                allowNull: true,
-                defaultValue: 0,
-            },
-            pt_amount: {
-                type: DataTypes.FLOAT,
-                allowNull: true,
-                defaultValue: 0,
-            },
-            pf_amount: {
-                type: DataTypes.FLOAT,
-                allowNull: true,
-                defaultValue: 0,
-            },
-            loan_amount: {
-                type: DataTypes.FLOAT,
-                allowNull: true,
-                defaultValue: 0,
-            },
-            other_deduction: {
-                type: DataTypes.FLOAT,
-                allowNull: true,
-                defaultValue: 0,
-            },
             month_year: {
                 type: DataTypes.STRING,
                 allowNull: false,
@@ -50,6 +20,8 @@ module.exports = (sequelize) => {
                     is: /^\d{4}-\d{2}$/i, // Format: YYYY-MM
                 },
             },
+            // All specific deduction columns (fine, canteen, etc.) have been removed
+            // Dynamic columns will be added by hooks in DeductionAdd model
         },
         {
             tableName: "all_deduction",

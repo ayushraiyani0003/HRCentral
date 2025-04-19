@@ -60,12 +60,6 @@ const setupAssociations = () => {
             constraints: false,
         });
 
-        Employee.hasMany(ShoesAddLess, {
-            foreignKey: "employee_id",
-            sourceKey: "employee_id",
-            constraints: false,
-        });
-
         Employee.hasMany(AllDeduction, {
             foreignKey: "employee_id",
             sourceKey: "employee_id",
@@ -85,12 +79,6 @@ const setupAssociations = () => {
         });
 
         Employee.hasMany(SlipInfo, {
-            foreignKey: "employee_id",
-            sourceKey: "employee_id",
-            constraints: false,
-        });
-
-        Employee.hasMany(PfInfo, {
             foreignKey: "employee_id",
             sourceKey: "employee_id",
             constraints: false,
@@ -133,12 +121,6 @@ const setupAssociations = () => {
             constraints: false,
         });
 
-        ShoesAddLess.belongsTo(Employee, {
-            foreignKey: "employee_id",
-            targetKey: "employee_id",
-            constraints: false,
-        });
-
         AllDeduction.belongsTo(Employee, {
             foreignKey: "employee_id",
             targetKey: "employee_id",
@@ -158,12 +140,6 @@ const setupAssociations = () => {
         });
 
         SlipInfo.belongsTo(Employee, {
-            foreignKey: "employee_id",
-            targetKey: "employee_id",
-            constraints: false,
-        });
-
-        PfInfo.belongsTo(Employee, {
             foreignKey: "employee_id",
             targetKey: "employee_id",
             constraints: false,
