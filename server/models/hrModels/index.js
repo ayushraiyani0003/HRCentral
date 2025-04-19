@@ -14,11 +14,6 @@ const SlipInfo = require("./slipInfo")(hrDb);
 const ExpenseAdd = require("./expenseAdd")(hrDb);
 const DeductionAdd = require("./deductionAdd")(hrDb);
 
-// Define associations between HR models if needed
-// For example:
-// TotalHrSalary.hasOne(TotalEarningDeduct, { foreignKey: 'employee_id' });
-// TotalEarningDeduct.belongsTo(TotalHrSalary, { foreignKey: 'employee_id' });
-
 // Export the HR models
 module.exports = {
     GrossSalary,
