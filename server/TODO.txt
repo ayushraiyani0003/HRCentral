@@ -1,0 +1,101 @@
+TODO: 
+
+Server/
+
+    Task 1: Use the two databases - one for getting employee details and another for handling other HR-related tasks.
+    gross_salary : employee_id {int forain key from employee on employee db. }
+                 : gross_salary (int)
+                 : month_year {varchar 2025-04}
+                 : time stamp {using the serilize.}
+
+    table2 : net_ot_hr_Salary:           
+                                employee_id {int forain key from employee on employee db. }
+                                expected_hours : int 
+                                net_hr : {float }  
+                                net_hr_salary: {float}
+                                 month_year {varchar 2025-04}
+                                time stamp {using the serilize.}
+    table 3 : festival_tour_hr_Salary
+                            employee_id {int forain key from employee on employee db. }
+                            Festival_Hours {float }
+                            festival_hours_salary {float}
+                            tour_hours {float }
+                             month_year {varchar 2025-04}
+                            tour_hours_salary  {float }
+                            time stamp {using the serilize.}
+    table 4: pending_hr_Salary:
+                            employee_id {int forain key from employee on employee db}
+                            pending_hr {float}
+                            pending_hr_Salary {float}
+                            month_year {varchar 2025-04}
+                            time stamp {using the serilize.}
+     table 5: total_hr_Salary:
+                            employee_id {int forain key from employee on employee db}
+                            total_hr {float}
+                            total_hr_salary {float} 
+                            month_year {varchar 2025-04}
+                            time stamp {using the serilize.}
+
+    table 6: expence 
+    employee_id {int forain key from employee on employee }
+    Vehicel_count, Vehicel_Exp_Total , OT_Hrs_Total, OT_Hrs_Exp, Fabrication_Total, Fabrication_Exp, Zink_5_Total, Zink_5_Exp, Night_Hrs_Exp_Total, outdoor_count_Exp, outdoor_count_Exp_total, rollforming_day_count, Zink_3_Exp, Zink_3_Total, Pending_Expense, Total_Expanse, Chhol_Exp, Chhol_Total, Vehicle_Day_count, Vehicel_Exp_Total, Night_Hrs_Exp, rollforming_total, month,  time stamp {using the serilize.}
+     month_year {varchar 2025-04}
+
+     table 7: shoes_add_less
+        employee_id {int forain key from employee on employee }
+        shoss add {true , false}
+        shoss less {true , false}
+        TShirt_Less {true , false}
+         month_year {varchar 2025-04}
+        issue_date
+        time stamp {using the serilize.}
+
+    table 8:  all_Deduction   
+        employee_id {int forain key from employee on employee }
+        fine
+        Canteen
+        PT_amount
+        PF_amount
+        Loan_amount
+        Other_Deduction
+         month_year {varchar 2025-04}
+         time stamp {using the serilize.}
+    table 9: total_Earning_deduct    
+        employee_id {int forain key from employee on employee }
+        Total_Earning
+        Total_Deduction
+        month_year {varchar 2025-04}
+        time stamp {using the serilize.}
+
+    table 10:    net_total_pay 
+        employee_id {int forain key from employee on employee }
+        net_pay
+        actual_pay
+        recovery
+        month_year {varchar 2025-04}
+        time stamp {using the serilize.}
+
+    table 11:  slip_info
+                employee_id {int forain key from employee on employee }
+                slip_file_location
+                month_year {varchar 2025-04}
+                time stamp {using the serilize.}
+
+    table 12:   pf_info
+                employee_id {int forain key from employee on employee }
+                is_pf 
+                time stamp {using the serilize.}
+
+
+    Task 2: Make all of the tables.
+
+    Task 3: Make a basic function for CRUD (Create, Read, Update, Delete) operations.
+
+    Task 6: Calculate the thing and generate the Excel
+
+client is likely intended to be "Client".s likely intended to be "Client".
+
+    task 4: create a Simple ui 
+    
+task 5: Add simple ingestion. with the server.
+
