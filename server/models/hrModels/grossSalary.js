@@ -12,11 +12,6 @@ module.exports = (sequelize) => {
             employee_id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
-                // Removing the direct foreign key constraint
-                // references: {
-                //   model: 'employees',
-                //   key: 'employee_id',
-                // },
             },
             gross_salary: {
                 type: DataTypes.INTEGER,

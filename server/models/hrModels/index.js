@@ -13,6 +13,7 @@ const TotalEarningDeduct = require("./totalEarningDeduct")(hrDb);
 const NetTotalPay = require("./netTotalPay")(hrDb);
 const SlipInfo = require("./slipInfo")(hrDb);
 const PfInfo = require("./pfInfo")(hrDb);
+const ExpenseAdd = require("./expenseAdd")(hrDb);
 
 // Define associations between HR models if needed
 // For example:
@@ -33,4 +34,5 @@ module.exports = {
     NetTotalPay,
     SlipInfo,
     PfInfo,
+    ExpenseAdd,
 };

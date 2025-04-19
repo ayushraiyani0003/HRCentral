@@ -5,6 +5,7 @@ const helmet = require("helmet");
 const initDb = require("./config/initDb");
 const setupAssociations = require("./models/associations");
 const logger = require("./utils/logger");
+const { ExpenseAdd } = require("./models/hrModels");
 require("dotenv").config();
 
 // Create Express app

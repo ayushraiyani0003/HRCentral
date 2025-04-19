@@ -12,90 +12,11 @@ module.exports = (sequelize) => {
             employee_id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
-            },
-            vehicle_count: {
-                type: DataTypes.INTEGER,
-                allowNull: true,
-            },
-            vehicle_exp_total: {
-                type: DataTypes.FLOAT,
-                allowNull: true,
-            },
-            ot_hrs_total: {
-                type: DataTypes.FLOAT,
-                allowNull: true,
-            },
-            ot_hrs_exp: {
-                type: DataTypes.FLOAT,
-                allowNull: true,
-            },
-            fabrication_total: {
-                type: DataTypes.FLOAT,
-                allowNull: true,
-            },
-            fabrication_exp: {
-                type: DataTypes.FLOAT,
-                allowNull: true,
-            },
-            zink_5_total: {
-                type: DataTypes.FLOAT,
-                allowNull: true,
-            },
-            zink_5_exp: {
-                type: DataTypes.FLOAT,
-                allowNull: true,
-            },
-            night_hrs_exp_total: {
-                type: DataTypes.FLOAT,
-                allowNull: true,
-            },
-            outdoor_count_exp: {
-                type: DataTypes.FLOAT,
-                allowNull: true,
-            },
-            outdoor_count_exp_total: {
-                type: DataTypes.FLOAT,
-                allowNull: true,
-            },
-            rollforming_day_count: {
-                type: DataTypes.INTEGER,
-                allowNull: true,
-            },
-            zink_3_exp: {
-                type: DataTypes.FLOAT,
-                allowNull: true,
-            },
-            zink_3_total: {
-                type: DataTypes.FLOAT,
-                allowNull: true,
-            },
-            pending_expense: {
-                type: DataTypes.FLOAT,
-                allowNull: true,
-            },
-            total_expense: {
-                type: DataTypes.FLOAT,
-                allowNull: true,
-            },
-            chhol_exp: {
-                type: DataTypes.FLOAT,
-                allowNull: true,
-            },
-            chhol_total: {
-                type: DataTypes.FLOAT,
-                allowNull: true,
-            },
-            vehicle_day_count: {
-                type: DataTypes.INTEGER,
-                allowNull: true,
-            },
-            night_hrs_exp: {
-                type: DataTypes.FLOAT,
-                allowNull: true,
-            },
-            rollforming_total: {
-                type: DataTypes.FLOAT,
-                allowNull: true,
+                // Foreign key removed for cross-database compatibility
+                // references: {
+                //   model: 'employees',
+                //   key: 'employee_id',
+                // },
             },
             month_year: {
                 type: DataTypes.STRING,
@@ -109,8 +30,30 @@ module.exports = (sequelize) => {
             tableName: "expense",
             timestamps: true,
             underscored: true,
+            comment: "Records all employee expenses for each month",
         }
     );
+
+    // This hook will automatically calculate total_expense before saving
+    Expense.beforeSave(async (instance, options) => {
+        // Calculate total by summing all expense fields
+        let total = 0;
+
+        // Add all expense totals
+        total += instance.night_hrs_exp_total || 0;
+        total += instance.ot_hrs_exp || 0;
+        total += instance.vehicle_exp_total || 0;
+        total += instance.rollforming_total || 0;
+        total += instance.zink_5_exp || 0;
+        total += instance.zink_3_exp || 0;
+        total += instance.fabrication_exp || 0;
+        total += instance.chhol_exp || 0;
+        total += instance.outdoor_count_exp || 0;
+        total += instance.pending_expense || 0;
+
+        // Set the total_expense field
+        instance.total_expense = total;
+    });
 
     return Expense;
 };
