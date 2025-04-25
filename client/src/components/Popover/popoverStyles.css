@@ -1,0 +1,209 @@
+/* popoverStyles.css */
+.popover-container {
+    position: relative;
+    display: inline-flex;
+}
+
+.popover-trigger {
+    cursor: pointer;
+    display: inline-flex;
+}
+
+.popover-content {
+    position: absolute;
+    z-index: 1000;
+    background-color: #ffffff;
+    border-radius: 0.375rem;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+        0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    width: max-content;
+    opacity: 0;
+    animation: popoverFadeIn 0.2s ease forwards;
+    overflow: hidden;
+}
+
+@keyframes popoverFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Close button */
+.popover-close-button {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: transparent;
+    border: none;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.popover-close-button:hover {
+    background-color: #f3f4f6;
+    color: #111827;
+}
+
+/* Title and content */
+.popover-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 0.75rem 1rem;
+    padding-right: 2.5rem; /* Make space for close button */
+    border-bottom: 1px solid #e5e7eb;
+    color: #111827;
+}
+
+.popover-body {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+/* Arrow styling */
+.popover-has-arrow {
+    margin: 8px; /* Make space for the arrow */
+}
+
+.popover-arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+}
+
+/* Arrow positions */
+.popover-arrow-top {
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 8px 8px 0 8px;
+    border-color: #ffffff transparent transparent transparent;
+}
+
+.popover-arrow-top::before {
+    content: "";
+    position: absolute;
+    top: -9px;
+    left: -8px;
+    border-style: solid;
+    border-width: 8px 8px 0 8px;
+    border-color: #e5e7eb transparent transparent transparent;
+    z-index: -1;
+}
+
+.popover-arrow-right {
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 8px 8px 8px 0;
+    border-color: transparent #ffffff transparent transparent;
+}
+
+.popover-arrow-right::before {
+    content: "";
+    position: absolute;
+    left: -1px;
+    top: -8px;
+    border-style: solid;
+    border-width: 8px 8px 8px 0;
+    border-color: transparent #e5e7eb transparent transparent;
+    z-index: -1;
+}
+
+.popover-arrow-bottom {
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 0 8px 8px 8px;
+    border-color: transparent transparent #ffffff transparent;
+}
+
+.popover-arrow-bottom::before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: -8px;
+    border-style: solid;
+    border-width: 0 8px 8px 8px;
+    border-color: transparent transparent #e5e7eb transparent;
+    z-index: -1;
+}
+
+.popover-arrow-left {
+    right: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 8px 0 8px 8px;
+    border-color: transparent transparent transparent #ffffff;
+}
+
+.popover-arrow-left::before {
+    content: "";
+    position: absolute;
+    right: -1px;
+    top: -8px;
+    border-style: solid;
+    border-width: 8px 0 8px 8px;
+    border-color: transparent transparent transparent #e5e7eb;
+    z-index: -1;
+}
+
+/* Rich content styling */
+.popover-body h4 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    color: #111827;
+}
+
+.popover-body p {
+    margin: 0 0 0.5rem 0;
+    line-height: 1.5;
+}
+
+.popover-body p:last-child {
+    margin-bottom: 0;
+}
+
+.popover-body a {
+    color: #6366f1;
+    text-decoration: none;
+}
+
+.popover-body a:hover {
+    text-decoration: underline;
+}
+
+.popover-body ul,
+.popover-body ol {
+    margin: 0.5rem 0;
+    padding-left: 1.25rem;
+}
+
+.popover-body li {
+    margin-bottom: 0.25rem;
+}
+
+.popover-body code {
+    background-color: #f3f4f6;
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    font-family: monospace;
+    font-size: 0.875rem;
+}

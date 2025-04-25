@@ -1,0 +1,177 @@
+/* customContainerStyles.css */
+.custom-container {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    margin-bottom: 1.5rem;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+/* Width variations */
+.custom-container.width-auto {
+    width: auto;
+}
+
+.custom-container.width-full {
+    width: 100%;
+}
+
+.custom-container.width-half {
+    width: 50%;
+}
+
+/* Border styling */
+.custom-container.with-border {
+    border: 1px solid #e5e7eb;
+}
+
+/* Error state */
+.custom-container.has-error {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+/* Rounded corner variations */
+.custom-container.rounded-none {
+    border-radius: 0;
+}
+
+.custom-container.rounded-small {
+    border-radius: 0.25rem;
+}
+
+.custom-container.rounded-medium {
+    border-radius: 0.5rem;
+}
+
+.custom-container.rounded-large {
+    border-radius: 0.75rem;
+}
+
+.custom-container.rounded-full {
+    border-radius: 1rem;
+}
+
+/* Background color variations */
+.custom-container.bg-white {
+    background-color: #fff;
+}
+
+.custom-container.bg-light {
+    background-color: #f9fafb;
+}
+
+.custom-container.bg-dark {
+    background-color: #111827;
+    color: #f9fafb;
+}
+
+.custom-container.bg-primary {
+    background-color: #6366f1;
+    color: #fff;
+}
+
+.custom-container.bg-accent {
+    background-color: #f3f4f6;
+}
+
+/* Elevation (shadow) variations */
+.custom-container.elevation-none {
+    box-shadow: none;
+}
+
+.custom-container.elevation-low {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.custom-container.elevation-medium {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.custom-container.elevation-high {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Padding variations */
+.custom-container.padding-none {
+    padding: 0;
+}
+
+.custom-container.padding-small {
+    padding: 0.5rem;
+}
+
+.custom-container.padding-medium {
+    padding: 0.75rem 1rem;
+}
+
+.custom-container.padding-large {
+    padding: 1.25rem 1.5rem;
+}
+
+/* Overflow control */
+.custom-container.with-overflow {
+    overflow: auto;
+}
+
+/* Container header styling */
+.container-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.container-header.with-border {
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.container-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.title-text {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #374151;
+    margin: 0;
+}
+
+.required-mark {
+    color: #ef4444;
+    margin-left: 0.25rem;
+}
+
+.container-icon {
+    display: flex;
+    align-items: center;
+    color: #6366f1;
+}
+
+.container-icon svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+/* Container content styling */
+.container-content {
+    position: relative;
+}
+
+/* Container footer styling */
+.container-footer {
+    margin-top: 1rem;
+}
+
+.container-footer.with-border {
+    padding-top: 0.75rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* Hover effects - similar to the input field */
+.custom-container:hover:not(.has-error) {
+    border-color: #d1d5db;
+}

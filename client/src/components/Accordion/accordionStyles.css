@@ -1,0 +1,154 @@
+/* accordionStyles.css */
+.accordion-container {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    width: 100%;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.accordion-item {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.accordion-item:last-child {
+    border-bottom: none;
+}
+
+.accordion-header {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 1rem;
+    background-color: #fff;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #111827;
+    transition: background-color 0.2s;
+}
+
+.accordion-header:hover {
+    background-color: #f9fafb;
+}
+
+.accordion-icon {
+    display: flex;
+    align-items: center;
+    margin-right: 0.75rem;
+    color: #6b7280;
+}
+
+.accordion-title {
+    flex: 1;
+}
+
+.accordion-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem 0.5rem;
+    background-color: #f3f4f6;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #4b5563;
+    margin-right: 0.75rem;
+}
+
+.accordion-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    transition: transform 0.3s ease;
+}
+
+.accordion-item.open .accordion-arrow {
+    transform: rotate(180deg);
+}
+
+.accordion-content {
+    overflow: hidden;
+    height: 0;
+    transition: height 0.3s ease;
+    background-color: #f9fafb;
+}
+
+.accordion-content-inner {
+    padding: 1rem;
+    font-size: 0.875rem;
+    color: #4b5563;
+    line-height: 1.5;
+}
+
+/* Disabled state */
+.accordion-item.disabled .accordion-header {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #f3f4f6;
+}
+
+.accordion-item.disabled .accordion-header:hover {
+    background-color: #f3f4f6;
+}
+
+/* Active/open state */
+.accordion-item.open .accordion-header {
+    background-color: #f9fafb;
+    color: #4f46e5;
+}
+
+.accordion-item.open .accordion-header .accordion-arrow {
+    color: #4f46e5;
+}
+
+/* Content styling for rich text */
+.accordion-content-inner p {
+    margin: 0 0 0.75rem 0;
+}
+
+.accordion-content-inner p:last-child {
+    margin-bottom: 0;
+}
+
+.accordion-content-inner a {
+    color: #6366f1;
+    text-decoration: none;
+}
+
+.accordion-content-inner a:hover {
+    text-decoration: underline;
+}
+
+.accordion-content-inner ul,
+.accordion-content-inner ol {
+    margin: 0.75rem 0;
+    padding-left: 1.5rem;
+}
+
+.accordion-content-inner li {
+    margin-bottom: 0.25rem;
+}
+
+.accordion-content-inner code {
+    background-color: #e5e7eb;
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    font-family: monospace;
+    font-size: 0.75rem;
+}
+
+/* Focus state */
+.accordion-header:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+/* Adjusted focus style for active item */
+.accordion-item.open .accordion-header:focus {
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+}

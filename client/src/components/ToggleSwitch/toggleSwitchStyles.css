@@ -1,0 +1,167 @@
+/* toggleSwitchStyles.css */
+.toggle-switch-container {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    margin-bottom: 1.5rem;
+}
+
+.toggle-switch-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.toggle-label-left {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+}
+
+.toggle-label-right {
+    flex-direction: row;
+}
+
+.toggle-switch-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    user-select: none; /* Prevent text selection */
+}
+
+.toggle-label-left .toggle-switch-label {
+    margin-right: 0.75rem;
+}
+
+.toggle-label-right .toggle-switch-label {
+    margin-left: 0.75rem;
+}
+
+.required-mark {
+    color: #ef4444;
+    margin-left: 0.25rem;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+/* Size variations */
+.toggle-switch-small {
+    width: 32px;
+    height: 18px;
+}
+
+.toggle-switch-medium {
+    width: 44px;
+    height: 24px;
+}
+
+.toggle-switch-large {
+    width: 56px;
+    height: 30px;
+}
+
+.toggle-switch-input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+    pointer-events: none; /* Ensure clicks pass through to the wrapper */
+}
+
+.toggle-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #e5e7eb;
+    transition: all 0.2s ease;
+    border-radius: 34px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.toggle-slider::before {
+    position: absolute;
+    content: "";
+    background-color: white;
+    transition: all 0.2s ease;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Handle sizes for the toggle knob */
+.toggle-switch-small .toggle-slider::before {
+    height: 14px;
+    width: 14px;
+    left: 2px;
+    bottom: 2px;
+}
+
+.toggle-switch-medium .toggle-slider::before {
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+}
+
+.toggle-switch-large .toggle-slider::before {
+    height: 22px;
+    width: 22px;
+    left: 4px;
+    bottom: 4px;
+}
+
+/* Active state - using a class rather than relying on the input:checked selector */
+.toggle-switch.checked .toggle-slider {
+    background-color: #6366f1;
+}
+
+/* Move the knob when checked - exact pixel calculations */
+.toggle-switch-small.checked .toggle-slider::before {
+    transform: translateX(14px);
+}
+
+.toggle-switch-medium.checked .toggle-slider::before {
+    transform: translateX(20px);
+}
+
+.toggle-switch-large.checked .toggle-slider::before {
+    transform: translateX(26px);
+}
+
+/* Focus state */
+.toggle-switch-input:focus + .toggle-slider {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+/* Hover state */
+.toggle-switch:hover .toggle-slider {
+    background-color: #d1d5db;
+}
+
+.toggle-switch.checked:hover .toggle-slider {
+    background-color: #4f46e5;
+}
+
+/* Disabled state */
+.toggle-switch.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.toggle-switch.disabled .toggle-slider {
+    cursor: not-allowed;
+    background-color: #f3f4f6;
+}
+
+.toggle-switch.disabled.checked .toggle-slider {
+    background-color: #9ca3af;
+}
+
+.input-error-message {
+    margin-top: 0.5rem;
+    color: #ef4444;
+    font-size: 0.75rem;
+}

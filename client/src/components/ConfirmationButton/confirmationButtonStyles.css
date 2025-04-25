@@ -1,0 +1,364 @@
+/* confirmationButtonStyles.css */
+.confirmation-button {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 500;
+    border-radius: 0.375rem;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+/* Size variants */
+.confirmation-small {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+    height: 2rem;
+}
+
+.confirmation-medium {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    height: 2.5rem;
+}
+
+.confirmation-large {
+    padding: 0.625rem 1.25rem;
+    font-size: 1rem;
+    height: 3rem;
+}
+
+/* Color variants */
+.confirmation-primary {
+    background-color: #6366f1;
+    color: #ffffff;
+}
+
+.confirmation-primary:hover:not(:disabled) {
+    background-color: #4f46e5;
+}
+
+.confirmation-primary:active:not(:disabled) {
+    background-color: #4338ca;
+}
+
+.confirmation-danger {
+    background-color: #ef4444;
+    color: #ffffff;
+}
+
+.confirmation-danger:hover:not(:disabled) {
+    background-color: #dc2626;
+}
+
+.confirmation-danger:active:not(:disabled) {
+    background-color: #b91c1c;
+}
+
+.confirmation-neutral {
+    background-color: #f3f4f6;
+    color: #111827;
+    border-color: #e5e7eb;
+}
+
+.confirmation-neutral:hover:not(:disabled) {
+    background-color: #e5e7eb;
+}
+
+.confirmation-neutral:active:not(:disabled) {
+    background-color: #d1d5db;
+}
+
+/* Confirmation states */
+.confirmation-button.is-confirming.confirmation-primary {
+    background-color: #4338ca;
+}
+
+.confirmation-button.is-confirming.confirmation-danger {
+    background-color: #b91c1c;
+}
+
+.confirmation-button.is-confirming.confirmation-neutral {
+    background-color: #d1d5db;
+}
+
+/* Animation */
+.confirmation-button.is-animating {
+    transform: scale(0.97);
+    opacity: 0.9;
+}
+
+/* Disabled state */
+.confirmation-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Full width */
+.confirmation-full-width,
+.confirmation-full-width .confirmation-button,
+.confirmation-full-width .confirmation-buttons-group {
+    width: 100%;
+}
+
+/* Icon styling */
+.confirmation-icon {
+    display: flex;
+    align-items: center;
+    margin-right: 0.5rem;
+}
+
+.confirmation-icon svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Inline-double mode */
+.confirmation-container {
+    position: relative;
+    display: inline-block;
+}
+
+.confirmation-buttons-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.confirmation-confirm-button {
+    flex: 1;
+}
+
+.confirmation-cancel-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    height: 2.5rem;
+    background-color: #f3f4f6;
+    color: #4b5563;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.confirmation-cancel-button:hover:not(:disabled) {
+    background-color: #e5e7eb;
+}
+
+.confirmation-cancel-button:active:not(:disabled) {
+    background-color: #d1d5db;
+}
+
+/* Popup mode */
+.confirmation-popup-container {
+    position: relative;
+    display: inline-block;
+}
+
+.confirmation-popup {
+    position: absolute;
+    z-index: 50;
+    background-color: #ffffff;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    padding: 0.75rem;
+    min-width: 200px;
+    animation: popup-fade-in 0.2s ease;
+}
+
+/* Popup positions */
+.confirmation-popup-top {
+    bottom: calc(100% + 0.5rem);
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.confirmation-popup-top:after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -8px;
+    border-width: 8px;
+    border-style: solid;
+    border-color: #ffffff transparent transparent transparent;
+}
+
+.confirmation-popup-bottom {
+    top: calc(100% + 0.5rem);
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.confirmation-popup-bottom:after {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    margin-left: -8px;
+    border-width: 8px;
+    border-style: solid;
+    border-color: transparent transparent #ffffff transparent;
+}
+
+.confirmation-popup-left {
+    right: calc(100% + 0.5rem);
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.confirmation-popup-left:after {
+    content: "";
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    margin-top: -8px;
+    border-width: 8px;
+    border-style: solid;
+    border-color: transparent transparent transparent #ffffff;
+}
+
+.confirmation-popup-right {
+    left: calc(100% + 0.5rem);
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.confirmation-popup-right:after {
+    content: "";
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    margin-top: -8px;
+    border-width: 8px;
+    border-style: solid;
+    border-color: transparent #ffffff transparent transparent;
+}
+
+/* Popup message */
+.confirmation-popup-message {
+    margin-bottom: 0.75rem;
+    font-size: 0.875rem;
+    color: #4b5563;
+}
+
+/* Popup actions */
+.confirmation-popup-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.confirmation-popup-confirm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+    background-color: #ef4444;
+    color: #ffffff;
+    border: none;
+    border-radius: 0.25rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.confirmation-popup-confirm:hover {
+    background-color: #dc2626;
+}
+
+.confirmation-popup-cancel {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+    background-color: #f3f4f6;
+    color: #4b5563;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.25rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.confirmation-popup-cancel:hover {
+    background-color: #e5e7eb;
+}
+
+/* Animations */
+@keyframes popup-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px) translateX(-50%);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) translateX(-50%);
+    }
+}
+
+.confirmation-popup-left,
+.confirmation-popup-right {
+    animation: popup-fade-in-horizontal 0.2s ease;
+}
+
+@keyframes popup-fade-in-horizontal {
+    from {
+        opacity: 0;
+        transform: translateX(10px) translateY(-50%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) translateY(-50%);
+    }
+}
+
+/* Focus state */
+.confirmation-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.4);
+}
+
+.confirmation-danger:focus {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.4);
+}
+
+.confirmation-popup-confirm:focus,
+.confirmation-popup-cancel:focus,
+.confirmation-cancel-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.4);
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .confirmation-popup {
+        position: fixed;
+        top: auto;
+        bottom: 1rem;
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100% - 2rem);
+        max-width: 400px;
+        animation: popup-fade-in-mobile 0.3s ease;
+    }
+
+    .confirmation-popup:after {
+        display: none;
+    }
+
+    @keyframes popup-fade-in-mobile {
+        from {
+            opacity: 0;
+            transform: translateY(20px) translateX(-50%);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) translateX(-50%);
+        }
+    }
+}

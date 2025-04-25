@@ -1,0 +1,282 @@
+/* customTabsStyles.css */
+.custom-tabs-wrapper {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    width: 100%;
+}
+
+/* Tab list (container for tab items) */
+.custom-tabs-list {
+    position: relative;
+    display: flex;
+    width: 100%;
+}
+
+/* Horizontal orientation */
+.custom-tabs-wrapper.horizontal .custom-tabs-list {
+    flex-direction: row;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+/* Vertical orientation */
+.custom-tabs-wrapper.vertical {
+    display: flex;
+    flex-direction: row;
+}
+
+.custom-tabs-wrapper.vertical .custom-tabs-list {
+    flex-direction: column;
+    border-right: 1px solid #e5e7eb;
+    width: auto;
+    min-width: 150px;
+}
+
+.custom-tabs-wrapper.vertical.full-width {
+    min-height: 350px;
+}
+
+.custom-tabs-wrapper.vertical .custom-tabs-content-wrapper {
+    flex: 1;
+    padding-left: 1.5rem;
+}
+
+/* Tab item styles */
+.custom-tab-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    position: relative;
+    color: #6b7280;
+    outline: none;
+}
+
+/* Sizes */
+.custom-tabs-wrapper.small .custom-tab-item {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+.custom-tabs-wrapper.medium .custom-tab-item {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+}
+
+.custom-tabs-wrapper.large .custom-tab-item {
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+}
+
+/* Variants */
+/* Indicator variant (formerly "underline") */
+.custom-tabs-wrapper.indicator .custom-tab-item:hover {
+    color: #111827;
+}
+
+.custom-tabs-wrapper.indicator .custom-tab-item.active {
+    color: #6366f1;
+    font-weight: 600;
+    position: relative;
+}
+
+.custom-tabs-wrapper.horizontal.indicator .custom-tab-item.active::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--tab-indicator-color, #6366f1);
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+}
+
+.custom-tabs-wrapper.vertical.indicator .custom-tab-item.active::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 3px;
+    background-color: var(--tab-indicator-color, #6366f1);
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+}
+
+/* Contained variant */
+.custom-tabs-wrapper.contained .custom-tabs-list {
+    background: #f3f4f6;
+    border-radius: 0.5rem;
+    padding: 0.25rem;
+    border: none;
+}
+
+.custom-tabs-wrapper.horizontal.contained .custom-tab-item {
+    border-radius: 0.375rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+.custom-tabs-wrapper.vertical.contained .custom-tab-item {
+    border-radius: 0.375rem;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+}
+
+.custom-tabs-wrapper.contained .custom-tab-item:hover {
+    background: rgba(255, 255, 255, 0.5);
+    color: #111827;
+}
+
+.custom-tabs-wrapper.contained .custom-tab-item.active {
+    background: #fff;
+    color: #6366f1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Pills variant */
+.custom-tabs-wrapper.pills .custom-tabs-list {
+    gap: 0.5rem;
+    border: none;
+}
+
+.custom-tabs-wrapper.pills .custom-tab-item {
+    border-radius: 9999px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.custom-tabs-wrapper.pills .custom-tab-item:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+.custom-tabs-wrapper.pills .custom-tab-item.active {
+    background: #6366f1;
+    color: #fff;
+}
+
+/* Full width tabs (only for horizontal) */
+.custom-tabs-wrapper.horizontal.full-width .custom-tabs-list {
+    justify-content: stretch;
+}
+
+.custom-tabs-wrapper.horizontal.full-width .custom-tab-item {
+    flex: 1;
+    justify-content: center;
+}
+
+/* Tab items with icons and badges */
+.custom-tab-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: inherit;
+}
+
+.custom-tab-icon svg {
+    width: 1.25em;
+    height: 1.25em;
+}
+
+.custom-tab-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2em;
+    height: 2em;
+    padding: 0.5em;
+    font-size: 0.75em;
+    font-weight: 600;
+    line-height: 1;
+    background-color: #e5e7eb;
+    color: #4b5563;
+    border-radius: 9999px;
+}
+
+.custom-tab-item.active .custom-tab-badge {
+    background-color: #c7d2fe;
+    color: #4f46e5;
+}
+
+.custom-tabs-wrapper.pills .custom-tab-item.active .custom-tab-badge {
+    background-color: #ffffff;
+    color: #4f46e5;
+}
+
+/* Disabled state */
+.custom-tab-item.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Tab content */
+.custom-tabs-content-wrapper {
+    position: relative;
+    margin-top: 1rem;
+}
+
+.custom-tabs-wrapper.equal-height .custom-tabs-content-wrapper {
+    min-height: 200px;
+}
+
+.custom-tab-content {
+    display: none;
+}
+
+.custom-tab-content.active {
+    display: block;
+}
+
+/* Animation for tab content */
+.custom-tabs-content-wrapper.animate .custom-tab-content {
+    opacity: 0;
+    transform: translateY(5px);
+    transition: none;
+}
+
+.custom-tabs-content-wrapper.animate .custom-tab-content.active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Focus styles */
+.custom-tab-item:focus-visible {
+    outline: 2px solid #6366f1;
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .custom-tabs-wrapper.vertical {
+        flex-direction: column;
+    }
+
+    .custom-tabs-wrapper.vertical .custom-tabs-list {
+        flex-direction: row;
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #e5e7eb;
+        overflow-x: auto;
+    }
+
+    .custom-tabs-wrapper.vertical .custom-tabs-content-wrapper {
+        padding-left: 0;
+        padding-top: 1rem;
+    }
+
+    .custom-tabs-wrapper.vertical.indicator .custom-tab-item.active::after {
+        bottom: 0;
+        top: auto;
+        right: auto;
+        left: 0;
+        height: 3px;
+        width: 100%;
+    }
+}

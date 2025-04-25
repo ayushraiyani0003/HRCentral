@@ -1,0 +1,222 @@
+/* badgeCounterStyles.css */
+.badge-container {
+    position: relative;
+    display: inline-flex;
+    vertical-align: middle;
+    pointer-events: auto;
+    /* Ensure maximum width for input containers */
+    max-width: 100%;
+    width: inherit;
+}
+
+.badge-counter {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 600;
+    color: #ffffff;
+    border-radius: 9999px;
+    z-index: 10;
+    white-space: nowrap;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    pointer-events: all; /* Ensure badges can receive events */
+}
+
+/* Position variants */
+.badge-top-right {
+    top: 0;
+    right: 0;
+    transform: translate(50%, -50%);
+}
+
+.badge-top-left {
+    top: 0;
+    left: 0;
+    transform: translate(-50%, -50%);
+}
+
+.badge-bottom-right {
+    bottom: 0;
+    right: 0;
+    transform: translate(50%, 50%);
+}
+
+.badge-bottom-left {
+    bottom: 0;
+    left: 0;
+    transform: translate(-50%, 50%);
+}
+
+/* Size variants */
+.badge-small {
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    font-size: 0.625rem;
+    line-height: 1;
+}
+
+.badge-medium {
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    font-size: 0.75rem;
+    line-height: 1;
+}
+
+.badge-large {
+    min-width: 24px;
+    height: 24px;
+    padding: 0 8px;
+    font-size: 0.875rem;
+    line-height: 1;
+}
+
+/* Color variants */
+.badge-primary {
+    background-color: #6366f1; /* Indigo from your input styles */
+}
+
+.badge-danger {
+    background-color: #ef4444; /* Red from your input styles */
+}
+
+.badge-warning {
+    background-color: #f59e0b;
+    color: #000000;
+}
+
+.badge-success {
+    background-color: #10b981;
+}
+
+.badge-neutral {
+    background-color: #9ca3af; /* Gray from your input styles */
+}
+
+/* Animation */
+.badge-pulsing {
+    animation: badge-pulse 2s infinite;
+}
+
+@keyframes badge-pulse {
+    0% {
+        opacity: 1;
+        transform: scale(1) translate(50%, -50%);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(1.1) translate(45%, -45%);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translate(50%, -50%);
+    }
+}
+
+/* Adjust pulse animation for different positions */
+.badge-pulsing.badge-top-left {
+    animation-name: badge-pulse-top-left;
+}
+
+.badge-pulsing.badge-bottom-right {
+    animation-name: badge-pulse-bottom-right;
+}
+
+.badge-pulsing.badge-bottom-left {
+    animation-name: badge-pulse-bottom-left;
+}
+
+@keyframes badge-pulse-top-left {
+    0% {
+        opacity: 1;
+        transform: scale(1) translate(-50%, -50%);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(1.1) translate(-45%, -45%);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translate(-50%, -50%);
+    }
+}
+
+@keyframes badge-pulse-bottom-right {
+    0% {
+        opacity: 1;
+        transform: scale(1) translate(50%, 50%);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(1.1) translate(45%, 45%);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translate(50%, 50%);
+    }
+}
+
+@keyframes badge-pulse-bottom-left {
+    0% {
+        opacity: 1;
+        transform: scale(1) translate(-50%, 50%);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(1.1) translate(-45%, 45%);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translate(-50%, 50%);
+    }
+}
+
+/* Interactive badge */
+.badge-clickable {
+    cursor: pointer !important;
+    transition: transform 0.1s ease-in-out, opacity 0.2s ease !important;
+}
+
+.badge-clickable:hover {
+    opacity: 0.85;
+    transform: scale(1.1) translate(45%, -45%);
+}
+
+.badge-clickable:active {
+    opacity: 1;
+    transform: scale(0.95) translate(52%, -52%);
+}
+
+/* Focus states for accessibility */
+.badge-clickable:focus {
+    outline: 2px solid rgba(99, 102, 241, 0.5);
+    outline-offset: 1px;
+}
+
+/* Adjust interactive transforms for different positions */
+.badge-clickable.badge-top-left:hover {
+    transform: scale(1.1) translate(-45%, -45%);
+}
+
+.badge-clickable.badge-top-left:active {
+    transform: scale(0.95) translate(-52%, -52%);
+}
+
+.badge-clickable.badge-bottom-right:hover {
+    transform: scale(1.1) translate(45%, 45%);
+}
+
+.badge-clickable.badge-bottom-right:active {
+    transform: scale(0.95) translate(52%, 52%);
+}
+
+.badge-clickable.badge-bottom-left:hover {
+    transform: scale(1.1) translate(-45%, 45%);
+}
+
+.badge-clickable.badge-bottom-left:active {
+    transform: scale(0.95) translate(-52%, 52%);
+}

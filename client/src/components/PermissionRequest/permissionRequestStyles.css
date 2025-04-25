@@ -1,0 +1,368 @@
+/* permissionRequestStyles.css */
+.permission-request {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    border-radius: 0.5rem;
+    background-color: #fff;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    width: 100%;
+    max-width: 400px;
+    transition: all 0.2s ease;
+}
+
+/* Variants */
+.permission-request-default {
+    padding: 1.5rem;
+}
+
+.permission-request-compact {
+    padding: 1rem;
+}
+
+.permission-request-detailed {
+    padding: 1.5rem;
+}
+
+/* Header section */
+.permission-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    position: relative;
+}
+
+.permission-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+    background-color: #e5e7eb;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+}
+
+.permission-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: #4b5563;
+}
+
+.permission-icon-processing {
+    background-color: #dbeafe;
+}
+
+.permission-icon-processing .permission-icon {
+    color: #2563eb;
+    animation: pulse 2s infinite;
+}
+
+.permission-icon-success {
+    background-color: #d1fae5;
+}
+
+.permission-icon-success .permission-icon {
+    color: #059669;
+}
+
+.permission-icon-error {
+    background-color: #fee2e2;
+}
+
+.permission-icon-error .permission-icon {
+    color: #dc2626;
+}
+
+.permission-title {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #111827;
+    flex-grow: 1;
+}
+
+.permission-close-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    transition: color 0.2s;
+}
+
+.permission-close-button:hover {
+    color: #6b7280;
+}
+
+.permission-close-button svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Content section */
+.permission-content {
+    margin-bottom: 1.5rem;
+}
+
+.permission-reason {
+    margin: 0 0 1rem 0;
+    color: #4b5563;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.permission-message {
+    margin: 0 0 1rem 0;
+    color: #4b5563;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.permission-current-status {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.permission-status {
+    display: flex;
+    align-items: center;
+    margin-left: 0.5rem;
+}
+
+.permission-status-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    margin-right: 0.25rem;
+}
+
+.permission-status-prompt .permission-status-dot {
+    background-color: #9ca3af;
+}
+
+.permission-status-granted .permission-status-dot {
+    background-color: #10b981;
+}
+
+.permission-status-denied .permission-status-dot {
+    background-color: #ef4444;
+}
+
+.permission-status-text {
+    font-weight: 500;
+}
+
+.permission-status-prompt .permission-status-text {
+    color: #6b7280;
+}
+
+.permission-status-granted .permission-status-text {
+    color: #059669;
+}
+
+.permission-status-denied .permission-status-text {
+    color: #dc2626;
+}
+
+/* Browser instructions */
+.permission-browser-instructions {
+    margin-bottom: 1.25rem;
+    padding: 0.75rem;
+    background-color: #f9fafb;
+    border-radius: 0.375rem;
+    border: 1px solid #e5e7eb;
+}
+
+.permission-browser-instructions h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.browser-instructions {
+    margin: 0.5rem 0 0 1.25rem;
+    padding: 0;
+    font-size: 0.75rem;
+    color: #4b5563;
+}
+
+.browser-instructions li {
+    margin-bottom: 0.25rem;
+}
+
+.browser-instructions p {
+    margin: 0;
+    font-size: 0.75rem;
+    color: #4b5563;
+}
+
+/* Fallback content */
+.permission-fallback {
+    margin-top: 1.25rem;
+    padding: 0.75rem;
+    background-color: #f9fafb;
+    border-radius: 0.375rem;
+    border: 1px solid #e5e7eb;
+}
+
+.permission-fallback h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.permission-fallback-content {
+    font-size: 0.875rem;
+    color: #4b5563;
+}
+
+/* Loading indicator */
+.permission-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem 0;
+}
+
+.permission-loading-indicator {
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 2px solid rgba(99, 102, 241, 0.2);
+    border-top-color: #6366f1;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Actions section */
+.permission-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.permission-allow-button,
+.permission-deny-button,
+.permission-retry-button,
+.permission-done-button,
+.permission-fallback-button {
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.permission-allow-button,
+.permission-retry-button {
+    background-color: #6366f1;
+    color: #ffffff;
+}
+
+.permission-allow-button:hover,
+.permission-retry-button:hover {
+    background-color: #4f46e5;
+}
+
+.permission-allow-button:active,
+.permission-retry-button:active {
+    background-color: #4338ca;
+}
+
+.permission-deny-button,
+.permission-fallback-button {
+    background-color: #f3f4f6;
+    color: #4b5563;
+    border-color: #e5e7eb;
+}
+
+.permission-deny-button:hover,
+.permission-fallback-button:hover {
+    background-color: #e5e7eb;
+}
+
+.permission-deny-button:active,
+.permission-fallback-button:active {
+    background-color: #d1d5db;
+}
+
+.permission-done-button {
+    background-color: #10b981;
+    color: #ffffff;
+}
+
+.permission-done-button:hover {
+    background-color: #059669;
+}
+
+.permission-done-button:active {
+    background-color: #047857;
+}
+
+.permission-allow-button:disabled,
+.permission-retry-button:disabled {
+    background-color: #a5b4fc;
+    cursor: not-allowed;
+}
+
+/* Contextual trigger */
+.permission-contextual-trigger {
+    cursor: pointer;
+    display: inline-block;
+}
+
+/* Animation keyframes */
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .permission-request {
+        max-width: 100%;
+    }
+
+    .permission-actions {
+        flex-direction: column;
+    }
+
+    .permission-allow-button,
+    .permission-deny-button,
+    .permission-retry-button,
+    .permission-done-button,
+    .permission-fallback-button {
+        width: 100%;
+        padding: 0.625rem 1rem;
+        text-align: center;
+    }
+}

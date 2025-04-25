@@ -1,42 +1,52 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+:root {
+    --timeline-zoom: 1;
+    --timeline-primary-color: #6366f1;
+    --timeline-completed-color: #10b981;
+    --timeline-pending-color: #9ca3af;
+    --timeline-active-color: #3b82f6;
+    --timeline-text-color: #374151;
+    --timeline-background-color: #ffffff;
+}
+button:hover {
+    cursor: pointer;
+    text-decoration: none;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/* Remove all clear icons from inputs */
+
+/* Remove browser's default clear/cancel icon from search inputs */
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration {
+    -webkit-appearance: none;
+    appearance: none;
+    display: none;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Remove browser's default clear icon from text inputs in Edge/IE */
+input::-ms-clear {
+    display: none;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* Remove browser's default password reveal icon in Edge/IE */
+input::-ms-reveal {
+    display: none;
 }
 
-.card {
-  padding: 2em;
+/* Mozilla Firefox specific */
+input[type="search"] {
+    -moz-appearance: none;
 }
 
-.read-the-docs {
-  color: #888;
+/* Remove all possible browser-provided icons that might appear */
+input[type="search"],
+input[type="text"],
+input[type="email"],
+input[type="url"],
+input[type="tel"],
+input[type="number"],
+input[type="password"] {
+    /* This ensures consistent appearance across browsers */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
 }
