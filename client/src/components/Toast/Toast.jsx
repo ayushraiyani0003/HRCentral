@@ -7,7 +7,6 @@ import React, {
 } from "react";
 import "./toastStyles.css";
 
-
 // Usage:
 // const ToastButtonsDemo = () => {
 //     const { addToast } = useToast();
@@ -249,7 +248,6 @@ import "./toastStyles.css";
 //     );
 // };
 
-
 // Create Toast Context
 const ToastContext = createContext(null);
 
@@ -386,6 +384,8 @@ export const ToastProvider = ({ children }) => {
         </ToastContext.Provider>
     );
 };
+
+export default ToastProvider;
 
 // Hook to use the toast context
 export const useToast = () => {

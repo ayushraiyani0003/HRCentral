@@ -130,3 +130,6 @@ bower_components/
 
 # TypeScript
 *.tsbuildinfo
+
+# structure
+*.structure.txt

@@ -11,7 +11,6 @@ const MaintenancePage = ({
     logoAlt = "Company Logo",
     contactEmail = null,
     contactPhone = null,
-    socialLinks = [],
     backgroundImage = null,
     backgroundPattern = "grid",
     autoRefreshInterval = 60, // in seconds, 0 to disable

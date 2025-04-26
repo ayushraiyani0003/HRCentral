@@ -1,6 +1,129 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./accordionStyles.css";
 
+const AccordionItem = ({
+    title,
+    children,
+    isOpen,
+    toggleItem,
+    index,
+    disabled = false,
+    icon = null,
+    badge = null,
+}) => {
+    const contentRef = useRef(null);
+    const [height, setHeight] = useState(0);
+
+    // Calculate height for smooth animation
+    useEffect(() => {
+        if (contentRef.current) {
+            setHeight(isOpen ? contentRef.current.scrollHeight : 0);
+        }
+    }, [isOpen, children]);
+
+    // Handle click event
+    const handleClick = () => {
+        if (!disabled) {
+            toggleItem(index);
+        }
+    };
+
+    return (
+        <div
+            className={`accordion-item ${isOpen ? "open" : ""} ${
+                disabled ? "disabled" : ""
+            }`}
+        >
+            <button
+                className="accordion-header"
+                onClick={handleClick}
+                disabled={disabled}
+                aria-expanded={isOpen}
+            >
+                {icon && <span className="accordion-icon">{icon}</span>}
+                <span className="accordion-title">{title}</span>
+                {badge && <span className="accordion-badge">{badge}</span>}
+                <span className="accordion-arrow">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="feather feather-chevron-down"
+                    >
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </span>
+            </button>
+            <div
+                className="accordion-content"
+                style={{ height: `${height}px` }}
+            >
+                <div className="accordion-content-inner" ref={contentRef}>
+                    {children}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const Accordion = ({
+    items,
+    allowMultiple = false,
+    defaultOpen = [],
+    onChange = () => {},
+    className = "",
+}) => {
+    const [openItems, setOpenItems] = useState(defaultOpen);
+
+    // Toggle accordion item
+    const toggleItem = (index) => {
+        if (allowMultiple) {
+            // If multiple is allowed, toggle the clicked item
+            setOpenItems((prev) =>
+                prev.includes(index)
+                    ? prev.filter((item) => item !== index)
+                    : [...prev, index]
+            );
+        } else {
+            // If single only, set the clicked item as the only open one
+            // or close it if it's already open
+            setOpenItems((prev) => (prev.includes(index) ? [] : [index]));
+        }
+    };
+
+    // Call onChange when open items change
+    useEffect(() => {
+        onChange(openItems);
+    }, [openItems, onChange]);
+
+    return (
+        <div className={`accordion-container ${className}`}>
+            {items.map((item, index) => (
+                <AccordionItem
+                    key={index}
+                    title={item.title}
+                    index={index}
+                    isOpen={openItems.includes(index)}
+                    toggleItem={toggleItem}
+                    disabled={item.disabled}
+                    icon={item.icon}
+                    badge={item.badge}
+                >
+                    {item.content}
+                </AccordionItem>
+            ))}
+        </div>
+    );
+};
+
+export default Accordion;
+
 // Usages:
 
 // function App() {
@@ -341,126 +464,3 @@ import "./accordionStyles.css";
 //         </div>
 //     );
 // }
-
-const AccordionItem = ({
-    title,
-    children,
-    isOpen,
-    toggleItem,
-    index,
-    disabled = false,
-    icon = null,
-    badge = null,
-}) => {
-    const contentRef = useRef(null);
-    const [height, setHeight] = useState(0);
-
-    // Calculate height for smooth animation
-    useEffect(() => {
-        if (contentRef.current) {
-            setHeight(isOpen ? contentRef.current.scrollHeight : 0);
-        }
-    }, [isOpen, children]);
-
-    // Handle click event
-    const handleClick = () => {
-        if (!disabled) {
-            toggleItem(index);
-        }
-    };
-
-    return (
-        <div
-            className={`accordion-item ${isOpen ? "open" : ""} ${
-                disabled ? "disabled" : ""
-            }`}
-        >
-            <button
-                className="accordion-header"
-                onClick={handleClick}
-                disabled={disabled}
-                aria-expanded={isOpen}
-            >
-                {icon && <span className="accordion-icon">{icon}</span>}
-                <span className="accordion-title">{title}</span>
-                {badge && <span className="accordion-badge">{badge}</span>}
-                <span className="accordion-arrow">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="feather feather-chevron-down"
-                    >
-                        <polyline points="6 9 12 15 18 9"></polyline>
-                    </svg>
-                </span>
-            </button>
-            <div
-                className="accordion-content"
-                style={{ height: `${height}px` }}
-            >
-                <div className="accordion-content-inner" ref={contentRef}>
-                    {children}
-                </div>
-            </div>
-        </div>
-    );
-};
-
-const Accordion = ({
-    items,
-    allowMultiple = false,
-    defaultOpen = [],
-    onChange = () => {},
-    className = "",
-}) => {
-    const [openItems, setOpenItems] = useState(defaultOpen);
-
-    // Toggle accordion item
-    const toggleItem = (index) => {
-        if (allowMultiple) {
-            // If multiple is allowed, toggle the clicked item
-            setOpenItems((prev) =>
-                prev.includes(index)
-                    ? prev.filter((item) => item !== index)
-                    : [...prev, index]
-            );
-        } else {
-            // If single only, set the clicked item as the only open one
-            // or close it if it's already open
-            setOpenItems((prev) => (prev.includes(index) ? [] : [index]));
-        }
-    };
-
-    // Call onChange when open items change
-    useEffect(() => {
-        onChange(openItems);
-    }, [openItems, onChange]);
-
-    return (
-        <div className={`accordion-container ${className}`}>
-            {items.map((item, index) => (
-                <AccordionItem
-                    key={index}
-                    title={item.title}
-                    index={index}
-                    isOpen={openItems.includes(index)}
-                    toggleItem={toggleItem}
-                    disabled={item.disabled}
-                    icon={item.icon}
-                    badge={item.badge}
-                >
-                    {item.content}
-                </AccordionItem>
-            ))}
-        </div>
-    );
-};
-
-export default Accordion;

@@ -1,7 +1,7 @@
 import React, { useState, forwardRef, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import "./datePickerStyles.css"; // Custom CSS file
+import "./ModernDateRangePicker.css"; // Custom CSS file
 
 // const today = new Date();
 // const nextWeek = new Date();

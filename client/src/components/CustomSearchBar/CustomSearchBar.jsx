@@ -1,5 +1,5 @@
 import React, { useState, forwardRef, useRef, useEffect } from "react";
-import { searchIcon } from "../../utils/SvgIcon";
+import { SearchIcon } from "../../utils/SvgIcon";
 import "./customSearchBarStyles.css";
 
 // refer this code for implements the search bar
@@ -197,7 +197,9 @@ const CustomSearchBar = forwardRef(
                         isFocused ? "focused" : ""
                     } ${disabled ? "disabled" : ""}`}
                 >
-                    <div className="search-icon-wrapper">{searchIcon}</div>
+                    <div className="search-icon-wrapper">
+                        <SearchIcon />
+                    </div>
 
                     <input
                         ref={inputRef}

@@ -3,25 +3,25 @@ import "./documentViewerStyles.css";
 
 // Import icons from separate file
 import {
-    searchIcon,
-    zoomInIcon,
-    zoomOutIcon,
-    resetZoomIcon,
-    fitToWidthIcon,
-    firstPageIcon,
-    prevPageIcon,
-    nextPageIcon,
-    lastPageIcon,
-    downloadIcon,
-    printIcon,
-    fullscreenIcon,
-    exitFullscreenIcon,
-    closeIcon,
-    errorIcon,
-    gridViewIcon,
-    addNoteIcon,
-    highlightIcon,
-    drawIcon,
+    SearchIcon,
+    ZoomInIcon,
+    ZoomOutIcon,
+    ResetZoomIcon,
+    FitToWidthIcon,
+    FirstPageIcon,
+    PrevPageIcon,
+    NextPageIcon,
+    LastPageIcon,
+    DownloadIcon,
+    PrintIcon,
+    FullscreenIcon,
+    ExitFullscreenIcon,
+    CloseIcon,
+    ErrorIcon,
+    GridViewIcon,
+    AddNoteIcon,
+    HighlightIcon,
+    DrawIcon,
 } from "../../utils/SvgIcon";
 
 // Import PDF.js correctly
@@ -489,7 +489,7 @@ const DocumentViewer = ({
         if (error) {
             return (
                 <div className="document-error">
-                    <div className="document-error-icon">{errorIcon}</div>
+                    <div className="document-error-icon">{ErrorIcon}</div>
                     <div className="document-error-text">{error}</div>
                 </div>
             );
@@ -532,7 +532,7 @@ const DocumentViewer = ({
                         onClick={() => setShowSearchPanel(false)}
                         aria-label="Close search panel"
                     >
-                        {closeIcon}
+                        {CloseIcon}
                     </button>
                 </div>
                 <div className="document-search-results">
@@ -590,7 +590,7 @@ const DocumentViewer = ({
                             }
                             aria-label="First page"
                         >
-                            {firstPageIcon}
+                            {FirstPageIcon}
                         </button>
                         <button
                             className="document-button"
@@ -602,7 +602,7 @@ const DocumentViewer = ({
                             }
                             aria-label="Previous page"
                         >
-                            {prevPageIcon}
+                            {PrevPageIcon}
                         </button>
                         <div className="document-page-input">
                             <input
@@ -627,7 +627,7 @@ const DocumentViewer = ({
                             }
                             aria-label="Next page"
                         >
-                            {nextPageIcon}
+                            {NextPageIcon}
                         </button>
                         <button
                             className="document-button"
@@ -639,7 +639,7 @@ const DocumentViewer = ({
                             }
                             aria-label="Last page"
                         >
-                            {lastPageIcon}
+                            {LastPageIcon}
                         </button>
                     </div>
 
@@ -651,7 +651,7 @@ const DocumentViewer = ({
                             disabled={scale <= 0.5 || isLoading}
                             aria-label="Zoom out"
                         >
-                            {zoomOutIcon}
+                            {ZoomOutIcon}
                         </button>
                         <div className="document-zoom-level">
                             {Math.round(scale * 100)}%
@@ -662,7 +662,7 @@ const DocumentViewer = ({
                             disabled={scale >= 3 || isLoading}
                             aria-label="Zoom in"
                         >
-                            {zoomInIcon}
+                            {ZoomInIcon}
                         </button>
                         <button
                             className="document-button"
@@ -670,7 +670,7 @@ const DocumentViewer = ({
                             disabled={scale === 1 || isLoading}
                             aria-label="Reset zoom"
                         >
-                            {resetZoomIcon}
+                            {ResetZoomIcon}
                         </button>
                         <button
                             className="document-button"
@@ -678,7 +678,7 @@ const DocumentViewer = ({
                             disabled={isLoading}
                             aria-label="Fit to width"
                         >
-                            {fitToWidthIcon}
+                            {FitToWidthIcon}
                         </button>
                     </div>
 
@@ -704,7 +704,7 @@ const DocumentViewer = ({
                                         }
                                         aria-label="Search"
                                     >
-                                        {searchIcon}
+                                        {SearchIcon}
                                     </button>
                                 </form>
                                 {searchResults.length > 0 && (
@@ -715,7 +715,7 @@ const DocumentViewer = ({
                                             disabled={searchResults.length <= 1}
                                             aria-label="Previous search result"
                                         >
-                                            {prevPageIcon}
+                                            {PrevPageIcon}
                                         </button>
                                         <span className="document-search-count">
                                             {currentSearchIndex + 1} of{" "}
@@ -727,7 +727,7 @@ const DocumentViewer = ({
                                             disabled={searchResults.length <= 1}
                                             aria-label="Next search result"
                                         >
-                                            {nextPageIcon}
+                                            {NextPageIcon}
                                         </button>
                                         <button
                                             className="document-button small"
@@ -738,7 +738,7 @@ const DocumentViewer = ({
                                             }
                                             aria-label="Show search panel"
                                         >
-                                            {gridViewIcon}
+                                            {GridViewIcon}
                                         </button>
                                     </div>
                                 )}
@@ -751,7 +751,7 @@ const DocumentViewer = ({
                             disabled={isLoading || error}
                             aria-label="Download"
                         >
-                            {downloadIcon}
+                            {DownloadIcon}
                         </button>
                         <button
                             className="document-button"
@@ -759,7 +759,7 @@ const DocumentViewer = ({
                             disabled={isLoading || error}
                             aria-label="Print"
                         >
-                            {printIcon}
+                            {PrintIcon}
                         </button>
                         <button
                             className="document-button"
@@ -770,7 +770,7 @@ const DocumentViewer = ({
                                     : "Enter fullscreen"
                             }
                         >
-                            {isFullscreen ? exitFullscreenIcon : fullscreenIcon}
+                            {isFullscreen ? ExitFullscreenIcon : FullscreenIcon}
                         </button>
                     </div>
                 </div>
@@ -807,16 +807,16 @@ const DocumentViewer = ({
                         className="document-button annotation"
                         title="Add note"
                     >
-                        {addNoteIcon}
+                        <AddNoteIcon />
                     </button>
                     <button
                         className="document-button annotation"
                         title="Highlight text"
                     >
-                        {highlightIcon}
+                        {HighlightIcon}
                     </button>
                     <button className="document-button annotation" title="Draw">
-                        {drawIcon}
+                        {DrawIcon}
                     </button>
                 </div>
             )}
