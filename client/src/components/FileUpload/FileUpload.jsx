@@ -1,4 +1,5 @@
 import React, { useState, useRef, forwardRef } from "react";
+
 import "./fileUploadStyles.css";
 
 const FileUpload = forwardRef(
@@ -318,61 +319,18 @@ const FileUpload = forwardRef(
         };
 
         // Simulate file upload (for demo purposes)
+        // Modify this in the FileUpload component
+        // Replace the simulateUpload function in FileUpload.jsx
         const simulateUpload = () => {
             if (files.length === 0) return;
 
-            setIsUploading(true);
+            // Instead of simulating progress, just pass the files to the parent
+            if (onFilesSelected) {
+                onFilesSelected(files);
+            }
 
-            // Initialize progress for each file
-            const initialProgress = {};
-            files.forEach((file, index) => {
-                initialProgress[index] = 0;
-            });
-            setUploadProgress(initialProgress);
-
-            // Simulate progress updates
-            const intervals = files.map((file, index) => {
-                return setInterval(() => {
-                    setUploadProgress((prev) => {
-                        const current = prev[index] || 0;
-
-                        // If upload is complete
-                        if (current >= 100) {
-                            clearInterval(intervals[index]);
-
-                            // Check if all uploads are complete
-                            const allComplete = Object.values({
-                                ...prev,
-                                [index]: 100,
-                            }).every((p) => p >= 100);
-
-                            if (allComplete) {
-                                setIsUploading(false);
-                                if (onUploadComplete) {
-                                    onUploadComplete(files);
-                                }
-                            }
-
-                            return { ...prev, [index]: 100 };
-                        }
-
-                        // Random progress increment between 5-15%
-                        const increment = Math.floor(Math.random() * 10) + 5;
-                        const newProgress = Math.min(current + increment, 100);
-
-                        if (onUploadProgress) {
-                            onUploadProgress(file, newProgress);
-                        }
-
-                        return { ...prev, [index]: newProgress };
-                    });
-                }, 500 + Math.random() * 500); // Random interval between 500-1000ms
-            });
-
-            // Cleanup intervals on component unmount
-            return () => {
-                intervals.forEach((interval) => clearInterval(interval));
-            };
+            // You might also want to clear the file input after "uploading"
+            setFiles([]);
         };
 
         // Size class mapping
@@ -478,20 +436,7 @@ const FileUpload = forwardRef(
 
                 {files.length > 0 && showPreview && (
                     <div className="file-upload-preview">
-                        <div className="file-upload-preview-header">
-                            <h4 className="file-upload-preview-title">
-                                Selected Files
-                            </h4>
-                            {!isUploading && (
-                                <button
-                                    type="button"
-                                    className="file-upload-action-button upload-button"
-                                    onClick={simulateUpload}
-                                >
-                                    Upload Files
-                                </button>
-                            )}
-                        </div>
+                        
                         <ul className="file-upload-preview-list">
                             {files.map((file, index) => (
                                 <li

@@ -12,7 +12,7 @@ const Header = ({ toggleSidebar, closeSidebar, isSidebarOpen }) => {
     });
 
     return (
-        <header className="bg-white shadow-md h-16 fixed top-0 right-0 left-0 z-10 flex items-center justify-between px-12">
+        <header className="bg-white shadow-md h-16 z-50 fixed top-0 right-0 left-0 z-10 flex items-center justify-between px-12">
             {/* Left side - Hamburger and Logo */}
             <div className="flex items-center">
                 {/* Use conditional rendering based on sidebar state */}

@@ -7,7 +7,7 @@ import {
     Navigate,
 } from "react-router-dom";
 import "./App.css";
-import { LoginPage } from "./features";
+import { LoginPage, PassWordResetPage, SlipSendPage } from "./features";
 import { ToastProvider } from "./components";
 import MainLayout from "./layouts/MainLayout";
 
@@ -45,9 +45,10 @@ function App() {
                             path="/login"
                             element={
                                 !isAuthenticated ? (
-                                    <LoginPage
-                                        onLoginSuccess={handleLoginSuccess}
-                                    />
+                                    // <LoginPage
+                                    //     onLoginSuccess={handleLoginSuccess}
+                                    // />
+                                    <PassWordResetPage />
                                 ) : (
                                     <Navigate to="/" replace />
                                 )
@@ -76,6 +77,10 @@ function App() {
                                             <Route
                                                 path="/settings"
                                                 element={<Settings />}
+                                            />
+                                            <Route
+                                                path="/slip-send"
+                                                element={<SlipSendPage />}
                                             />
                                         </Routes>
                                     </MainLayout>

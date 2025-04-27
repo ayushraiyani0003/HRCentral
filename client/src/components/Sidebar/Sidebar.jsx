@@ -13,11 +13,12 @@ const Sidebar = ({ isOpen }) => {
         { id: 4, title: "Calendar", icon: DashboardIcon, path: "/calendar" },
         { id: 5, title: "Messages", icon: DashboardIcon, path: "/messages" },
         { id: 6, title: "Settings", icon: DashboardIcon, path: "/settings" },
+        { id: 7, title: "Slip Send", icon: DashboardIcon, path: "/slip-send" },
     ]);
 
     return (
         <aside
-            className={`bg-gray-800 text-white fixed h-full overflow-y-auto w-64 transition-transform duration-300 ${
+            className={`bg-gray-800 text-white fixed h-full z-40 overflow-y-auto w-64 transition-transform duration-300 ${
                 isOpen ? "translate-x-0" : "-translate-x-full"
             }`}
         >

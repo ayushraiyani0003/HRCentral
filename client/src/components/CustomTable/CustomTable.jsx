@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import "./customTableStyles.css";
 
 // Usage :
@@ -270,6 +270,16 @@ const CustomTable = ({
     });
     const [filters, setFilters] = useState({});
     const [activeFilters, setActiveFilters] = useState({});
+    
+    // Use refs to track if we've already initialized filters
+    const filtersInitialized = useRef(false);
+    const prevDataLength = useRef(data.length);
+    const prevColumnsKey = useRef("");
+    
+    // Generate a stable key for columns
+    const columnsKey = useMemo(() => {
+        return columns.map(c => c.accessor || c.key || c.header || "").join("|");
+    }, [columns]);
 
     // Create a memoized value for the stringified filters
     const stringifiedFilters = useMemo(
@@ -277,48 +287,71 @@ const CustomTable = ({
         [activeFilters]
     );
 
-    // Reset pagination when data changes
+    // Reset pagination when data changes or search/filter changes
     useEffect(() => {
         setCurrentPage(1);
-    }, [data, searchTerm, stringifiedFilters]);
+    }, [data.length, searchTerm, stringifiedFilters]);
 
-    // Initialize filter options for each column
+    // Initialize filter options for each column - with strict dependency checks
     useEffect(() => {
-        if (filterable) {
-            const initialFilters = {};
-            columns.forEach((column) => {
-                // Check if column should have filter based on filterableColumns prop or column's own filterable property
-                const shouldHaveFilter =
-                    (filterableColumns.length > 0 &&
-                        filterableColumns.includes(column.key)) ||
-                    (filterableColumns.length === 0 &&
-                        column.filterable !== false);
-
-                if (shouldHaveFilter) {
-                    const uniqueValues = [
-                        ...new Set(
-                            data.map((item) => {
-                                const value = column.accessor
-                                    ? item[column.accessor]
-                                    : item[column.key];
-                                return value !== undefined && value !== null
-                                    ? String(value)
-                                    : "";
-                            })
-                        ),
-                    ]
-                        .filter(Boolean)
-                        .sort();
-
-                    initialFilters[column.key] = uniqueValues;
-                }
-            });
-            setFilters(initialFilters);
+        // Skip if filterable is false or we're not supposed to re-initialize
+        if (!filterable) return;
+        
+        // Only recalculate filters when data or columns actually change
+        if (
+            filtersInitialized.current && 
+            prevDataLength.current === data.length && 
+            prevColumnsKey.current === columnsKey
+        ) {
+            return;
         }
-    }, [columns, data, filterable, filterableColumns]);
+        
+        // Update our tracking refs
+        prevDataLength.current = data.length;
+        prevColumnsKey.current = columnsKey;
+        filtersInitialized.current = true;
+        
+        // Now calculate the filters
+        const initialFilters = {};
+        
+        columns.forEach((column) => {
+            const columnKey = column.key || column.header || column.accessor;
+            if (!columnKey) return; // Skip columns with no key
+            
+            // Check if column should have filter
+            const shouldHaveFilter =
+                (filterableColumns.length > 0 && filterableColumns.includes(columnKey)) ||
+                (filterableColumns.length === 0 && column.filterable !== false);
+
+            if (shouldHaveFilter) {
+                const uniqueValues = [
+                    ...new Set(
+                        data.map((item) => {
+                            let value;
+                            if (column.accessor && item[column.accessor] !== undefined) {
+                                value = item[column.accessor];
+                            } else if (columnKey && item[columnKey] !== undefined) {
+                                value = item[columnKey];
+                            } else {
+                                value = "";
+                            }
+                            
+                            return value !== null && value !== undefined ? String(value) : "";
+                        })
+                    ),
+                ]
+                    .filter(Boolean)
+                    .sort();
+
+                initialFilters[columnKey] = uniqueValues;
+            }
+        });
+        
+        setFilters(initialFilters);
+    }, [filterable, data.length, columnsKey, filterableColumns]);
 
     // Handle sorting
-    const handleSort = (key) => {
+    const handleSort = useCallback((key) => {
         if (!sortable) return;
 
         let direction = "asc";
@@ -326,15 +359,15 @@ const CustomTable = ({
             direction = "desc";
         }
         setSortConfig({ key, direction });
-    };
+    }, [sortable, sortConfig]);
 
     // Handle search
-    const handleSearch = (e) => {
+    const handleSearch = useCallback((e) => {
         setSearchTerm(e.target.value);
-    };
+    }, []);
 
     // Handle filter change
-    const handleFilterChange = (columnKey, value) => {
+    const handleFilterChange = useCallback((columnKey, value) => {
         setActiveFilters((prev) => {
             const newFilters = { ...prev };
             if (value === "") {
@@ -344,17 +377,17 @@ const CustomTable = ({
             }
             return newFilters;
         });
-    };
+    }, []);
 
     // Handle pagination
-    const handlePageChange = (page) => {
+    const handlePageChange = useCallback((page) => {
         setCurrentPage(page);
-    };
+    }, []);
 
-    const handleItemsPerPageChange = (e) => {
+    const handleItemsPerPageChange = useCallback((e) => {
         setItemsPerPage(Number(e.target.value));
         setCurrentPage(1);
-    };
+    }, []);
 
     // Apply filters, search, and sorting to data
     const filteredAndSortedData = useMemo(() => {
@@ -364,10 +397,23 @@ const CustomTable = ({
         if (Object.keys(activeFilters).length > 0) {
             processedData = processedData.filter((item) => {
                 return Object.entries(activeFilters).every(([key, value]) => {
-                    const column = columns.find((col) => col.key === key);
-                    const itemValue = column.accessor
-                        ? item[column.accessor]
-                        : item[key];
+                    const column = columns.find((col) => 
+                        (col.key || col.header || col.accessor) === key
+                    );
+                    
+                    if (!column) return true; // Skip if column not found
+                    
+                    let itemValue;
+                    if (column.accessor && item[column.accessor] !== undefined) {
+                        itemValue = item[column.accessor];
+                    } else if (column.key && item[column.key] !== undefined) {
+                        itemValue = item[column.key];
+                    } else if (column.header && item[column.header] !== undefined) {
+                        itemValue = item[column.header];
+                    } else {
+                        return false; // No matching value found
+                    }
+                    
                     return String(itemValue) === value;
                 });
             });
@@ -379,11 +425,19 @@ const CustomTable = ({
             processedData = processedData.filter((item) => {
                 return columns.some((column) => {
                     if (column.searchable === false) return false;
-                    const value = column.accessor
-                        ? item[column.accessor]
-                        : item[column.key];
+                    
+                    let value;
+                    if (column.accessor && item[column.accessor] !== undefined) {
+                        value = item[column.accessor];
+                    } else if (column.key && item[column.key] !== undefined) {
+                        value = item[column.key];
+                    } else if (column.header && item[column.header] !== undefined) {
+                        value = item[column.header];
+                    } else {
+                        return false; // No matching value found
+                    }
+                    
                     return (
-                        value !== undefined &&
                         value !== null &&
                         String(value).toLowerCase().includes(searchLower)
                     );
@@ -394,15 +448,26 @@ const CustomTable = ({
         // Apply sorting
         if (sortConfig.key) {
             processedData.sort((a, b) => {
-                const column = columns.find(
-                    (col) => col.key === sortConfig.key
+                const column = columns.find((col) => 
+                    (col.key || col.header || col.accessor) === sortConfig.key
                 );
-                let aValue = column.accessor
-                    ? a[column.accessor]
-                    : a[sortConfig.key];
-                let bValue = column.accessor
-                    ? b[column.accessor]
-                    : b[sortConfig.key];
+                
+                if (!column) return 0; // No sorting if column not found
+                
+                let aValue, bValue;
+                
+                if (column.accessor) {
+                    aValue = a[column.accessor];
+                    bValue = b[column.accessor];
+                } else if (column.key) {
+                    aValue = a[column.key];
+                    bValue = b[column.key];
+                } else if (column.header) {
+                    aValue = a[column.header];
+                    bValue = b[column.header];
+                } else {
+                    return 0; // Can't sort without a valid accessor
+                }
 
                 // Handle custom sorting logic if provided
                 if (column.sortFn) {
@@ -430,8 +495,9 @@ const CustomTable = ({
 
     // Pagination calculations
     const totalItems = filteredAndSortedData.length;
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
-    const startIndex = (currentPage - 1) * itemsPerPage;
+    const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+    const safeCurrentPage = Math.min(currentPage, totalPages);
+    const startIndex = (safeCurrentPage - 1) * itemsPerPage;
     const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
     const currentData = filteredAndSortedData.slice(startIndex, endIndex);
 
@@ -440,15 +506,17 @@ const CustomTable = ({
         const buttons = [];
         const maxVisiblePages = 5;
 
+        if (totalPages <= 1) return buttons;
+
         // Always show first page
         buttons.push(
             <button
                 key="first"
                 className={`pagination-button ${
-                    currentPage === 1 ? "active" : ""
+                    safeCurrentPage === 1 ? "active" : ""
                 }`}
                 onClick={() => handlePageChange(1)}
-                disabled={currentPage === 1}
+                disabled={safeCurrentPage === 1}
             >
                 1
             </button>
@@ -457,7 +525,7 @@ const CustomTable = ({
         // Calculate range of visible page buttons
         let startPage = Math.max(
             2,
-            currentPage - Math.floor(maxVisiblePages / 2)
+            safeCurrentPage - Math.floor(maxVisiblePages / 2)
         );
         let endPage = Math.min(totalPages - 1, startPage + maxVisiblePages - 3);
 
@@ -476,7 +544,7 @@ const CustomTable = ({
                 <button
                     key={i}
                     className={`pagination-button ${
-                        currentPage === i ? "active" : ""
+                        safeCurrentPage === i ? "active" : ""
                     }`}
                     onClick={() => handlePageChange(i)}
                 >
@@ -500,10 +568,10 @@ const CustomTable = ({
                 <button
                     key="last"
                     className={`pagination-button ${
-                        currentPage === totalPages ? "active" : ""
+                        safeCurrentPage === totalPages ? "active" : ""
                     }`}
                     onClick={() => handlePageChange(totalPages)}
-                    disabled={currentPage === totalPages}
+                    disabled={safeCurrentPage === totalPages}
                 >
                     {totalPages}
                 </button>
@@ -511,15 +579,29 @@ const CustomTable = ({
         }
 
         return buttons;
-    }, [currentPage, totalPages]);
+    }, [safeCurrentPage, totalPages, handlePageChange]);
 
     // Render cell content with custom renderer if provided
-    const renderCell = (item, column) => {
-        const value = column.accessor
-            ? item[column.accessor]
-            : item[column.key];
-        return column.render ? column.render(value, item) : value;
-    };
+    const renderCell = useCallback((item, column) => {
+        // Use cell render function if provided
+        if (column.cell) {
+            return column.cell(item);
+        }
+        
+        // Otherwise render normally
+        let value;
+        if (column.accessor && item[column.accessor] !== undefined) {
+            value = item[column.accessor];
+        } else if (column.key && item[column.key] !== undefined) {
+            value = item[column.key];
+        } else if (column.header && item[column.header] !== undefined) {
+            value = item[column.header];
+        } else {
+            value = ''; // Default empty value
+        }
+        
+        return value;
+    }, []);
 
     return (
         <div
@@ -537,7 +619,7 @@ const CustomTable = ({
                             value={searchTerm}
                             onChange={handleSearch}
                         />
-                        <div className="custom-input-icons">
+                        <div className="custom-table-search-input-icons">
                             {searchTerm && (
                                 <button
                                     type="button"
@@ -583,25 +665,28 @@ const CustomTable = ({
 
                 {filterable && (
                     <div className="filters-container">
-                        {columns.map((column) => {
-                            // Check if column should have filter based on filterableColumns prop or column's own filterable property
+                        {columns.map((column, colIndex) => {
+                            const columnKey = column.key || column.header || column.accessor;
+                            if (!columnKey) return null; // Skip columns with no key
+                            
+                            // Check if column should have filter
                             const shouldHaveFilter =
                                 (filterableColumns.length > 0 &&
-                                    filterableColumns.includes(column.key)) ||
+                                    filterableColumns.includes(columnKey)) ||
                                 (filterableColumns.length === 0 &&
                                     column.filterable !== false);
 
-                            return shouldHaveFilter && filters[column.key] ? (
+                            return shouldHaveFilter && filters[columnKey] && filters[columnKey].length > 0 ? (
                                 <div
-                                    key={column.key}
+                                    key={`filter-${colIndex}`}
                                     className="filter-select-container"
                                 >
                                     <select
                                         className="filter-select"
-                                        value={activeFilters[column.key] || ""}
+                                        value={activeFilters[columnKey] || ""}
                                         onChange={(e) =>
                                             handleFilterChange(
-                                                column.key,
+                                                columnKey,
                                                 e.target.value
                                             )
                                         }
@@ -609,8 +694,8 @@ const CustomTable = ({
                                         <option value="">
                                             All {column.header}
                                         </option>
-                                        {filters[column.key].map((value) => (
-                                            <option key={value} value={value}>
+                                        {filters[columnKey].map((value, valIndex) => (
+                                            <option key={`opt-${valIndex}`} value={value}>
                                                 {value}
                                             </option>
                                         ))}
@@ -623,7 +708,6 @@ const CustomTable = ({
             </div>
 
             {/* Table */}
-            {/* Table */}
             <div
                 className="table-wrapper"
                 style={{
@@ -635,7 +719,7 @@ const CustomTable = ({
                     <colgroup>
                         {columns.map((column, index) => (
                             <col
-                                key={index}
+                                key={`col-${index}`}
                                 style={{
                                     width: column.width || "auto",
                                     minWidth: column.minWidth || "auto",
@@ -646,80 +730,86 @@ const CustomTable = ({
                     </colgroup>
                     <thead>
                         <tr>
-                            {columns.map((column) => (
-                                <th
-                                    key={column.key}
-                                    className={`${
-                                        sortable && column.sortable !== false
-                                            ? "sortable"
-                                            : ""
-                                    } ${
-                                        sortConfig.key === column.key
-                                            ? sortConfig.direction
-                                            : ""
-                                    }`}
-                                    onClick={() =>
-                                        column.sortable !== false &&
-                                        handleSort(column.key)
-                                    }
-                                    style={{
-                                        width: column.width || "auto",
-                                        minWidth: column.minWidth || "auto",
-                                        maxWidth: column.maxWidth || "none",
-                                    }}
-                                >
-                                    <div className="th-content">
-                                        {column.header}
-                                        {sortable &&
-                                            column.sortable !== false && (
-                                                <div className="sort-icons">
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 20 20"
-                                                        fill="currentColor"
-                                                        className={`sort-icon ${
-                                                            sortConfig.key ===
-                                                                column.key &&
-                                                            sortConfig.direction ===
-                                                                "asc"
-                                                                ? "active"
-                                                                : ""
-                                                        }`}
-                                                        width="16"
-                                                        height="16"
-                                                    >
-                                                        <path
-                                                            fillRule="evenodd"
-                                                            d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"
-                                                            clipRule="evenodd"
-                                                        />
-                                                    </svg>
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 20 20"
-                                                        fill="currentColor"
-                                                        className={`sort-icon ${
-                                                            sortConfig.key ===
-                                                                column.key &&
-                                                            sortConfig.direction ===
-                                                                "desc"
-                                                                ? "active"
-                                                                : ""
-                                                        }`}
-                                                        width="16"
-                                                        height="16"
-                                                    >
-                                                        <path
-                                                            fillRule="evenodd"
-                                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 011.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                            clipRule="evenodd"
-                                                        />
-                                                    </svg>
-                                                </div>
-                                            )}
-                                    </div>
-                                </th>
-                            ))}
+                            {columns.map((column, colIndex) => {
+                                const columnKey = column.key || column.header || column.accessor;
+                                
+                                return (
+                                    <th
+                                        key={`header-${colIndex}`}
+                                        className={`${
+                                            sortable && column.sortable !== false
+                                                ? "sortable"
+                                                : ""
+                                        } ${
+                                            sortConfig.key === columnKey
+                                                ? sortConfig.direction
+                                                : ""
+                                        }`}
+                                        onClick={() =>
+                                            sortable && 
+                                            column.sortable !== false &&
+                                            columnKey && 
+                                            handleSort(columnKey)
+                                        }
+                                        style={{
+                                            width: column.width || "auto",
+                                            minWidth: column.minWidth || "auto",
+                                            maxWidth: column.maxWidth || "none",
+                                        }}
+                                    >
+                                        <div className="th-content">
+                                            {column.header}
+                                            {sortable &&
+                                                column.sortable !== false && (
+                                                    <div className="sort-icons">
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            viewBox="0 0 20 20"
+                                                            fill="currentColor"
+                                                            className={`sort-icon ${
+                                                                sortConfig.key ===
+                                                                    columnKey &&
+                                                                sortConfig.direction ===
+                                                                    "asc"
+                                                                    ? "active"
+                                                                    : ""
+                                                            }`}
+                                                            width="16"
+                                                            height="16"
+                                                        >
+                                                            <path
+                                                                fillRule="evenodd"
+                                                                d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"
+                                                                clipRule="evenodd"
+                                                            />
+                                                        </svg>
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            viewBox="0 0 20 20"
+                                                            fill="currentColor"
+                                                            className={`sort-icon ${
+                                                                sortConfig.key ===
+                                                                    columnKey &&
+                                                                sortConfig.direction ===
+                                                                    "desc"
+                                                                    ? "active"
+                                                                    : ""
+                                                            }`}
+                                                            width="16"
+                                                            height="16"
+                                                        >
+                                                            <path
+                                                                fillRule="evenodd"
+                                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 011.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                                clipRule="evenodd"
+                                                            />
+                                                        </svg>
+                                                    </div>
+                                                )}
+                                        </div>
+                                    </th>
+                                );
+                            })}
                         </tr>
                     </thead>
                     <tbody>
@@ -734,17 +824,17 @@ const CustomTable = ({
                                 </td>
                             </tr>
                         ) : currentData.length > 0 ? (
-                            currentData.map((item, index) => (
+                            currentData.map((item, rowIndex) => (
                                 <tr
-                                    key={item.id || index}
+                                    key={`row-${rowIndex}`}
                                     onClick={() =>
                                         onRowClick && onRowClick(item)
                                     }
                                     className={onRowClick ? "clickable" : ""}
                                 >
-                                    {columns.map((column) => (
+                                    {columns.map((column, colIndex) => (
                                         <td
-                                            key={`${index}-${column.key}`}
+                                            key={`cell-${rowIndex}-${colIndex}`}
                                             className={column.className || ""}
                                         >
                                             {renderCell(item, column)}
@@ -785,14 +875,14 @@ const CustomTable = ({
             {pagination && totalItems > 0 && (
                 <div className="pagination-container">
                     <div className="pagination-info">
-                        Showing {startIndex + 1} to {endIndex} of {totalItems}{" "}
+                        Showing {totalItems > 0 ? startIndex + 1 : 0} to {endIndex} of {totalItems}{" "}
                         entries
                     </div>
                     <div className="pagination-controls">
                         <button
                             className="pagination-arrow"
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
+                            onClick={() => handlePageChange(safeCurrentPage - 1)}
+                            disabled={safeCurrentPage === 1}
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -813,8 +903,8 @@ const CustomTable = ({
                         </div>
                         <button
                             className="pagination-arrow"
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages}
+                            onClick={() => handlePageChange(safeCurrentPage + 1)}
+                            disabled={safeCurrentPage === totalPages}
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"

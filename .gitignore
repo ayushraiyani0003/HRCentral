@@ -133,3 +133,10 @@ bower_components/
 
 # structure
 *.structure.txt
+
+# upload folder 
+uploads
+
+# web whatsapp 
+.wwebjs_auth
+.wwebjs_cache

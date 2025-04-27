@@ -1,0 +1,402 @@
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import whatsappService from "../services/WhatsappService";
+
+// Create a reusable function for handling common async thunk patterns
+const createWhatsappThunk = (
+    name,
+    serviceMethod,
+    payloadTransformer = null
+) => {
+    return createAsyncThunk(
+        `whatsapp/${name}`,
+        async (arg, { rejectWithValue }) => {
+            try {
+                // Call the service method with the argument if provided
+                const response = await (arg
+                    ? serviceMethod(arg)
+                    : serviceMethod());
+
+                // Transform the payload if a transformer function is provided
+                return payloadTransformer
+                    ? payloadTransformer(response)
+                    : response;
+            } catch (error) {
+                return rejectWithValue(error.message);
+            }
+        }
+    );
+};
+
+// Async thunks for WhatsApp operations
+export const generateQRCode = createWhatsappThunk(
+    "generateQRCode",
+    whatsappService.generateQRCode.bind(whatsappService)
+);
+
+export const getStatus = createWhatsappThunk(
+    "status",
+    whatsappService.getStatus.bind(whatsappService)
+);
+
+// Add checkWhatsappStatus action using the same pattern as getStatus
+export const checkWhatsappStatus = createWhatsappThunk(
+    "checkStatus",
+    whatsappService.checkStatus.bind(whatsappService)
+);
+
+export const disconnectSession = createWhatsappThunk(
+    "disconnectSession",
+    whatsappService.disconnectSession.bind(whatsappService)
+);
+
+export const startSendingPDFs = createAsyncThunk(
+    "whatsapp/startSendingPDFs",
+    async ({ contacts, settings }, { rejectWithValue }) => {
+        try {
+            const response = await whatsappService.startSendingPDFs(
+                contacts,
+                settings
+            );
+            return response;
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
+export const pauseSending = createWhatsappThunk(
+    "pauseSending",
+    whatsappService.pauseSending.bind(whatsappService)
+);
+
+export const resumeSending = createWhatsappThunk(
+    "resumeSending",
+    whatsappService.resumeSending.bind(whatsappService)
+);
+
+export const retryFailed = createWhatsappThunk(
+    "retryFailed",
+    whatsappService.retryFailed.bind(whatsappService)
+);
+
+export const getProgress = createWhatsappThunk(
+    "getProgress",
+    whatsappService.getProgress.bind(whatsappService)
+);
+
+// Initial state
+const initialState = {
+    qrCode: null,
+    connectionStatus: "disconnected", // disconnected, connected, connecting
+    sendingStatus: "idle", // idle, processing, paused, completed
+    progress: {
+        overallProgress: 0,
+        batchProgress: 0,
+        currentBatch: 0,
+        totalBatches: 0,
+        stats: {
+            total: 0,
+            sent: 0,
+            failed: 0
+        }
+    },
+    loading: false,
+    error: null,
+    lastMessage: "",
+    contacts: [], // Store contacts with their current send status
+};
+
+// WhatsApp slice
+const whatsappSlice = createSlice({
+    name: "whatsapp",
+    initialState,
+    reducers: {
+        resetWhatsappState: (state) => {
+            state.loading = false;
+            state.error = null;
+            state.lastMessage = "";
+        },
+        clearQRCode: (state) => {
+            state.qrCode = null;
+        },
+        setConnectionStatus: (state, action) => {
+            state.connectionStatus = action.payload;
+        },
+        setSendingStatus: (state, action) => {
+            state.sendingStatus = action.payload;
+        },
+        // Helper reducer to update contacts when starting sending process
+        setInitialContacts: (state, action) => {
+            state.contacts = action.payload;
+        }
+    },
+    extraReducers: (builder) => {
+        builder
+            // Generate QR Code
+            .addCase(generateQRCode.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(generateQRCode.fulfilled, (state, action) => {
+                state.loading = false;
+                state.qrCode = action.payload.qrCode;
+                state.connectionStatus = "connecting";
+            })
+            .addCase(generateQRCode.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+                state.connectionStatus = "disconnected";
+            })
+
+            // Get Status
+            .addCase(getStatus.pending, (state) => {
+                // Don't set loading to true here to avoid UI flicker during polling
+            })
+            .addCase(getStatus.fulfilled, (state, action) => {
+                state.loading = false;
+                // Updated to handle both API response formats
+                if (action.payload.success && action.payload.status === "connected") {
+                    state.connectionStatus = "connected";
+                } else if (action.payload.connectionStatus) {
+                    state.connectionStatus = action.payload.connectionStatus;
+                } else {
+                    state.connectionStatus = "disconnected";
+                }
+                
+                if (action.payload.sendingStatus) {
+                    state.sendingStatus = action.payload.sendingStatus;
+                }
+            })
+            .addCase(getStatus.rejected, (state, action) => {
+                state.error = action.payload;
+                // Don't set loading to false here to avoid UI flicker during polling
+            })
+
+            // Ensure the extraReducers section has these cases for checkWhatsappStatus
+            .addCase(checkWhatsappStatus.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+                state.lastMessage = "Checking WhatsApp connection...";
+            })
+            .addCase(checkWhatsappStatus.fulfilled, (state, action) => {
+                state.loading = false;
+                // Update based on the API response format
+                if (action.payload.success && action.payload.status === "connected") {
+                    state.connectionStatus = "connected";
+                } else {
+                    state.connectionStatus = "disconnected";
+                }
+                state.lastMessage = action.payload.success ? 
+                    `WhatsApp is ${action.payload.status}` : 
+                    "WhatsApp is not connected";
+            })
+            .addCase(checkWhatsappStatus.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+                state.connectionStatus = "disconnected"; // Set to disconnected on error
+                state.lastMessage = "Failed to check WhatsApp status";
+            })
+
+            // Disconnect Session
+            .addCase(disconnectSession.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(disconnectSession.fulfilled, (state, action) => {
+                state.loading = false;
+                state.connectionStatus = "disconnected";
+                state.qrCode = null;
+                state.lastMessage =
+                    action.payload.message || "Disconnected successfully";
+                state.sendingStatus = "idle";
+                // Reset contacts
+                state.contacts = [];
+                // Reset progress data
+                state.progress = initialState.progress;
+            })
+            .addCase(disconnectSession.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            // Start Sending PDFs
+            .addCase(startSendingPDFs.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(startSendingPDFs.fulfilled, (state, action) => {
+                state.loading = false;
+                state.sendingStatus = "processing"; // Updated to match backend state
+                state.lastMessage =
+                    action.payload.message || "Started sending PDFs";
+                    
+                // Store initial contacts if they exist in the payload
+                if (action.payload.contacts) {
+                    state.contacts = action.payload.contacts;
+                }
+                
+                // Update progress if included in response
+                if (action.payload.progress) {
+                    updateProgressState(state, action.payload.progress);
+                }
+            })
+            .addCase(startSendingPDFs.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            // Pause Sending
+            .addCase(pauseSending.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(pauseSending.fulfilled, (state, action) => {
+                state.loading = false;
+                state.sendingStatus = "paused";
+                state.lastMessage = action.payload.message || "Paused sending";
+                
+                // Update progress and contacts if included in response
+                if (action.payload.progress) {
+                    updateProgressState(state, action.payload.progress);
+                    
+                    if (action.payload.progress.contacts) {
+                        state.contacts = action.payload.progress.contacts;
+                    }
+                }
+            })
+            .addCase(pauseSending.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            // Resume Sending
+            .addCase(resumeSending.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(resumeSending.fulfilled, (state, action) => {
+                state.loading = false;
+                state.sendingStatus = "processing"; // Updated to match backend state
+                state.lastMessage = action.payload.message || "Resumed sending";
+                
+                // Update progress and contacts if included in response
+                if (action.payload.progress) {
+                    updateProgressState(state, action.payload.progress);
+                    
+                    if (action.payload.progress.contacts) {
+                        state.contacts = action.payload.progress.contacts;
+                    }
+                }
+            })
+            .addCase(resumeSending.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            // Retry Failed
+            .addCase(retryFailed.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(retryFailed.fulfilled, (state, action) => {
+                state.loading = false;
+                state.sendingStatus = "processing"; // Updated to match backend state
+                state.lastMessage =
+                    action.payload.message || "Retrying failed sends";
+                
+                // Update progress and contacts if included in response
+                if (action.payload.progress) {
+                    updateProgressState(state, action.payload.progress);
+                    
+                    if (action.payload.progress.contacts) {
+                        state.contacts = action.payload.progress.contacts;
+                    }
+                }
+            })
+            .addCase(retryFailed.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            // Get Progress
+            .addCase(getProgress.pending, (state) => {
+                // Don't set loading to true here to avoid UI flicker during polling
+            })
+            .addCase(getProgress.fulfilled, (state, action) => {
+                state.loading = false;
+                
+                // Extract progress and contacts data from response
+                if (action.payload.progress) {
+                    // New format with nested progress object
+                    updateProgressState(state, action.payload.progress);
+                    
+                    // Update contacts array if available
+                    if (action.payload.progress.contacts) {
+                        state.contacts = action.payload.progress.contacts;
+                    }
+                } else {
+                    // Old format with progress data at the top level
+                    updateProgressState(state, action.payload);
+                    
+                    // Update contacts array if available at top level
+                    if (action.payload.contacts) {
+                        state.contacts = action.payload.contacts;
+                    }
+                }
+                
+                // Update sending status if provided
+                if (action.payload.status) {
+                    state.sendingStatus = action.payload.status;
+                }
+                
+                // Auto-set completed status if processing is completed
+                if (state.sendingStatus === "completed") {
+                    state.progress.overallProgress = 100;
+                }
+            })
+            .addCase(getProgress.rejected, (state, action) => {
+                // Don't set loading to false here to avoid UI flicker during polling
+                state.error = action.payload;
+            });
+    },
+});
+
+// Helper function to update progress state
+const updateProgressState = (state, progressData) => {
+    // Update overall progress metrics
+    if (progressData.overallProgress !== undefined) {
+        state.progress.overallProgress = progressData.overallProgress;
+    }
+    
+    if (progressData.batchProgress !== undefined) {
+        state.progress.batchProgress = progressData.batchProgress;
+    }
+    
+    if (progressData.currentBatch !== undefined) {
+        state.progress.currentBatch = progressData.currentBatch;
+    }
+    
+    if (progressData.totalBatches !== undefined) {
+        state.progress.totalBatches = progressData.totalBatches;
+    }
+    
+    // Update stats
+    if (progressData.stats) {
+        state.progress.stats = {
+            total: progressData.stats.total || 0,
+            sent: progressData.stats.sent || 0,
+            failed: progressData.stats.failed || 0
+        };
+    }
+};
+
+// Export actions and reducer
+export const {
+    resetWhatsappState,
+    clearQRCode,
+    setConnectionStatus,
+    setSendingStatus,
+    setInitialContacts
+} = whatsappSlice.actions;
+
+export default whatsappSlice.reducer;
