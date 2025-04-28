@@ -1,8 +1,24 @@
 // controllers/whatsapp.controller.js
 const whatsappService = require('../../services/whatsapp.service');
 
-// Helper function for delay (was missing in original code)
+// Helper function for delay
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Track active SSE clients for each feature
+const sseClients = {
+  status: new Set(),
+  progress: new Set()
+};
+
+// Helper function to send SSE update to all clients for a specific feature
+const notifyClients = (feature, data) => {
+  if (sseClients[feature] && sseClients[feature].size > 0) {
+    const eventData = JSON.stringify(data);
+    sseClients[feature].forEach(client => {
+      client.write(`data: ${eventData}\n\n`);
+    });
+  }
+};
 
 // Generate QR code for WhatsApp authentication
 const generateQRCode = async (req, res) => {
@@ -67,7 +83,7 @@ const generateQRCode = async (req, res) => {
   }
 };
 
-// Get current WhatsApp connection status
+// Get current WhatsApp connection status (Regular REST endpoint)
 const getStatus = async (req, res) => {
   try {
     const status = await whatsappService.getConnectionStatus();
@@ -92,6 +108,8 @@ const getStatus = async (req, res) => {
   }
 };
 
+// SSE endpoint for real-time status updates is now defined as createStatusStream
+
 // Disconnect WhatsApp session
 const disconnectSession = async (req, res) => {
   try {
@@ -102,6 +120,12 @@ const disconnectSession = async (req, res) => {
         success: false,
         message: result?.message || "Failed to disconnect session"
       });
+    }
+    
+    // Since status has changed, notify all status clients
+    const newStatus = await whatsappService.getConnectionStatus();
+    if (newStatus) {
+      notifyClients('status', { success: true, ...newStatus });
     }
     
     return res.status(200).json({
@@ -159,6 +183,15 @@ const startSendingPDFs = async (req, res) => {
     // Get initial progress to return to client
     const initialProgress = await whatsappService.getProgress();
     
+    // Notify progress clients that progress has started/changed
+    notifyClients('progress', { success: true, progress: initialProgress });
+    
+    // Notify status clients about potential status change
+    const newStatus = await whatsappService.getConnectionStatus();
+    if (newStatus) {
+      notifyClients('status', { success: true, ...newStatus });
+    }
+    
     return res.status(200).json({
       success: true,
       message: result.message || "Started sending PDFs successfully",
@@ -187,6 +220,15 @@ const pauseSending = async (req, res) => {
     
     // Get current progress after pausing
     const currentProgress = await whatsappService.getProgress();
+    
+    // Notify progress clients that progress has changed
+    notifyClients('progress', { success: true, progress: currentProgress });
+    
+    // Notify status clients about potential status change
+    const newStatus = await whatsappService.getConnectionStatus();
+    if (newStatus) {
+      notifyClients('status', { success: true, ...newStatus });
+    }
     
     return res.status(200).json({
       success: true,
@@ -217,6 +259,15 @@ const resumeSending = async (req, res) => {
     // Get current progress after resuming
     const currentProgress = await whatsappService.getProgress();
     
+    // Notify progress clients that progress has changed
+    notifyClients('progress', { success: true, progress: currentProgress });
+    
+    // Notify status clients about potential status change
+    const newStatus = await whatsappService.getConnectionStatus();
+    if (newStatus) {
+      notifyClients('status', { success: true, ...newStatus });
+    }
+    
     return res.status(200).json({
       success: true,
       message: result.message || "Sending resumed successfully",
@@ -246,6 +297,9 @@ const retryFailed = async (req, res) => {
     // Get current progress after retrying failed messages
     const currentProgress = await whatsappService.getProgress();
     
+    // Notify progress clients that progress has changed
+    notifyClients('progress', { success: true, progress: currentProgress });
+    
     return res.status(200).json({
       success: true,
       message: result.message || "Retrying failed sends",
@@ -260,7 +314,7 @@ const retryFailed = async (req, res) => {
   }
 };
 
-// Get progress of sending process
+// Get progress of sending process (Regular REST endpoint)
 const getProgress = async (req, res) => {
   try {
     const progress = await whatsappService.getProgress();
@@ -285,13 +339,176 @@ const getProgress = async (req, res) => {
   }
 };
 
+// SSE endpoint for real-time progress updates is now defined as createProgressStream
+
+// Setup periodic checks for progress and status changes
+// This is optional - you may instead want to trigger updates only when actions occur
+let statusMonitorInterval = null;
+let progressMonitorInterval = null;
+
+// Function to start monitors if not already running
+const ensureMonitorsRunning = () => {
+  // Start status monitor if it's not running and we have clients
+  if (!statusMonitorInterval && sseClients.status.size > 0) {
+    let lastStatusJson = '';
+    
+    statusMonitorInterval = setInterval(async () => {
+      try {
+        // Only check if we have connected clients
+        if (sseClients.status.size === 0) {
+          clearInterval(statusMonitorInterval);
+          statusMonitorInterval = null;
+          return;
+        }
+        
+        const status = await whatsappService.getConnectionStatus();
+        if (status) {
+          const statusJson = JSON.stringify(status);
+          // Only notify if status has changed
+          if (statusJson !== lastStatusJson) {
+            lastStatusJson = statusJson;
+            notifyClients('status', { success: true, ...status });
+          }
+        }
+      } catch (error) {
+        console.error('Status monitor error:', error);
+      }
+    }, 2000); // Check every 2 seconds
+  }
+  
+  // Start progress monitor if it's not running and we have clients
+  if (!progressMonitorInterval && sseClients.progress.size > 0) {
+    let lastProgressJson = '';
+    
+    progressMonitorInterval = setInterval(async () => {
+      try {
+        // Only check if we have connected clients
+        if (sseClients.progress.size === 0) {
+          clearInterval(progressMonitorInterval);
+          progressMonitorInterval = null;
+          return;
+        }
+        
+        const progress = await whatsappService.getProgress();
+        if (progress) {
+          const progressJson = JSON.stringify(progress);
+          // Only notify if progress has changed
+          if (progressJson !== lastProgressJson) {
+            lastProgressJson = progressJson;
+            notifyClients('progress', { success: true, progress });
+          }
+        }
+      } catch (error) {
+        console.error('Progress monitor error:', error);
+      }
+    }, 1000); // Check every second
+  }
+};
+
+// Create stream handlers that include monitor initialization
+const createStatusStream = async (req, res) => {
+  // Set headers for SSE
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive'
+  });
+  
+  // Send an initial status update immediately
+  try {
+    const status = await whatsappService.getConnectionStatus();
+    if (status) {
+      const data = { success: true, ...status };
+      res.write(`data: ${JSON.stringify(data)}\n\n`);
+    } else {
+      const data = { success: false, message: "Could not retrieve connection status" };
+      res.write(`data: ${JSON.stringify(data)}\n\n`);
+    }
+  } catch (error) {
+    console.error('Initial status stream error:', error);
+    const data = { success: false, message: error.message || "Error retrieving connection status" };
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+  }
+  
+  // Add this client to our set of active status clients
+  sseClients.status.add(res);
+  
+  // Remove client when connection closes
+  req.on('close', () => {
+    sseClients.status.delete(res);
+    console.log(`Status SSE client disconnected. Active clients: ${sseClients.status.size}`);
+  });
+  
+  console.log(`New status SSE client connected. Active clients: ${sseClients.status.size}`);
+  
+  // Ensure monitors are running when a client connects
+  ensureMonitorsRunning();
+};
+
+const createProgressStream = async (req, res) => {
+  // Set headers for SSE
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive'
+  });
+  
+  // Send an initial progress update immediately
+  try {
+    const progress = await whatsappService.getProgress();
+    if (progress) {
+      const data = { success: true, progress };
+      res.write(`data: ${JSON.stringify(data)}\n\n`);
+    } else {
+      const data = { success: false, message: "Could not retrieve progress information" };
+      res.write(`data: ${JSON.stringify(data)}\n\n`);
+    }
+  } catch (error) {
+    console.error('Initial progress stream error:', error);
+    const data = { success: false, message: error.message || "Error retrieving progress" };
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+  }
+  
+  // Add this client to our set of active progress clients
+  sseClients.progress.add(res);
+  
+  // Remove client when connection closes
+  req.on('close', () => {
+    sseClients.progress.delete(res);
+    console.log(`Progress SSE client disconnected. Active clients: ${sseClients.progress.size}`);
+  });
+  
+  console.log(`New progress SSE client connected. Active clients: ${sseClients.progress.size}`);
+  
+  // Ensure monitors are running when a client connects
+  ensureMonitorsRunning();
+};
+
+// Expose a function to notify about progress changes from the service
+const updateProgressFromService = (progress) => {
+  if (progress && sseClients.progress.size > 0) {
+    notifyClients('progress', { success: true, progress });
+  }
+};
+
+// Expose a function to notify about status changes from the service
+const updateStatusFromService = (status) => {
+  if (status && sseClients.status.size > 0) {
+    notifyClients('status', { success: true, ...status });
+  }
+};
+
 module.exports = {
   generateQRCode,
   getStatus,
+  streamStatus: createStatusStream,
   disconnectSession,
   startSendingPDFs,
   pauseSending,
   resumeSending,
   retryFailed,
-  getProgress
+  getProgress,
+  streamProgress: createProgressStream,
+  updateProgressFromService,
+  updateStatusFromService
 };
