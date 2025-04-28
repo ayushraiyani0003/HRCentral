@@ -66,6 +66,14 @@ const SlipSendPage = () => {
         };
 
         checkInitialStatus();
+
+        // Clean up SSE streams when component unmounts
+        return () => {
+            // This will ensure any active SSE connections are properly closed
+            if (whatsapp.statusStreaming || whatsapp.progressStreaming) {
+                whatsapp.resetState();
+            }
+        };
     }, []);
 
     // Update local stats when upload contacts change
@@ -96,16 +104,17 @@ const SlipSendPage = () => {
             setProgress(whatsapp.progress.overallProgress || 0);
             setBatchProgress(whatsapp.progress.batchProgress || 0);
             setCurrentBatch(whatsapp.progress.currentBatch || 0);
-            
+
             // Update stats based on progress
             if (whatsapp.progress.stats) {
                 setStats({
                     total: whatsapp.progress.stats.total || 0,
                     sent: whatsapp.progress.stats.sent || 0,
                     failed: whatsapp.progress.stats.failed || 0,
-                    remaining: (whatsapp.progress.stats.total || 0) - 
-                               (whatsapp.progress.stats.sent || 0) - 
-                               (whatsapp.progress.stats.failed || 0)
+                    remaining:
+                        (whatsapp.progress.stats.total || 0) -
+                        (whatsapp.progress.stats.sent || 0) -
+                        (whatsapp.progress.stats.failed || 0),
                 });
             }
         }
@@ -343,6 +352,11 @@ const SlipSendPage = () => {
                                     : "Disconnected"}
                             </span>
                         </div>
+                        {whatsapp.statusStreaming && (
+                            <span className="text-xs text-green-600 ml-2">
+                                (Live Updates)
+                            </span>
+                        )}
                     </div>
 
                     <div className="connection-actions">
@@ -359,13 +373,15 @@ const SlipSendPage = () => {
                                     : "Connect WhatsApp"}
                             </CustomButton>
                         ) : (
-                            <ConfirmationButton
-                                onConfirm={handleDisconnectSession}
-                                confirmText="Are you sure you want to disconnect?"
-                                buttonText="Disconnect Session"
-                                variant="danger"
-                                disabled={whatsapp.loading}
-                            />
+                            <div>
+                                <ConfirmationButton
+                                    onConfirm={handleDisconnectSession}
+                                    confirmationText="Are you sure you want to disconnect?"
+                                    buttonText="Disconnect Session"
+                                    variant="danger"
+                                    disabled={whatsapp.loading}
+                                />
+                            </div>
                         )}
                     </div>
                 </div>
@@ -410,68 +426,99 @@ const SlipSendPage = () => {
                                             <div className="grid grid-cols-2 gap-4">
                                                 {/* Total Card */}
                                                 <div className="bg-blue-50 rounded-lg p-4 flex flex-col items-center justify-center">
-                                                    <p className="text-gray-700 font-medium text-sm uppercase">Total</p>
-                                                    <p className="text-blue-600 text-2xl font-bold">{stats.total}</p>
+                                                    <p className="text-gray-700 font-medium text-sm uppercase">
+                                                        Total
+                                                    </p>
+                                                    <p className="text-blue-600 text-2xl font-bold">
+                                                        {stats.total}
+                                                    </p>
                                                 </div>
-                                                
+
                                                 {/* Sent Card */}
                                                 <div className="bg-green-50 rounded-lg p-4 flex flex-col items-center justify-center">
-                                                    <p className="text-gray-700 font-medium text-sm uppercase">Sent</p>
-                                                    <p className="text-green-600 text-2xl font-bold">{stats.sent}</p>
+                                                    <p className="text-gray-700 font-medium text-sm uppercase">
+                                                        Sent
+                                                    </p>
+                                                    <p className="text-green-600 text-2xl font-bold">
+                                                        {stats.sent}
+                                                    </p>
                                                 </div>
-                                                
+
                                                 {/* Failed Card */}
                                                 <div className="bg-red-50 rounded-lg p-4 flex flex-col items-center justify-center">
-                                                    <p className="text-gray-700 font-medium text-sm uppercase">Failed</p>
-                                                    <p className="text-red-600 text-2xl font-bold">{stats.failed}</p>
+                                                    <p className="text-gray-700 font-medium text-sm uppercase">
+                                                        Failed
+                                                    </p>
+                                                    <p className="text-red-600 text-2xl font-bold">
+                                                        {stats.failed}
+                                                    </p>
                                                 </div>
-                                                
+
                                                 {/* Pending Card */}
                                                 <div className="bg-yellow-50 rounded-lg p-4 flex flex-col items-center justify-center">
-                                                    <p className="text-gray-700 font-medium text-sm uppercase">Pending</p>
-                                                    <p className="text-yellow-600 text-2xl font-bold">{stats.remaining}</p>
+                                                    <p className="text-gray-700 font-medium text-sm uppercase">
+                                                        Pending
+                                                    </p>
+                                                    <p className="text-yellow-600 text-2xl font-bold">
+                                                        {stats.remaining}
+                                                    </p>
                                                 </div>
                                             </div>
-                                            
+
                                             {/* Status and Actions */}
                                             <div className="flex flex-col justify-between">
                                                 {/* Current Status */}
                                                 <div className="mb-4">
                                                     <div className="flex items-center mb-2">
-                                                        <span className="mr-2 font-medium">Status:</span>
-                                                        <span className={`px-3 py-1 text-xs rounded-full ${
-                                                            whatsapp.isSending 
-                                                                ? 'bg-blue-100 text-blue-800' 
-                                                                : whatsapp.isPaused 
-                                                                ? 'bg-yellow-100 text-yellow-800' 
-                                                                : whatsapp.isCompleted 
-                                                                ? 'bg-green-100 text-green-800' 
-                                                                : 'bg-gray-100 text-gray-800'
-                                                        }`}>
-                                                            {whatsapp.isSending 
-                                                                ? 'Sending' 
-                                                                : whatsapp.isPaused 
-                                                                ? 'Paused' 
-                                                                : whatsapp.isCompleted 
-                                                                ? 'Completed' 
-                                                                : 'Ready'}
+                                                        <span className="mr-2 font-medium">
+                                                            Status:
                                                         </span>
+                                                        <span
+                                                            className={`px-3 py-1 text-xs rounded-full ${
+                                                                whatsapp.isSending
+                                                                    ? "bg-blue-100 text-blue-800"
+                                                                    : whatsapp.isPaused
+                                                                    ? "bg-yellow-100 text-yellow-800"
+                                                                    : whatsapp.isCompleted
+                                                                    ? "bg-green-100 text-green-800"
+                                                                    : "bg-gray-100 text-gray-800"
+                                                            }`}
+                                                        >
+                                                            {whatsapp.isSending
+                                                                ? "Sending"
+                                                                : whatsapp.isPaused
+                                                                ? "Paused"
+                                                                : whatsapp.isCompleted
+                                                                ? "Completed"
+                                                                : "Ready"}
+                                                        </span>
+                                                        {whatsapp.progressStreaming && (
+                                                            <span className="text-xs text-green-600 ml-2">
+                                                                (Live Updates)
+                                                            </span>
+                                                        )}
                                                     </div>
-                                                    
+
                                                     {/* If there are failed messages, show a warning */}
                                                     {stats.failed > 0 && (
                                                         <div className="bg-red-50 text-red-700 p-2 rounded text-sm">
-                                                            {stats.failed} message(s) failed to send. 
-                                                            {whatsapp.isCompleted || whatsapp.isPaused ? 
-                                                                " Use 'Retry Failed' to attempt sending them again." : ""}
+                                                            {stats.failed}{" "}
+                                                            message(s) failed to
+                                                            send.
+                                                            {whatsapp.isCompleted ||
+                                                            whatsapp.isPaused
+                                                                ? " Use 'Retry Failed' to attempt sending them again."
+                                                                : ""}
                                                         </div>
                                                     )}
                                                 </div>
-                                                
+
                                                 {/* Action Buttons */}
                                                 <div className="flex flex-wrap gap-2">
                                                     <CustomButton
-                                                        onClick={handleOpenSettings}
+                                                        onClick={
+                                                            handleOpenSettings
+                                                        }
                                                         variant="secondary"
                                                         disabled={
                                                             whatsapp.isSending ||
@@ -482,9 +529,12 @@ const SlipSendPage = () => {
                                                     </CustomButton>
 
                                                     {!whatsapp.sendingStatus ||
-                                                    whatsapp.sendingStatus === "idle" ? (
+                                                    whatsapp.sendingStatus ===
+                                                        "idle" ? (
                                                         <CustomButton
-                                                            onClick={handleStartSending}
+                                                            onClick={
+                                                                handleStartSending
+                                                            }
                                                             variant="primary"
                                                             disabled={
                                                                 !fileUploaded ||
@@ -495,17 +545,25 @@ const SlipSendPage = () => {
                                                         </CustomButton>
                                                     ) : whatsapp.isSending ? (
                                                         <CustomButton
-                                                            onClick={handlePauseSending}
+                                                            onClick={
+                                                                handlePauseSending
+                                                            }
                                                             variant="warning"
-                                                            disabled={whatsapp.loading}
+                                                            disabled={
+                                                                whatsapp.loading
+                                                            }
                                                         >
                                                             Pause Sending
                                                         </CustomButton>
                                                     ) : whatsapp.isPaused ? (
                                                         <CustomButton
-                                                            onClick={handleResumeSending}
+                                                            onClick={
+                                                                handleResumeSending
+                                                            }
                                                             variant="primary"
-                                                            disabled={whatsapp.loading}
+                                                            disabled={
+                                                                whatsapp.loading
+                                                            }
                                                         >
                                                             Resume Sending
                                                         </CustomButton>
@@ -515,11 +573,16 @@ const SlipSendPage = () => {
                                                         whatsapp.isPaused) &&
                                                         stats.failed > 0 && (
                                                             <CustomButton
-                                                                onClick={handleRetryFailed}
+                                                                onClick={
+                                                                    handleRetryFailed
+                                                                }
                                                                 variant="danger"
-                                                                disabled={whatsapp.loading}
+                                                                disabled={
+                                                                    whatsapp.loading
+                                                                }
                                                             >
-                                                                Retry Failed ({stats.failed})
+                                                                Retry Failed (
+                                                                {stats.failed})
                                                             </CustomButton>
                                                         )}
                                                 </div>
@@ -532,26 +595,40 @@ const SlipSendPage = () => {
                                     <div className="bg-white rounded-lg shadow-md p-5 mb-6">
                                         <div className="mb-4">
                                             <div className="flex justify-between mb-1">
-                                                <span className="text-gray-700 font-medium">Overall Progress:</span>
-                                                <span className="text-gray-700 font-medium">{Math.round(progress)}%</span>
+                                                <span className="text-gray-700 font-medium">
+                                                    Overall Progress:
+                                                </span>
+                                                <span className="text-gray-700 font-medium">
+                                                    {Math.round(progress)}%
+                                                </span>
                                             </div>
                                             <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
-                                                <div 
-                                                    className="bg-blue-600 h-4 rounded-full transition-all duration-300 ease-in-out" 
-                                                    style={{ width: `${progress}%` }}
+                                                <div
+                                                    className="bg-blue-600 h-4 rounded-full transition-all duration-300 ease-in-out"
+                                                    style={{
+                                                        width: `${progress}%`,
+                                                    }}
                                                 ></div>
                                             </div>
                                         </div>
 
                                         <div>
                                             <div className="flex justify-between mb-1">
-                                                <span className="text-gray-700 font-medium">Batch Progress: {currentBatch}/{totalBatches}</span>
-                                                <span className="text-gray-700 font-medium">{Math.round(batchProgress)}%</span>
+                                                <span className="text-gray-700 font-medium">
+                                                    Batch Progress:{" "}
+                                                    {currentBatch}/
+                                                    {totalBatches}
+                                                </span>
+                                                <span className="text-gray-700 font-medium">
+                                                    {Math.round(batchProgress)}%
+                                                </span>
                                             </div>
                                             <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
-                                                <div 
-                                                    className="bg-green-500 h-4 rounded-full transition-all duration-300 ease-in-out" 
-                                                    style={{ width: `${batchProgress}%` }}
+                                                <div
+                                                    className="bg-green-500 h-4 rounded-full transition-all duration-300 ease-in-out"
+                                                    style={{
+                                                        width: `${batchProgress}%`,
+                                                    }}
                                                 ></div>
                                             </div>
                                         </div>
@@ -583,9 +660,20 @@ const SlipSendPage = () => {
                 <div className="qr-code-container">
                     {whatsapp.qrCode ? (
                         <>
-                            <img src={whatsapp.qrCode} alt="WhatsApp QR Code" />
-                            <p>Scan this QR code with WhatsApp to connect</p>
-                            <div className="mt-4">
+                            {/* Make sure the QR code is displayed correctly */}
+                            <img
+                                src={
+                                    whatsapp.qrCode.startsWith("data:")
+                                        ? whatsapp.qrCode // If it already has a data URL prefix, use it as is
+                                        : `data:image/png;base64,${whatsapp.qrCode}`
+                                } // Otherwise add the prefix
+                                alt="WhatsApp QR Code"
+                                className="mx-auto max-w-full h-auto"
+                            />
+                            <p className="text-center mt-4">
+                                Scan this QR code with WhatsApp to connect
+                            </p>
+                            <div className="mt-4 text-center">
                                 <CustomButton
                                     onClick={async () => {
                                         try {
@@ -623,7 +711,9 @@ const SlipSendPage = () => {
                             </div>
                         </>
                     ) : (
-                        <p>Generating QR code...</p>
+                        <p className="text-center py-8">
+                            Generating QR code...
+                        </p>
                     )}
                 </div>
             </CustomModal>

@@ -28,6 +28,12 @@ whatsappApi.interceptors.request.use(
     }
 );
 
+// Store EventSource instances
+const eventSources = {
+    status: null,
+    progress: null,
+};
+
 /**
  * Service for handling WhatsApp operations
  */
@@ -152,6 +158,154 @@ class WhatsappService {
         } catch (error) {
             return this._handleError(error);
         }
+    }
+
+    /**
+     * Start streaming WhatsApp status using SSE
+     * @param {Function} onStatusUpdate - Callback function to handle status updates
+     * @param {Function} onError - Callback function to handle errors
+     * @returns {Object} - Methods to close the connection
+     */
+    streamStatus(onStatusUpdate, onError) {
+        // Close any existing connection first
+        this.closeStatusStream();
+
+        try {
+            // Create a new EventSource connection
+            const source = new EventSource(`${WHATSAPP_ENDPOINT}/stream-status`);
+
+            // Set up event handlers
+            source.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    onStatusUpdate(data);
+                } catch (err) {
+                    console.error("Error parsing status SSE data:", err);
+                    if (onError) onError(err);
+                }
+            };
+
+            source.onerror = (error) => {
+                console.error("Status SSE error:", error);
+                if (onError) onError(error);
+                
+                // Auto-reconnect strategy:
+                // Only reconnect if we didn't close it intentionally
+                if (eventSources.status === source) {
+                    // Wait a bit before reconnecting
+                    setTimeout(() => {
+                        this.streamStatus(onStatusUpdate, onError);
+                    }, 5000);
+                }
+            };
+
+            // Store the event source
+            eventSources.status = source;
+            
+            console.log("Status SSE connection established");
+
+            // Return control methods
+            return {
+                close: () => this.closeStatusStream()
+            };
+        } catch (error) {
+            console.error("Failed to establish status SSE connection:", error);
+            if (onError) onError(error);
+            
+            // Return placeholder control methods
+            return {
+                close: () => {}
+            };
+        }
+    }
+
+    /**
+     * Close the status SSE stream
+     */
+    closeStatusStream() {
+        if (eventSources.status) {
+            eventSources.status.close();
+            eventSources.status = null;
+            console.log("Status SSE connection closed");
+        }
+    }
+
+    /**
+     * Start streaming sending progress using SSE
+     * @param {Function} onProgressUpdate - Callback function to handle progress updates
+     * @param {Function} onError - Callback function to handle errors
+     * @returns {Object} - Methods to close the connection
+     */
+    streamProgress(onProgressUpdate, onError) {
+        // Close any existing connection first
+        this.closeProgressStream();
+
+        try {
+            // Create a new EventSource connection
+            const source = new EventSource(`${WHATSAPP_ENDPOINT}/stream-progress`);
+
+            // Set up event handlers
+            source.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    onProgressUpdate(data);
+                } catch (err) {
+                    console.error("Error parsing progress SSE data:", err);
+                    if (onError) onError(err);
+                }
+            };
+
+            source.onerror = (error) => {
+                console.error("Progress SSE error:", error);
+                if (onError) onError(error);
+                
+                // Auto-reconnect strategy:
+                // Only reconnect if we didn't close it intentionally
+                if (eventSources.progress === source) {
+                    // Wait a bit before reconnecting
+                    setTimeout(() => {
+                        this.streamProgress(onProgressUpdate, onError);
+                    }, 5000);
+                }
+            };
+
+            // Store the event source
+            eventSources.progress = source;
+            
+            console.log("Progress SSE connection established");
+
+            // Return control methods
+            return {
+                close: () => this.closeProgressStream()
+            };
+        } catch (error) {
+            console.error("Failed to establish progress SSE connection:", error);
+            if (onError) onError(error);
+            
+            // Return placeholder control methods
+            return {
+                close: () => {}
+            };
+        }
+    }
+
+    /**
+     * Close the progress SSE stream
+     */
+    closeProgressStream() {
+        if (eventSources.progress) {
+            eventSources.progress.close();
+            eventSources.progress = null;
+            console.log("Progress SSE connection closed");
+        }
+    }
+
+    /**
+     * Close all SSE connections
+     */
+    closeAllStreams() {
+        this.closeStatusStream();
+        this.closeProgressStream();
     }
 
     /**

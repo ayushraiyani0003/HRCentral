@@ -1,7 +1,7 @@
 // src/hooks/useWhatsapp.js
 import { useDispatch, useSelector } from "react-redux";
 import { useCallback } from "react";
-import useStatusPoller from "./useStatusPoller";
+import useStatusUpdates from "./useStatusUpdates";
 import {
     generateQRCode,
     disconnectSession,
@@ -11,7 +11,9 @@ import {
     retryFailed,
     resetWhatsappState,
     checkWhatsappStatus,
-    setInitialContacts, // Add this action import
+    setInitialContacts,
+    stopAllStreams,
+    getProgress
 } from "../../../store/whatsappSlice";
 
 /**
@@ -30,19 +32,19 @@ export const useWhatsapp = () => {
         loading,
         error,
         lastMessage,
-        contacts, // Add contacts from the store
+        contacts,
+        streams
     } = useSelector((state) => state.whatsapp);
 
-    // Use the status poller hook for managed polling
+    // Use the status updates hook for SSE streams
     const {
-        statusPolling,
-        progressPolling,
-        startStatusPolling,
-        stopStatusPolling,
-        startProgressPolling,
-        stopProgressPolling,
-        checkProgressOnce,
-    } = useStatusPoller();
+        statusStreaming,
+        progressStreaming,
+        startStatusStream: startStatus,
+        stopStatusStream: stopStatus,
+        startProgressStream: startProgress,
+        stopProgressStream: stopProgress
+    } = useStatusUpdates();
 
     /**
      * Connect to WhatsApp by generating a QR code
@@ -52,9 +54,8 @@ export const useWhatsapp = () => {
         try {
             await dispatch(generateQRCode()).unwrap();
 
-            // Start polling for status to detect when QR is scanned
-            startStatusPolling();
-
+            // Status stream will start automatically when status changes to "connected"
+            
             return { success: true };
         } catch (error) {
             return {
@@ -62,7 +63,7 @@ export const useWhatsapp = () => {
                 message: error.message || "Failed to generate QR code",
             };
         }
-    }, [dispatch, startStatusPolling]);
+    }, [dispatch]);
 
     /**
      * Check WhatsApp connection status
@@ -71,11 +72,6 @@ export const useWhatsapp = () => {
     const checkStatus = useCallback(async () => {
         try {
             const result = await dispatch(checkWhatsappStatus()).unwrap();
-
-            // Start polling for status if connected
-            if (result.success && result.status === "connected") {
-                startStatusPolling();
-            }
 
             return {
                 success: true,
@@ -91,7 +87,7 @@ export const useWhatsapp = () => {
                 message: error.message || "Failed to check WhatsApp status",
             };
         }
-    }, [dispatch, startStatusPolling]);
+    }, [dispatch]);
 
     /**
      * Disconnect WhatsApp session
@@ -99,11 +95,10 @@ export const useWhatsapp = () => {
      */
     const disconnect = useCallback(async () => {
         try {
+            // Stop all SSE streams first
+            await dispatch(stopAllStreams()).unwrap();
+            
             const result = await dispatch(disconnectSession()).unwrap();
-
-            // Stop all polling
-            stopStatusPolling();
-            stopProgressPolling();
 
             return {
                 success: true,
@@ -115,7 +110,7 @@ export const useWhatsapp = () => {
                 message: error.message || "Failed to disconnect",
             };
         }
-    }, [dispatch, stopStatusPolling, stopProgressPolling]);
+    }, [dispatch]);
 
     /**
      * Start sending PDFs to contacts
@@ -133,9 +128,8 @@ export const useWhatsapp = () => {
                     startSendingPDFs({ contacts, settings })
                 ).unwrap();
 
-                // Force start polling for immediate feedback
-                startProgressPolling();
-
+                // Progress stream will start automatically when sendingStatus changes
+                
                 return {
                     success: true,
                     message: result?.message || "Started sending PDFs",
@@ -147,7 +141,7 @@ export const useWhatsapp = () => {
                 };
             }
         },
-        [dispatch, startProgressPolling]
+        [dispatch]
     );
 
     /**
@@ -157,9 +151,6 @@ export const useWhatsapp = () => {
     const pauseProcess = useCallback(async () => {
         try {
             const result = await dispatch(pauseSending()).unwrap();
-            
-            // Check progress once to update contacts immediately
-            checkProgressOnce();
             
             return {
                 success: true,
@@ -171,7 +162,7 @@ export const useWhatsapp = () => {
                 message: error.message || "Failed to pause process",
             };
         }
-    }, [dispatch, checkProgressOnce]);
+    }, [dispatch]);
 
     /**
      * Resume the sending process
@@ -180,9 +171,6 @@ export const useWhatsapp = () => {
     const resumeProcess = useCallback(async () => {
         try {
             const result = await dispatch(resumeSending()).unwrap();
-            
-            // Check progress once to update contacts immediately
-            checkProgressOnce();
             
             return {
                 success: true,
@@ -194,7 +182,7 @@ export const useWhatsapp = () => {
                 message: error.message || "Failed to resume process",
             };
         }
-    }, [dispatch, checkProgressOnce]);
+    }, [dispatch]);
 
     /**
      * Retry failed sends
@@ -203,9 +191,6 @@ export const useWhatsapp = () => {
     const retryFailedSends = useCallback(async () => {
         try {
             const result = await dispatch(retryFailed()).unwrap();
-            
-            // Check progress once to update contacts immediately
-            checkProgressOnce();
             
             return {
                 success: true,
@@ -217,20 +202,22 @@ export const useWhatsapp = () => {
                 message: error.message || "Failed to retry process",
             };
         }
-    }, [dispatch, checkProgressOnce]);
+    }, [dispatch]);
 
     /**
-     * Get current progress manually (usually handled by polling)
+     * Get current progress manually if needed
      * @returns {Promise<Object>} - Current progress
      */
     const checkProgress = useCallback(async () => {
-        return await checkProgressOnce();
-    }, [checkProgressOnce]);
+        return await dispatch(getProgress()).unwrap();
+    }, [dispatch]);
 
     /**
      * Reset WhatsApp state
      */
     const resetState = useCallback(() => {
+        // Stop all SSE streams first
+        dispatch(stopAllStreams());
         dispatch(resetWhatsappState());
     }, [dispatch]);
 
@@ -244,11 +231,13 @@ export const useWhatsapp = () => {
         retryFailedSends,
         checkProgress,
         checkStatus,
-        startStatusPolling,
-        stopStatusPolling,
-        startProgressPolling,
-        stopProgressPolling,
         resetState,
+        
+        // SSE stream control methods
+        startStatusStream: startStatus,
+        stopStatusStream: stopStatus,
+        startProgressStream: startProgress,
+        stopProgressStream: stopProgress,
 
         // State
         qrCode,
@@ -258,12 +247,16 @@ export const useWhatsapp = () => {
         loading,
         error,
         lastMessage,
-        contacts, // Expose contacts to components
+        contacts,
         isConnected: connectionStatus === "connected",
         isConnecting: connectionStatus === "connecting",
         isSending: sendingStatus === "sending" || sendingStatus === "processing",
         isPaused: sendingStatus === "paused",
         isCompleted: sendingStatus === "completed",
-        isPolling: statusPolling || progressPolling,
+        
+        // Stream status
+        statusStreaming,
+        progressStreaming,
+        streams
     };
 };
