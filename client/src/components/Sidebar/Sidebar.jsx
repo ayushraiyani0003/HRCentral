@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import SunchaserLogo from "../../assets/sunchaser.png";
 import { HomeIcon, DashboardIcon } from "../../utils/SvgIcon";
 
-const Sidebar = ({ isOpen }) => {
+const Sidebar = ({ isOpen, onCloseSidebar }) => {
     // Example of dynamic sidebar items
     const [menuItems] = useState([
         { id: 1, title: "Dashboard", icon: HomeIcon, path: "/" },
@@ -15,6 +15,13 @@ const Sidebar = ({ isOpen }) => {
         { id: 6, title: "Settings", icon: DashboardIcon, path: "/settings" },
         { id: 7, title: "Slip Send", icon: DashboardIcon, path: "/slip-send" },
     ]);
+
+    // Handle menu item click - close sidebar
+    const handleMenuClick = () => {
+        if (onCloseSidebar) {
+            onCloseSidebar();
+        }
+    };
 
     return (
         <aside
@@ -35,6 +42,7 @@ const Sidebar = ({ isOpen }) => {
                             <Link
                                 to={item.path}
                                 className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+                                onClick={handleMenuClick}
                             >
                                 <span className="text-xl">
                                     {/* Render the SVG icon as a component */}
