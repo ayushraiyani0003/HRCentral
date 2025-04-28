@@ -143,12 +143,13 @@ const SlipSendPage = () => {
             }
         } catch (error) {
             displayToast("Failed to connect to WhatsApp", "error");
+            console.error("Error connecting to WhatsApp:", error);
             setShowQrModal(false);
         }
     };
 
     const handleFileUpload = (files) => {
-        console.log("Files received:", files);
+        // console.log("Files received:", files);
         setSelectedFiles(files);
     };
 
@@ -179,23 +180,31 @@ const SlipSendPage = () => {
             );
         }
     };
+
     const handleStartSending = async () => {
         if (whatsapp.isSending) return;
-    
+
         try {
-            // Start progress stream only if not already active
-            if (!whatsapp.progressStreaming) {
-                whatsapp.startProgressStream();
-            }
-            
+            // First, start the progress stream before sending PDFs
+            // console.log("Starting progress stream before sending PDFs");
+            whatsapp.startProgressStream();
+
             // Then start sending PDFs
             const result = await whatsapp.startSending(
                 upload.contacts,
                 settings
             );
-    
+
             if (result.success) {
                 displayToast("Started sending salary slips", "success");
+
+                // Ensure progress stream is active
+                if (!whatsapp.progressStreaming) {
+                    // console.log(
+                    //     "Restarting progress stream after PDF sending initiated"
+                    // );
+                    setTimeout(() => whatsapp.startProgressStream(), 500);
+                }
             } else {
                 displayToast(
                     result.message || "Failed to start sending process",
@@ -204,6 +213,7 @@ const SlipSendPage = () => {
             }
         } catch (error) {
             displayToast("Failed to start sending process", "error");
+            console.error("Failed to start sending process:", error);
         }
     };
 
@@ -221,6 +231,7 @@ const SlipSendPage = () => {
             }
         } catch (error) {
             displayToast("Failed to pause process", "error");
+            console.error("Failed to pause process:", error);
         }
     };
 
@@ -238,6 +249,7 @@ const SlipSendPage = () => {
             }
         } catch (error) {
             displayToast("Failed to resume process", "error");
+            console.error("Failed to resume process:", error);
         }
     };
 
@@ -255,6 +267,7 @@ const SlipSendPage = () => {
             }
         } catch (error) {
             displayToast("Failed to retry process", "error");
+            console.error("Failed to retry process:", error);
         }
     };
 
@@ -273,6 +286,7 @@ const SlipSendPage = () => {
             }
         } catch (error) {
             displayToast("Failed to disconnect session", "error");
+            console.error("Failed to disconnect session:", error);
         }
     };
 
@@ -706,6 +720,7 @@ const SlipSendPage = () => {
                                                 "Failed to check connection status",
                                                 "error"
                                             );
+                                            console.error(error);
                                         }
                                     }}
                                     variant="secondary"

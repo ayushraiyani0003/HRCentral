@@ -132,36 +132,44 @@ export const stopStatusStream = createAsyncThunk(
 
 export const startProgressStream = createAsyncThunk(
     "whatsapp/startProgressStream",
-    async (_, { dispatch, getState }) => {
-      // Force the stream to stay active by using an existing action
-      dispatch(setForceProgressActive(true));
-      
-      return whatsappService.streamProgress(
-        // On progress update
-        (data) => {
-          if (data.success) {
-            // Make sure we're passing the data in a consistent structure
-            if (data.progress) {
-              // Force the sendingStatus to be processing if appropriate
-              if (data.progress.status === "processing" || 
-                  data.progress.currentBatch > 0) {
-                dispatch(setSendingStatus("processing"));
-              }
-              
-              // Pass the entire progress object structure
-              dispatch(updateProgressInfo(data.progress));
+    async (_, { dispatch }) => {
+        // Force the stream to stay active by using an existing action
+        dispatch(setForceProgressActive(true));
+
+        return whatsappService.streamProgress(
+            // On progress update
+            (data) => {
+                if (data.success) {
+                    // Make sure we're passing the data in a consistent structure
+                    if (data.progress) {
+                        // Force the sendingStatus to be processing if appropriate
+                        if (
+                            data.progress.status === "processing" ||
+                            data.progress.currentBatch > 0
+                        ) {
+                            dispatch(setSendingStatus("processing"));
+                        }
+
+                        // Pass the entire progress object structure
+                        dispatch(updateProgressInfo(data.progress));
+                    }
+                } else {
+                    dispatch(
+                        setProgressError(
+                            data.message || "Progress update failed"
+                        )
+                    );
+                }
+            },
+            // On error
+            (error) => {
+                dispatch(
+                    setProgressError(error.message || "Progress stream error")
+                );
             }
-          } else {
-            dispatch(setProgressError(data.message || "Progress update failed"));
-          }
-        },
-        // On error
-        (error) => {
-          dispatch(setProgressError(error.message || "Progress stream error"));
-        }
-      );
+        );
     }
-  );
+);
 
 // Add a new reducer to directly set the progress stream active state
 export const setProgressStreamActive = (active) => ({
@@ -210,14 +218,14 @@ const initialState = {
     streams: {
         status: {
             active: false,
-            error: null
+            error: null,
         },
         progress: {
             active: false,
             error: null,
-            forced: false  // Add this new flag
-        }
-    }
+            forced: false, // Add this new flag
+        },
+    },
 };
 
 // WhatsApp slice
@@ -275,7 +283,7 @@ const whatsappSlice = createSlice({
             state.streams.progress.active = action.payload;
             // Also set a flag to indicate this was forced
             state.streams.progress.forced = action.payload;
-        },    
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -295,10 +303,6 @@ const whatsappSlice = createSlice({
                 state.connectionStatus = "disconnected";
             })
 
-            // Get Status
-            .addCase(getStatus.pending, (state) => {
-                // Don't set loading to true here to avoid UI flicker during polling
-            })
             .addCase(getStatus.fulfilled, (state, action) => {
                 state.loading = false;
                 // Updated to handle both API response formats
@@ -378,7 +382,7 @@ const whatsappSlice = createSlice({
                 state.error = null;
             })
             .addCase(startSendingPDFs.fulfilled, (state, action) => {
-                console.log("startSendingPDFs.fulfilled", action.payload);
+                // console.log("startSendingPDFs.fulfilled", action.payload);
 
                 state.loading = false;
                 state.sendingStatus = "processing"; // Updated to match backend state
@@ -473,10 +477,6 @@ const whatsappSlice = createSlice({
                 state.error = action.payload;
             })
 
-            // Get Progress
-            .addCase(getProgress.pending, (state) => {
-                // Don't set loading to true here to avoid UI flicker during polling
-            })
             .addCase(getProgress.fulfilled, (state, action) => {
                 state.loading = false;
 
@@ -594,7 +594,7 @@ export const {
     updateProgressInfo,
     setStatusError,
     setProgressError,
-    setForceProgressActive  // Add this new export
+    setForceProgressActive, // Add this new export
 } = whatsappSlice.actions;
 
 export default whatsappSlice.reducer;

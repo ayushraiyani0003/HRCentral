@@ -40,7 +40,7 @@ const useStatusUpdates = () => {
     const startStatusStream = useCallback(() => {
         // Only start if not already active and not in the process of connecting
         if (!isStatusStreamActive && !statusStreamConnecting.current) {
-            console.log("Starting status SSE stream");
+            // console.log("Starting status SSE stream");
 
             // Mark that we're connecting
             statusStreamConnecting.current = true;
@@ -66,7 +66,7 @@ const useStatusUpdates = () => {
             (isStatusStreamActive || hasInitiatedStatusConnection.current) &&
             !statusStreamConnecting.current
         ) {
-            console.log("Stopping status SSE stream");
+            // console.log("Stopping status SSE stream");
 
             // Mark that we're disconnecting
             statusStreamConnecting.current = true;
@@ -89,7 +89,7 @@ const useStatusUpdates = () => {
     const startProgressStream = useCallback(() => {
         // Only start if not already active and not in the process of connecting
         if (!isProgressStreamActive && !progressStreamConnecting.current) {
-            console.log("Starting progress SSE stream");
+            // console.log("Starting progress SSE stream");
 
             // Mark that we're connecting
             progressStreamConnecting.current = true;
@@ -112,7 +112,7 @@ const useStatusUpdates = () => {
                     progressStreamConnecting.current = false;
                 });
         } else {
-            console.log("Progress stream already active or connecting");
+            // console.log("Progress stream already active or connecting");
         }
     }, [dispatch, isProgressStreamActive, streams.progress.active]);
 
@@ -129,7 +129,7 @@ const useStatusUpdates = () => {
             (isProgressStreamActive || hasInitiatedProgressConnection.current) &&
             !progressStreamConnecting.current
         ) {
-            console.log("Stopping progress SSE stream");
+            // console.log("Stopping progress SSE stream");
 
             // Mark that we're disconnecting
             progressStreamConnecting.current = true;
@@ -175,7 +175,7 @@ const useStatusUpdates = () => {
     // This only starts the progress stream, it never automatically stops it
     useEffect(() => {
         let isMounted = true;
-        console.log("Current sendingStatus:", sendingStatus);
+        // console.log("Current sendingStatus:", sendingStatus);
 
         const handleProgressStream = async () => {
             // Only start the progress stream when sending becomes active
@@ -186,7 +186,7 @@ const useStatusUpdates = () => {
                 !progressStreamConnecting.current &&
                 connectionStatus === "connected"
             ) {
-                console.log("Sending status indicates we should start progress stream");
+                // console.log("Sending status indicates we should start progress stream");
                 startProgressStream();
             }
         };

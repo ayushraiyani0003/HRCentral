@@ -66,13 +66,13 @@ const LoginPage = () => {
                 }, 1000);
             });
 
-            console.log("Login attempt with:", formData);
+            // console.log("Login attempt with:", formData);
             // Handle successful login
             addToast("Login successful! Redirecting...", "success");
 
             // Simulate redirect after successful login (you can replace with actual navigation)
             setTimeout(() => {
-                console.log("Redirecting to dashboard...");
+                // console.log("Redirecting to dashboard...");
             }, 2000);
         } catch (err) {
             console.error("Login error:", err);

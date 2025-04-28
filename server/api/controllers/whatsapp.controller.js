@@ -30,13 +30,13 @@ const generateQRCode = async (req, res) => {
             currentStatus &&
             ["connected", "connecting"].includes(currentStatus.status)
         ) {
-            console.log("Existing session detected. Disconnecting...");
+            // console.log("Existing session detected. Disconnecting...");
             await whatsappService.disconnect();
             await delay(1000); // Give time to cleanup
         }
 
         // Step 2: Initialize QR generation
-        console.log("Initializing QR code generation...");
+        // console.log("Initializing QR code generation...");
         whatsappService.getQRCode(); // Just initialize
 
         const maxWaitTime = 30000; // 30 seconds
@@ -52,7 +52,7 @@ const generateQRCode = async (req, res) => {
                 qrData = result;
                 break;
             }
-            console.log("Waiting for QR...");
+            // console.log("Waiting for QR...");
             await delay(pollInterval);
         }
 
@@ -458,14 +458,14 @@ const createStatusStream = async (req, res) => {
     // Remove client when connection closes
     req.on("close", () => {
         sseClients.status.delete(res);
-        console.log(
-            `Status SSE client disconnected. Active clients: ${sseClients.status.size}`
-        );
+        // console.log(
+        //     `Status SSE client disconnected. Active clients: ${sseClients.status.size}`
+        // );
     });
 
-    console.log(
-        `New status SSE client connected. Active clients: ${sseClients.status.size}`
-    );
+    // console.log(
+    //     `New status SSE client connected. Active clients: ${sseClients.status.size}`
+    // );
 
     // Ensure monitors are running when a client connects
     ensureMonitorsRunning();
@@ -518,14 +518,14 @@ const createProgressStream = async (req, res) => {
     req.on("close", () => {
         clearInterval(pingInterval);
         sseClients.progress.delete(res);
-        console.log(
-            `Progress SSE client disconnected. Active clients: ${sseClients.progress.size}`
-        );
+        // console.log(
+        //     `Progress SSE client disconnected. Active clients: ${sseClients.progress.size}`
+        // );
     });
 
-    console.log(
-        `New progress SSE client connected. Active clients: ${sseClients.progress.size}`
-    );
+    // console.log(
+    //     `New progress SSE client connected. Active clients: ${sseClients.progress.size}`
+    // );
 
     // Ensure monitors are running when a client connects
     ensureMonitorsRunning();

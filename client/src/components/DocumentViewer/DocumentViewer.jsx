@@ -143,7 +143,7 @@ const DocumentViewer = ({
         // Function to load PDF documents
         const loadPDF = async () => {
             try {
-                console.log("Loading PDF from URL:", documentUrl);
+                // console.log("Loading PDF from URL:", documentUrl);
 
                 // Determine if this is a file object, blob URL, or remote URL
                 let pdfSource = documentUrl;
@@ -155,20 +155,20 @@ const DocumentViewer = ({
                         documentUrl.startsWith("blob:"))
                 ) {
                     // Already a file object or blob URL, use directly
-                    console.log("Using blob URL or file object");
+                    // console.log("Using blob URL or file object");
                 }
                 // For remote URLs
                 else if (
                     typeof documentUrl === "string" &&
                     documentUrl.startsWith("http")
                 ) {
-                    console.log("Using remote URL");
+                    // console.log("Using remote URL");
                     // Use with proper CORS headers
                     // pdfSource remains unchanged
                 }
                 // For relative paths
                 else if (typeof documentUrl === "string") {
-                    console.log("Converting relative path to absolute");
+                    // console.log("Converting relative path to absolute");
                     // Might need to convert to absolute path
                     pdfSource = new URL(documentUrl, window.location.origin)
                         .href;
@@ -179,7 +179,7 @@ const DocumentViewer = ({
 
                 loadingTask.promise.then(
                     (pdfDoc) => {
-                        console.log("PDF loaded successfully");
+                        // console.log("PDF loaded successfully");
                         setPdfDocument(pdfDoc);
                         setTotalPages(pdfDoc.numPages);
                         setIsLoading(false);
@@ -279,7 +279,7 @@ const DocumentViewer = ({
             };
 
             await page.render(renderContext).promise;
-            console.log(`Page ${pageNum} rendered successfully`);
+            // console.log(`Page ${pageNum} rendered successfully`);
         } catch (err) {
             console.error("Error rendering page:", err);
             setError(`Failed to render page ${pageNum}: ${err.message}`);
@@ -343,7 +343,7 @@ const DocumentViewer = ({
 
         // This would be a real PDF text search implementation
         // For now we'll mock it
-        console.log("Searching for:", searchQuery);
+        // console.log("Searching for:", searchQuery);
 
         // Mock search results for demonstration
         const mockResults = [];
@@ -397,15 +397,15 @@ const DocumentViewer = ({
                 link.href = documentUrl;
                 // If it's a blob URL, use the direct URL
                 if (documentUrl.startsWith("blob:")) {
-                    console.log("Downloading from blob URL:", documentUrl);
+                    // console.log("Downloading from blob URL:", documentUrl);
                 }
                 // For remote URLs, might need additional handling for CORS
                 else if (documentUrl.startsWith("http")) {
-                    console.log("Downloading from remote URL:", documentUrl);
+                    // console.log("Downloading from remote URL:", documentUrl);
                 }
             } else {
                 // For file objects, create a blob URL
-                console.log("Creating blob URL for download");
+                // console.log("Creating blob URL for download");
                 const blobUrl = URL.createObjectURL(documentUrl);
                 link.href = blobUrl;
                 // Clean up the blob URL after download

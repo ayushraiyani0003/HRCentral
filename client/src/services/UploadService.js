@@ -17,12 +17,12 @@ const uploadApi = axios.create({
 uploadApi.interceptors.request.use(
     (config) => {
         // Only log in development
-        if (process.env.NODE_ENV === "development") {
-            console.log(
-                `Upload API Request: ${config.method.toUpperCase()} ${
-                    config.url
-                }`
-            );
+        if (import.meta.env.NODE_ENV === "development") {
+            // console.log(
+            //     `Upload API Request: ${config.method.toUpperCase()} ${
+            //         config.url
+            //     }`
+            // );
         }
         return config;
     },
@@ -42,7 +42,7 @@ class UploadService {
      */
     async uploadSalarySlips(zipFile) {
         try {
-            console.log("Uploading salary slips...");
+            // console.log("Uploading salary slips...");
             
             const formData = new FormData();
             formData.append("zipFile", zipFile);

@@ -102,10 +102,10 @@ const PasswordResetPage = () => {
                 }, 1000);
             });
 
-            console.log("Password reset attempt with:", {
-                mobileNumber: formData.mobileNumber,
-                passwordLength: formData.newPassword.length,
-            });
+            // console.log("Password reset attempt with:", {
+            //     mobileNumber: formData.mobileNumber,
+            //     passwordLength: formData.newPassword.length,
+            // });
 
             // Handle successful password reset
             addToast(
@@ -115,7 +115,7 @@ const PasswordResetPage = () => {
 
             // Simulate redirect after successful reset (you can replace with actual navigation)
             setTimeout(() => {
-                console.log("Redirecting to login page...");
+                // console.log("Redirecting to login page...");
             }, 2000);
         } catch (err) {
             console.error("Password reset error:", err);

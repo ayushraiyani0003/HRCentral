@@ -32,7 +32,7 @@ export const useUpload = () => {
                 setIsUploading(true);
                 setUploadError(null);
                 // In uploadFile function
-                console.log("Sending file to API:", zipFile);
+                // console.log("Sending file to API:", zipFile);
 
                 // Use the Redux action which uses the service internally
                 await dispatch(uploadSalarySlips(zipFile)).unwrap();
@@ -103,7 +103,7 @@ export const useUpload = () => {
             if (!files || files.length === 0) {
                 return { success: false, message: "No files selected" };
             }
-            console.log("Files in hook:", files);
+            // console.log("Files in hook:", files);
 
             // Handle both FileList and normal arrays
             const filesArray = Array.from(files);

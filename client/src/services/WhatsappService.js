@@ -17,9 +17,9 @@ whatsappApi.interceptors.request.use(
     (config) => {
         // Only log in development
         if (import.meta.env.MODE === "development") {
-            console.log(
-                `API Request: ${config.method.toUpperCase()} ${config.url}`
-            );
+            // console.log(
+            //     `API Request: ${config.method.toUpperCase()} ${config.url}`
+            // );
         }
         return config;
     },
@@ -204,7 +204,7 @@ class WhatsappService {
             // Store the event source
             eventSources.status = source;
 
-            console.log("Status SSE connection established");
+            // console.log("Status SSE connection established");
 
             // Return control methods
             return {
@@ -228,7 +228,7 @@ class WhatsappService {
         if (eventSources.status) {
             eventSources.status.close();
             eventSources.status = null;
-            console.log("Status SSE connection closed");
+            // console.log("Status SSE connection closed");
         }
     }
 
@@ -243,7 +243,7 @@ class WhatsappService {
     streamProgress(onProgressUpdate, onError) {
         // Close any existing connection first
         this.closeProgressStream();
-        console.log("Starting progress stream connection...");
+        // console.log("Starting progress stream connection...");
     
         // Add a reconnection flag
         let isReconnecting = false;
@@ -260,11 +260,11 @@ class WhatsappService {
     
             // Set up event handlers
             source.onopen = () => {
-                console.log("Progress SSE connection opened successfully");
+                // console.log("Progress SSE connection opened successfully");
                 
                 // Setup heartbeat to keep connection alive once the connection is open
                 source.onopen = () => {
-                    console.log("Progress SSE connection opened successfully");
+                    // console.log("Progress SSE connection opened successfully");
                     isReconnecting = false;
                 };
             };
@@ -275,7 +275,7 @@ class WhatsappService {
             source.onmessage = (event) => {
                 try {
                     const data = JSON.parse(event.data);
-                    console.log("Progress SSE data received:", data);
+                    // console.log("Progress SSE data received:", data);
                     onProgressUpdate(data);
                 } catch (err) {
                     console.error("Error parsing progress SSE data:", err);
@@ -294,12 +294,12 @@ class WhatsappService {
                     
                     // Mark as reconnecting
                     isReconnecting = true;
-                    console.log("Will attempt to reconnect progress stream in 5 seconds...");
+                    // console.log("Will attempt to reconnect progress stream in 5 seconds...");
     
                     // Wait before reconnecting
                     setTimeout(() => {
                         if (eventSources.progress === source) {
-                            console.log("Attempting to reconnect progress stream...");
+                            // console.log("Attempting to reconnect progress stream...");
                             // Create a new stream connection
                             this.streamProgress(onProgressUpdate, onError);
                         }
@@ -310,7 +310,7 @@ class WhatsappService {
             // Store the event source
             eventSources.progress = source;
     
-            console.log("Progress SSE connection established");
+            // console.log("Progress SSE connection established");
     
             // Return control methods
             return {
@@ -337,10 +337,10 @@ class WhatsappService {
      */
     closeProgressStream() {
         if (eventSources.progress) {
-            console.log("Closing progress SSE connection...");
+            // console.log("Closing progress SSE connection...");
             eventSources.progress.close();
             eventSources.progress = null;
-            console.log("Progress SSE connection closed");
+            // console.log("Progress SSE connection closed");
         }
     }
 

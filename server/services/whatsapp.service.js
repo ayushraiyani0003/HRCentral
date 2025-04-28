@@ -328,7 +328,7 @@ const processBatches = async () => {
     
     // Random delay between PDF sends (pdfInterval ± 2 seconds)
     const naturalDelay = createNaturalDelay(sessionState.pdfInterval);
-    console.log(`Sent to ${contact.phoneNo} in ${naturalDelay / 1000} seconds`);
+    // console.log(`Sent to ${contact.phoneNo} in ${naturalDelay / 1000} seconds`);
     
     await new Promise(resolve => setTimeout(resolve, naturalDelay));
   }
