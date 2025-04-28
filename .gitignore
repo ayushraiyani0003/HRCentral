@@ -4,13 +4,13 @@
 .env.development.local
 .env.test.local
 .env.production.local
-.env.*
+.env
 
 # Local environment variables
 /client/.env
-/client/.env.*
+/client/.env
 /server/.env
-/server/.env.*
+/server/.env
 
 # Environment variables
 .env
