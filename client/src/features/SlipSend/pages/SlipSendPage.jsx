@@ -179,16 +179,21 @@ const SlipSendPage = () => {
             );
         }
     };
-
     const handleStartSending = async () => {
         if (whatsapp.isSending) return;
-
+    
         try {
+            // Start progress stream only if not already active
+            if (!whatsapp.progressStreaming) {
+                whatsapp.startProgressStream();
+            }
+            
+            // Then start sending PDFs
             const result = await whatsapp.startSending(
                 upload.contacts,
                 settings
             );
-
+    
             if (result.success) {
                 displayToast("Started sending salary slips", "success");
             } else {

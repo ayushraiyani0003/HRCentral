@@ -96,22 +96,26 @@ export const startStatusStream = createAsyncThunk(
                     if (data.status) {
                         dispatch(setConnectionStatus(data.status));
                     }
-                    
+
                     // If the response includes sending status
                     if (data.sendingStatus) {
                         dispatch(setSendingStatus(data.sendingStatus));
                     }
-                    
+
                     // Update any other relevant status info
                     dispatch(updateStatusInfo(data));
                 } else {
                     // Handle error case
-                    dispatch(setStatusError(data.message || "Status update failed"));
+                    dispatch(
+                        setStatusError(data.message || "Status update failed")
+                    );
                 }
             },
             // On error
             (error) => {
-                dispatch(setStatusError(error.message || "Status stream error"));
+                dispatch(
+                    setStatusError(error.message || "Status stream error")
+                );
             }
         );
     }
@@ -124,35 +128,46 @@ export const stopStatusStream = createAsyncThunk(
         return { success: true };
     }
 );
+// In whatsappSlice.js, modify the startProgressStream thunk to:
 
 export const startProgressStream = createAsyncThunk(
     "whatsapp/startProgressStream",
-    async (_, { dispatch }) => {
-        return whatsappService.streamProgress(
-            // On progress update
-            (data) => {
-                if (data.success) {
-                    // Update progress information in the store
-                    if (data.progress) {
-                        dispatch(updateProgressInfo(data.progress));
-                    }
-                    
-                    // If response includes status, update that too
-                    if (data.status) {
-                        dispatch(setSendingStatus(data.status));
-                    }
-                } else {
-                    // Handle error case
-                    dispatch(setProgressError(data.message || "Progress update failed"));
-                }
-            },
-            // On error
-            (error) => {
-                dispatch(setProgressError(error.message || "Progress stream error"));
+    async (_, { dispatch, getState }) => {
+      // Force the stream to stay active by using an existing action
+      dispatch(setForceProgressActive(true));
+      
+      return whatsappService.streamProgress(
+        // On progress update
+        (data) => {
+          if (data.success) {
+            // Make sure we're passing the data in a consistent structure
+            if (data.progress) {
+              // Force the sendingStatus to be processing if appropriate
+              if (data.progress.status === "processing" || 
+                  data.progress.currentBatch > 0) {
+                dispatch(setSendingStatus("processing"));
+              }
+              
+              // Pass the entire progress object structure
+              dispatch(updateProgressInfo(data.progress));
             }
-        );
+          } else {
+            dispatch(setProgressError(data.message || "Progress update failed"));
+          }
+        },
+        // On error
+        (error) => {
+          dispatch(setProgressError(error.message || "Progress stream error"));
+        }
+      );
     }
-);
+  );
+
+// Add a new reducer to directly set the progress stream active state
+export const setProgressStreamActive = (active) => ({
+    type: "whatsapp/setProgressStreamActive",
+    payload: active,
+});
 
 export const stopProgressStream = createAsyncThunk(
     "whatsapp/stopProgressStream",
@@ -183,14 +198,14 @@ const initialState = {
         stats: {
             total: 0,
             sent: 0,
-            failed: 0
-        }
+            failed: 0,
+        },
     },
     loading: false,
     error: null,
     lastMessage: "",
     contacts: [], // Store contacts with their current send status
-    
+
     // New state for SSE
     streams: {
         status: {
@@ -199,7 +214,8 @@ const initialState = {
         },
         progress: {
             active: false,
-            error: null
+            error: null,
+            forced: false  // Add this new flag
         }
     }
 };
@@ -233,17 +249,17 @@ const whatsappSlice = createSlice({
             if (action.payload.status) {
                 state.connectionStatus = action.payload.status;
             }
-            
+
             if (action.payload.sendingStatus) {
                 state.sendingStatus = action.payload.sendingStatus;
             }
-            
+
             // You can add more status properties here as needed
         },
         updateProgressInfo: (state, action) => {
             // Update progress information from SSE
             updateProgressState(state, action.payload);
-            
+
             // Update contacts if they're included
             if (action.payload.contacts) {
                 state.contacts = action.payload.contacts;
@@ -254,7 +270,12 @@ const whatsappSlice = createSlice({
         },
         setProgressError: (state, action) => {
             state.streams.progress.error = action.payload;
-        }
+        },
+        setForceProgressActive: (state, action) => {
+            state.streams.progress.active = action.payload;
+            // Also set a flag to indicate this was forced
+            state.streams.progress.forced = action.payload;
+        },    
     },
     extraReducers: (builder) => {
         builder
@@ -281,14 +302,17 @@ const whatsappSlice = createSlice({
             .addCase(getStatus.fulfilled, (state, action) => {
                 state.loading = false;
                 // Updated to handle both API response formats
-                if (action.payload.success && action.payload.status === "connected") {
+                if (
+                    action.payload.success &&
+                    action.payload.status === "connected"
+                ) {
                     state.connectionStatus = "connected";
                 } else if (action.payload.connectionStatus) {
                     state.connectionStatus = action.payload.connectionStatus;
                 } else {
                     state.connectionStatus = "disconnected";
                 }
-                
+
                 if (action.payload.sendingStatus) {
                     state.sendingStatus = action.payload.sendingStatus;
                 }
@@ -307,14 +331,17 @@ const whatsappSlice = createSlice({
             .addCase(checkWhatsappStatus.fulfilled, (state, action) => {
                 state.loading = false;
                 // Update based on the API response format
-                if (action.payload.success && action.payload.status === "connected") {
+                if (
+                    action.payload.success &&
+                    action.payload.status === "connected"
+                ) {
                     state.connectionStatus = "connected";
                 } else {
                     state.connectionStatus = "disconnected";
                 }
-                state.lastMessage = action.payload.success ? 
-                    `WhatsApp is ${action.payload.status}` : 
-                    "WhatsApp is not connected";
+                state.lastMessage = action.payload.success
+                    ? `WhatsApp is ${action.payload.status}`
+                    : "WhatsApp is not connected";
             })
             .addCase(checkWhatsappStatus.rejected, (state, action) => {
                 state.loading = false;
@@ -351,16 +378,18 @@ const whatsappSlice = createSlice({
                 state.error = null;
             })
             .addCase(startSendingPDFs.fulfilled, (state, action) => {
+                console.log("startSendingPDFs.fulfilled", action.payload);
+
                 state.loading = false;
                 state.sendingStatus = "processing"; // Updated to match backend state
                 state.lastMessage =
                     action.payload.message || "Started sending PDFs";
-                    
+
                 // Store initial contacts if they exist in the payload
                 if (action.payload.contacts) {
                     state.contacts = action.payload.contacts;
                 }
-                
+
                 // Update progress if included in response
                 if (action.payload.progress) {
                     updateProgressState(state, action.payload.progress);
@@ -380,11 +409,11 @@ const whatsappSlice = createSlice({
                 state.loading = false;
                 state.sendingStatus = "paused";
                 state.lastMessage = action.payload.message || "Paused sending";
-                
+
                 // Update progress and contacts if included in response
                 if (action.payload.progress) {
                     updateProgressState(state, action.payload.progress);
-                    
+
                     if (action.payload.progress.contacts) {
                         state.contacts = action.payload.progress.contacts;
                     }
@@ -404,11 +433,11 @@ const whatsappSlice = createSlice({
                 state.loading = false;
                 state.sendingStatus = "processing"; // Updated to match backend state
                 state.lastMessage = action.payload.message || "Resumed sending";
-                
+
                 // Update progress and contacts if included in response
                 if (action.payload.progress) {
                     updateProgressState(state, action.payload.progress);
-                    
+
                     if (action.payload.progress.contacts) {
                         state.contacts = action.payload.progress.contacts;
                     }
@@ -429,11 +458,11 @@ const whatsappSlice = createSlice({
                 state.sendingStatus = "processing"; // Updated to match backend state
                 state.lastMessage =
                     action.payload.message || "Retrying failed sends";
-                
+
                 // Update progress and contacts if included in response
                 if (action.payload.progress) {
                     updateProgressState(state, action.payload.progress);
-                    
+
                     if (action.payload.progress.contacts) {
                         state.contacts = action.payload.progress.contacts;
                     }
@@ -450,12 +479,12 @@ const whatsappSlice = createSlice({
             })
             .addCase(getProgress.fulfilled, (state, action) => {
                 state.loading = false;
-                
+
                 // Extract progress and contacts data from response
                 if (action.payload.progress) {
                     // New format with nested progress object
                     updateProgressState(state, action.payload.progress);
-                    
+
                     // Update contacts array if available
                     if (action.payload.progress.contacts) {
                         state.contacts = action.payload.progress.contacts;
@@ -463,18 +492,18 @@ const whatsappSlice = createSlice({
                 } else {
                     // Old format with progress data at the top level
                     updateProgressState(state, action.payload);
-                    
+
                     // Update contacts array if available at top level
                     if (action.payload.contacts) {
                         state.contacts = action.payload.contacts;
                     }
                 }
-                
+
                 // Update sending status if provided
                 if (action.payload.status) {
                     state.sendingStatus = action.payload.status;
                 }
-                
+
                 // Auto-set completed status if processing is completed
                 if (state.sendingStatus === "completed") {
                     state.progress.overallProgress = 100;
@@ -494,7 +523,8 @@ const whatsappSlice = createSlice({
             })
             .addCase(startStatusStream.rejected, (state, action) => {
                 state.streams.status.active = false;
-                state.streams.status.error = action.payload || "Failed to start status stream";
+                state.streams.status.error =
+                    action.payload || "Failed to start status stream";
             })
             .addCase(stopStatusStream.fulfilled, (state) => {
                 state.streams.status.active = false;
@@ -509,7 +539,8 @@ const whatsappSlice = createSlice({
             })
             .addCase(startProgressStream.rejected, (state, action) => {
                 state.streams.progress.active = false;
-                state.streams.progress.error = action.payload || "Failed to start progress stream";
+                state.streams.progress.error =
+                    action.payload || "Failed to start progress stream";
             })
             .addCase(stopProgressStream.fulfilled, (state) => {
                 state.streams.progress.active = false;
@@ -529,25 +560,25 @@ const updateProgressState = (state, progressData) => {
     if (progressData.overallProgress !== undefined) {
         state.progress.overallProgress = progressData.overallProgress;
     }
-    
+
     if (progressData.batchProgress !== undefined) {
         state.progress.batchProgress = progressData.batchProgress;
     }
-    
+
     if (progressData.currentBatch !== undefined) {
         state.progress.currentBatch = progressData.currentBatch;
     }
-    
+
     if (progressData.totalBatches !== undefined) {
         state.progress.totalBatches = progressData.totalBatches;
     }
-    
+
     // Update stats
     if (progressData.stats) {
         state.progress.stats = {
             total: progressData.stats.total || 0,
             sent: progressData.stats.sent || 0,
-            failed: progressData.stats.failed || 0
+            failed: progressData.stats.failed || 0,
         };
     }
 };
@@ -562,7 +593,8 @@ export const {
     updateStatusInfo,
     updateProgressInfo,
     setStatusError,
-    setProgressError
+    setProgressError,
+    setForceProgressActive  // Add this new export
 } = whatsappSlice.actions;
 
 export default whatsappSlice.reducer;

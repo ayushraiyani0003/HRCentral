@@ -1,11 +1,11 @@
 // src/hooks/useStatusUpdates.js
 import { useEffect, useRef, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { 
-  startStatusStream as startStatusStreamAction, 
-  stopStatusStream as stopStatusStreamAction, 
-  startProgressStream as startProgressStreamAction, 
-  stopProgressStream as stopProgressStreamAction 
+import {
+    startStatusStream as startStatusStreamAction,
+    stopStatusStream as stopStatusStreamAction,
+    startProgressStream as startProgressStreamAction,
+    stopProgressStream as stopProgressStreamAction,
 } from "../../../store/whatsappSlice";
 
 /**
@@ -14,19 +14,24 @@ import {
  */
 const useStatusUpdates = () => {
     const dispatch = useDispatch();
-    
+
     // Track whether we've initiated connection in this session
     const hasInitiatedStatusConnection = useRef(false);
     const hasInitiatedProgressConnection = useRef(false);
-    
+
     // Track if streams are in the process of connecting/disconnecting
     const statusStreamConnecting = useRef(false);
     const progressStreamConnecting = useRef(false);
-
-    const connectionStatus = useSelector(state => state.whatsapp.connectionStatus);
-    const sendingStatus = useSelector(state => state.whatsapp.sendingStatus);
-    const streams = useSelector(state => state.whatsapp.streams);
     
+    // Keep track of the keepAlive interval
+    const keepAliveIntervalRef = useRef(null);
+
+    const connectionStatus = useSelector(
+        (state) => state.whatsapp.connectionStatus
+    );
+    const sendingStatus = useSelector((state) => state.whatsapp.sendingStatus);
+    const streams = useSelector((state) => state.whatsapp.streams);
+
     // Prevent connecting again if we're already in active state
     const isStatusStreamActive = streams.status.active;
     const isProgressStreamActive = streams.progress.active;
@@ -36,10 +41,10 @@ const useStatusUpdates = () => {
         // Only start if not already active and not in the process of connecting
         if (!isStatusStreamActive && !statusStreamConnecting.current) {
             console.log("Starting status SSE stream");
-            
+
             // Mark that we're connecting
             statusStreamConnecting.current = true;
-            
+
             // Dispatch the action to start the stream
             dispatch(startStatusStreamAction())
                 .then(() => {
@@ -57,12 +62,15 @@ const useStatusUpdates = () => {
     // Stop streaming status updates
     const stopStatusStream = useCallback(() => {
         // Only stop if already active and not in the process of disconnecting
-        if ((isStatusStreamActive || hasInitiatedStatusConnection.current) && !statusStreamConnecting.current) {
+        if (
+            (isStatusStreamActive || hasInitiatedStatusConnection.current) &&
+            !statusStreamConnecting.current
+        ) {
             console.log("Stopping status SSE stream");
-            
+
             // Mark that we're disconnecting
             statusStreamConnecting.current = true;
-            
+
             // Dispatch the action to stop the stream
             dispatch(stopStatusStreamAction())
                 .then(() => {
@@ -77,15 +85,21 @@ const useStatusUpdates = () => {
         }
     }, [dispatch, isStatusStreamActive]);
 
-    // Start streaming progress updates
+    // Start streaming progress updates with improved connection stability
     const startProgressStream = useCallback(() => {
         // Only start if not already active and not in the process of connecting
         if (!isProgressStreamActive && !progressStreamConnecting.current) {
             console.log("Starting progress SSE stream");
-            
+
             // Mark that we're connecting
             progressStreamConnecting.current = true;
             
+            // Clear any existing keepAlive interval
+        if (keepAliveIntervalRef.current) {
+            clearInterval(keepAliveIntervalRef.current);
+            keepAliveIntervalRef.current = null;
+        }
+
             // Dispatch the action to start the stream
             dispatch(startProgressStreamAction())
                 .then(() => {
@@ -97,18 +111,29 @@ const useStatusUpdates = () => {
                     // Connection failed
                     progressStreamConnecting.current = false;
                 });
+        } else {
+            console.log("Progress stream already active or connecting");
         }
-    }, [dispatch, isProgressStreamActive]);
+    }, [dispatch, isProgressStreamActive, streams.progress.active]);
 
     // Stop streaming progress updates
     const stopProgressStream = useCallback(() => {
+        // Clear the keepAlive interval
+        if (keepAliveIntervalRef.current) {
+            clearInterval(keepAliveIntervalRef.current);
+            keepAliveIntervalRef.current = null;
+        }
+        
         // Only stop if already active and not in the process of disconnecting
-        if ((isProgressStreamActive || hasInitiatedProgressConnection.current) && !progressStreamConnecting.current) {
+        if (
+            (isProgressStreamActive || hasInitiatedProgressConnection.current) &&
+            !progressStreamConnecting.current
+        ) {
             console.log("Stopping progress SSE stream");
-            
+
             // Mark that we're disconnecting
             progressStreamConnecting.current = true;
-            
+
             // Dispatch the action to stop the stream
             dispatch(stopProgressStreamAction())
                 .then(() => {
@@ -124,53 +149,65 @@ const useStatusUpdates = () => {
     }, [dispatch, isProgressStreamActive]);
 
     // Effect to manage status stream based on connection status
-    // Using a stable dependency for this effect to prevent re-execution
-    const stableConnStatus = connectionStatus === "connected";
-    
     useEffect(() => {
         let isMounted = true;
-        
+
         const handleStatusStream = async () => {
-            if (stableConnStatus && isMounted) {
+            if (connectionStatus === "connected" && isMounted) {
                 startStatusStream();
-            } else if (!stableConnStatus && isMounted) {
+            } else if (connectionStatus !== "connected" && isMounted) {
                 stopStatusStream();
-                stopProgressStream();
+                // Only stop progress stream if we're fully disconnected
+                if (connectionStatus === "disconnected") {
+                    stopProgressStream();
+                }
             }
         };
-        
+
         handleStatusStream();
-        
+
         return () => {
             isMounted = false;
         };
-    }, [stableConnStatus, startStatusStream, stopStatusStream, stopProgressStream]);
+    }, [connectionStatus, startStatusStream, stopStatusStream, stopProgressStream]);
 
     // Effect to manage progress stream based on sending status
-    // Using a stable value for this effect dependency
-    const shouldMonitorProgress = ["processing", "sending", "paused"].includes(sendingStatus);
-    
+    // This only starts the progress stream, it never automatically stops it
     useEffect(() => {
         let isMounted = true;
-        
+        console.log("Current sendingStatus:", sendingStatus);
+
         const handleProgressStream = async () => {
-            if (shouldMonitorProgress && isMounted) {
+            // Only start the progress stream when sending becomes active
+            if (
+                ["processing", "sending", "paused"].includes(sendingStatus) &&
+                isMounted &&
+                !isProgressStreamActive && 
+                !progressStreamConnecting.current &&
+                connectionStatus === "connected"
+            ) {
+                console.log("Sending status indicates we should start progress stream");
                 startProgressStream();
-            } else if (!shouldMonitorProgress && isMounted) {
-                stopProgressStream();
             }
         };
-        
+
         handleProgressStream();
-        
+
         return () => {
             isMounted = false;
         };
-    }, [shouldMonitorProgress, startProgressStream, stopProgressStream]);
+    }, [sendingStatus, startProgressStream, isProgressStreamActive, progressStreamConnecting, connectionStatus]);
 
-    // Clean up all streams on unmount
+    // Clean up all resources on unmount
     useEffect(() => {
         return () => {
+            // Clear any intervals
+            if (keepAliveIntervalRef.current) {
+                clearInterval(keepAliveIntervalRef.current);
+                keepAliveIntervalRef.current = null;
+            }
+            
+            // Stop both streams
             stopStatusStream();
             stopProgressStream();
         };
@@ -180,16 +217,16 @@ const useStatusUpdates = () => {
         // Status of streams
         statusStreaming: isStatusStreamActive,
         progressStreaming: isProgressStreamActive,
-        
+
         // Stream control methods
         startStatusStream,
         stopStatusStream,
         startProgressStream,
         stopProgressStream,
-        
+
         // Stream errors
         statusStreamError: streams.status.error,
-        progressStreamError: streams.progress.error
+        progressStreamError: streams.progress.error,
     };
 };
 
