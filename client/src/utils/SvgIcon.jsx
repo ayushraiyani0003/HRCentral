@@ -567,3 +567,115 @@ export const SalaryIcon = ({ width = 20, height }) => (
         />
     </svg>
 );
+
+// Spinner/Loader Icon
+export const LoaderIcon = ({ width = 20, height = 20 }) => (
+    <div className="spinner" style={{ width, height }}></div>
+);
+
+// Rotate Icon
+
+export const RotateIcon = ({ width = 20, height }) => (
+    <svg
+        width={width}
+        height={height || width}
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+    >
+        <path
+            d="M21 2V8M21 8H15M21 8L18.3597 5.63067C16.9787 4.25209 15.187 3.35964 13.2547 3.08779C11.3223 2.81593 9.35394 3.17941 7.64612 4.12343C5.93831 5.06746 4.58358 6.54091 3.78606 8.32177C2.98854 10.1026 2.79143 12.0944 3.22442 13.997C3.65742 15.8996 4.69707 17.61 6.18673 18.8704C7.67638 20.1308 9.53534 20.873 11.4835 20.9851C13.4317 21.0972 15.3635 20.5732 16.988 19.492C18.6124 18.4108 19.8414 16.831 20.4899 14.9907"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        />
+    </svg>
+);
+
+// Close Fullscreen Icon
+export const CloseFullscreenIcon = ({ width = 20, height }) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        width={width}
+        height={height || width}
+        className="control-icon"
+    >
+        <path
+            fillRule="evenodd"
+            d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z"
+            clipRule="evenodd"
+        />
+    </svg>
+);
+
+// Open Fullscreen Icon
+export const OpenFullscreenIcon = ({ width = 20, height }) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        width={width}
+        height={height || width}
+        className="control-icon"
+    >
+        <path
+            fillRule="evenodd"
+            d="M15 3.75a.75.75 0 01.75-.75h4.5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0V5.56l-3.97 3.97a.75.75 0 11-1.06-1.06l3.97-3.97h-2.69a.75.75 0 01-.75-.75zm-12 0A.75.75 0 013.75 3h4.5a.75.75 0 010 1.5H5.56l3.97 3.97a.75.75 0 01-1.06 1.06L4.5 5.56v2.69a.75.75 0 01-1.5 0v-4.5zm11.47 14.47a.75.75 0 001.06 0l3.97-3.97v2.69a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.69l-3.97 3.97a.75.75 0 000 1.06zm-4.94.06a.75.75 0 01-1.06 0l-3.97-3.97v2.69a.75.75 0 01-1.5 0v-4.5a.75.75 0 01.75-.75h4.5a.75.75 0 010 1.5H5.56l3.97 3.97a.75.75 0 010 1.06z"
+            clipRule="evenodd"
+        />
+    </svg>
+);
+
+// Previous Arrow Icon
+export const PrevArrowIcon = ({ width = 20, height }) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        width={width}
+        height={height || width}
+    >
+        <path
+            fillRule="evenodd"
+            d="M7.72 12.53a.75.75 0 010-1.06l7.5-7.5a.75.75 0 111.06 1.06L9.31 12l6.97 6.97a.75.75 0 11-1.06 1.06l-7.5-7.5z"
+            clipRule="evenodd"
+        />
+    </svg>
+);
+
+// Next Arrow Icon
+export const NextArrowIcon = ({ width = 20, height }) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        width={width}
+        height={height || width}
+    >
+        <path
+            fillRule="evenodd"
+            d="M16.28 11.47a.75.75 0 010 1.06l-7.5 7.5a.75.75 0 01-1.06-1.06L14.69 12 7.72 5.03a.75.75 0 011.06-1.06l7.5 7.5z"
+            clipRule="evenodd"
+        />
+    </svg>
+);
+// Next Arrow Icon
+export const ZoomResetIcon = ({ width = 20, height }) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        width={width}
+        height={height || width}
+        className="control-icon"
+    >
+        <path
+            fillRule="evenodd"
+            d="M4.755 10.059a7.5 7.5 0 0112.548-3.364l1.903 1.903h-3.183a.75.75 0 100 1.5h4.992a.75.75 0 00.75-.75V4.356a.75.75 0 00-1.5 0v3.18l-1.9-1.9A9 9 0 003.306 9.67a.75.75 0 101.45.388zm15.408 3.352a.75.75 0 00-.919.53 7.5 7.5 0 01-12.548 3.364l-1.902-1.903h3.183a.75.75 0 000-1.5H2.984a.75.75 0 00-.75.75v4.992a.75.75 0 001.5 0v-3.18l1.9 1.9a9 9 0 0015.059-4.035.75.75 0 00-.53-.918z"
+            clipRule="evenodd"
+        />
+    </svg>
+);

@@ -13,6 +13,11 @@ import { useToast } from "../../../components/Toast/Toast";
 import { useUpload } from "../hooks/useUpload";
 import { useWhatsapp } from "../hooks/useWhatsapp";
 import "./SlipSendPage.css";
+import ImagePreview from "../../../components/ImagePreview/ImagePreview";
+import previewImage from "../../../assets/slip contact excel formate.png";
+import preview2Image from "../../../assets/fetchpik.com-iconscout-d59RgSKncT.png";
+import preview3Image from "../../../assets/sunchaser.png";
+import SampleExcelFileDownload from "../../../assets/fileupload.zip";
 
 const SlipSendPage = () => {
     // Get toast from context
@@ -407,21 +412,42 @@ const SlipSendPage = () => {
 
                 {whatsapp.isConnected && (
                     <>
-                        <div className="upload-section">
-                            <FileUpload
-                                onFilesSelected={handleFileUpload}
-                                disabled={
-                                    !whatsapp.isConnected || upload.loading
-                                }
-                                accept=".zip"
-                                multiple={false}
-                                maxFileSize={200 * 1024 * 1024}
-                                maxFiles={1}
-                                buttonText="Choose ZIP File"
-                                dragDropText="Drag & drop ZIP file here"
-                                label="Upload ZIP file (containing PDFs and contact Excel)"
-                                showPreview={true}
-                            />
+                        <div className="upload-section flex flex-row gap-3">
+                                <div className="flex-1">
+                                    <FileUpload
+                                    height={"285px"}
+                                        onFilesSelected={handleFileUpload}
+                                        disabled={
+                                            !whatsapp.isConnected ||
+                                            upload.loading
+                                        }
+                                        accept=".zip"
+                                        multiple={false}
+                                        maxFileSize={200 * 1024 * 1024}
+                                        maxFiles={1}
+                                        buttonText="Choose ZIP File"
+                                        dragDropText="Drag & drop ZIP file here"
+                                        label="Upload ZIP file (containing PDFs and contact Excel)"
+                                        showPreview={true}
+                                    />
+                                </div>
+                                <div className="flex-1">
+                                    <ImagePreview
+                                        label="Expected Excel File Structure"
+                                        className="h-full"
+                                        src={previewImage}
+                                        // images={[{src:previewImage}, {src: preview2Image},{src: preview3Image}]}
+                                        size={"small"}
+                                        height={"285px"}
+                                        showControls={true}
+                                        showInfo={false}
+                                        showCaption={true}
+                                        showThumbnails={true}
+                                        extraFileDownload={SampleExcelFileDownload}
+                                        // If you have a specific selector, you can also use:
+                                        // siblingSelector=".your-file-upload-selector"
+                                    />
+                            </div>
 
                             {selectedFiles && selectedFiles.length > 0 && (
                                 <CustomButton

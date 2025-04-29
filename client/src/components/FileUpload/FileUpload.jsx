@@ -15,6 +15,8 @@ const FileUpload = forwardRef(
             onUploadProgress,
             onUploadComplete,
             onError,
+            width = "100%",
+            height = "100%",
             showPreview = true,
             required = false,
             className = "",
@@ -355,9 +357,14 @@ const FileUpload = forwardRef(
             warning: "file-upload-warning",
             danger: "file-upload-danger",
         };
-
+        // Dynamic styles for container and image
+        const containerStyle = {
+            width: width,
+            height: height,
+        };
+        
         return (
-            <div className={`file-upload-container ${className}`}>
+            <div className={`file-upload-container ${className}`} style={containerStyle}>
                 {label && (
                     <label className="file-upload-label">
                         {label}

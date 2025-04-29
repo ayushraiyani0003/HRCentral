@@ -8,7 +8,7 @@ import App from "./App.jsx";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Provider store={store}>
-      <App className="bg-gray-100" />
+      <App className="bg-gray-100 h-screen" />
     </Provider>
   </StrictMode>
 );
