@@ -1,0 +1,91 @@
+/* headerStyles.css */
+
+/* Enhance the user avatar with smooth hover effect */
+.user-avatar {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+/*  hover on "profile-dropdown" then the user avatar  */
+.profile-dropdown:hover .user-avatar {
+    transform: scale(1.05);
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+}
+
+/* Dropdown menu animation */
+.profile-dropdown {
+    animation: slideDown 0.2s ease-out forwards;
+    transform-origin: top center;
+    font-family: var(--font-sans);
+}
+
+@keyframes slideDown {
+    0% {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Polished button styles */
+button[data-sidebar-toggle] {
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+button[data-sidebar-toggle]:hover {
+    transform: scale(1.05);
+}
+
+button[data-sidebar-toggle]:active {
+    transform: scale(0.95);
+}
+
+/* Add subtle hover effect to the header */
+header {
+    transition: box-shadow 0.3s ease;
+}
+
+header:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Make the logo more interactive */
+header img {
+    transition: transform 0.3s ease;
+}
+
+header img:hover {
+    transform: scale(1.05);
+}
+
+/* Add a notification dot example - can be used with dynamic data */
+.notification-indicator {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 8px;
+    height: 8px;
+    background-color: #ef4444;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+/* Optional: Add glass morphism effect for modern UI trend */
+@supports (backdrop-filter: blur(10px)) {
+    .glass-effect {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    header {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
