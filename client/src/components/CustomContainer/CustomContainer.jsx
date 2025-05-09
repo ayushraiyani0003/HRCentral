@@ -7,6 +7,7 @@ const CustomContainer = forwardRef(
             children,
             className = "",
             title = "",
+            description = "",
             titleRequired = false,
             elevation = "low", // "none", "low", "medium", "high"
             padding = "medium", // "none", "small", "medium", "large"
@@ -25,6 +26,7 @@ const CustomContainer = forwardRef(
             footerBorder = true,
             headerBorder = true,
             icon = null,
+            titleCssClass = "",
             ...rest
         },
         ref
@@ -87,13 +89,16 @@ const CustomContainer = forwardRef(
                         }`}
                     >
                         {title && (
-                            <div className="container-title">
-                                <h3 className="title-text">
+                            <div className="container-title flex flex-col justify-start">
+                                <h3 className={`title-text ${titleCssClass}`}>
                                     {title}
                                     {titleRequired && (
                                         <span className="required-mark">*</span>
                                     )}
                                 </h3>
+                                <h4 className="title-subtext">
+                                    {description}
+                                </h4>
                                 {icon && (
                                     <div className="container-icon">{icon}</div>
                                 )}

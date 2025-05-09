@@ -35,6 +35,7 @@ const CustomButton = ({
     hoverShadow = "", // e.g. "shadow-lg"
     hoverAnimation = "", // Any custom animation class
     customHoverEffect = "", // For any other tailwind hover effect
+    ...rest
 }) => {
     const [isPressed, setIsPressed] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
@@ -250,6 +251,7 @@ const CustomButton = ({
 
     return (
         <button
+            {...rest}
             type={type}
             disabled={disabled || loading}
             onClick={onClick}

@@ -1,0 +1,69 @@
+/* RoleCard.css - Professional responsive styles */
+
+.avatar-group {
+    display: flex;
+    flex-direction: row;
+}
+.avatar-img:hover {
+    transform: none !important;
+  }
+  
+.laptop-image {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+}
+
+.lady-with-laptop {
+    width: 100%;
+    max-width: 81px;
+    margin-left: 4rem;
+    height: auto;
+    object-fit: contain;
+    transition: all 0.3s ease;
+}
+
+/* Tablet (≤1024px) */
+@media (max-width: 1024px) {
+    .laptop-image {
+        justify-content: center;
+    }
+
+    .lady-with-laptop {
+        max-width: 80px;
+    }
+}
+
+/* Mobile (≤768px) */
+@media (max-width: 768px) {
+    .laptop-image {
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+
+    .lady-with-laptop {
+        max-width: 80px;
+        margin: 0;
+    }
+}
+
+
+/* Hover effects for better UX */
+.role-card {
+    transition: all 0.3s ease;
+}
+
+.role-card:hover {
+    transform: translateY(-2px);
+}
+
+/* Avatar styling improvements */
+.avatar-img {
+    transition: transform 0.2s ease;
+}
+
+.avatar-img:hover {
+    transform: translateY(-3px);
+    z-index: 10;
+}
+

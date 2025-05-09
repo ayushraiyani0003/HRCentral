@@ -403,7 +403,6 @@ const CustomModal = ({
                 isAnimatingOut ? "closing" : ""
             } ${overlayClassName}`}
             onClick={handleOverlayClick}
-            aria-hidden="true"
             data-testid={`${testId}-overlay`}
             style={{ animationDuration: `${animationDuration}ms` }}
         >

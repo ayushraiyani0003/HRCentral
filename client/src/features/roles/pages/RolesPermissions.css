@@ -1,0 +1,17 @@
+.roles-permissions-page {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+}
+@media (max-width: 1080px) {
+    .grids-width {
+        grid-template-columns: 1fr 1fr; /* Two columns when width ≥ 1080px */
+    }
+}
+
+@media screen and (max-width: 640px) {
+    .grids-width {
+        grid-template-columns: 1fr; /* One column when width < 640px */
+    }
+    
+}

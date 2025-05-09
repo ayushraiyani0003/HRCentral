@@ -107,7 +107,6 @@ const ImagePreview = forwardRef(
             }
             combinedRef.current = element;
         };
-        console.log(extraFileDownload);
 
         // Handle image load and error
         const handleImageLoad = (e) => {

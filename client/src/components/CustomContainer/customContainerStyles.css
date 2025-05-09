@@ -129,7 +129,6 @@
 
 .container-title {
     display: flex;
-    align-items: center;
     gap: 0.5rem;
 }
 
@@ -137,6 +136,13 @@
     font-size: 1rem;
     font-weight: 600;
     color: #374151;
+    margin: 0;
+}
+
+.title-subtext{
+    font-size: .85rem;
+    font-weight: 400;
+    color: #6b6b6b;
     margin: 0;
 }
 
@@ -159,6 +165,7 @@
 /* Container content styling */
 .container-content {
     position: relative;
+    height: 100%;
 }
 
 /* Container footer styling */

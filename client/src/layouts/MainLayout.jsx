@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Header, Sidebar } from "../components";
 
-const MainLayout = ({ children }) => {
+const MainLayout = ({ children, menuItems }) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const sidebarRef = useRef(null);
     const mainContentRef = useRef(null);
@@ -73,7 +73,7 @@ const MainLayout = ({ children }) => {
             
             {/* Sidebar with ref for detecting outside clicks */}
             <div ref={sidebarRef} className="z-20">
-                <Sidebar isOpen={sidebarOpen} onCloseSidebar={closeSidebar} />
+                <Sidebar isOpen={sidebarOpen} onCloseSidebar={closeSidebar} menuItems={menuItems} />
             </div>
             
             {/* Main Content Area */}

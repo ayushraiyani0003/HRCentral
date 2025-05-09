@@ -1,21 +1,9 @@
 // Sidebar.jsx
-import React, { useState, createElement } from "react";
+import React, { createElement } from "react";
 import { Link } from "react-router-dom";
 import SunchaserLogo from "../../assets/sunchaser.png";
-import { HomeIcon, DashboardIcon } from "../../utils/SvgIcon";
 
-const Sidebar = ({ isOpen, onCloseSidebar }) => {
-    // Example of dynamic sidebar items
-    const [menuItems] = useState([
-        { id: 1, title: "Dashboard", icon: HomeIcon, path: "/" },
-        { id: 2, title: "Analytics", icon: DashboardIcon, path: "/analytics" },
-        { id: 3, title: "Projects", icon: DashboardIcon, path: "/projects" },
-        { id: 4, title: "Calendar", icon: DashboardIcon, path: "/calendar" },
-        { id: 5, title: "Messages", icon: DashboardIcon, path: "/messages" },
-        { id: 6, title: "Settings", icon: DashboardIcon, path: "/settings" },
-        { id: 7, title: "Slip Send", icon: DashboardIcon, path: "/slip-send" },
-    ]);
-
+const Sidebar = ({ isOpen, onCloseSidebar, menuItems }) => {
     // Handle menu item click - close sidebar
     const handleMenuClick = () => {
         if (onCloseSidebar) {

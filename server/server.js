@@ -10,6 +10,7 @@ require("dotenv").config();
 
 // Import main router
 const apiRoutes = require("./api/routes");
+const { processPayslips }= require("./api/controllers/slipGenerate.controller");
 
 // Create Express app
 const app = express();
@@ -34,27 +35,27 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Static files for uploaded files (temporary storage)
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Mount all API routes
-app.use('/api', apiRoutes);
+app.use("/api", apiRoutes);
 
 // API health check route
-app.get('/api/health', (req, res) => {
+app.get("/api/health", (req, res) => {
     res.status(200).json({
-        status: 'ok',
-        message: 'Server is running',
-        timestamp: new Date().toISOString()
+        status: "ok",
+        message: "Server is running",
+        timestamp: new Date().toISOString(),
     });
 });
 
 // Serve static files for production build (if needed)
-if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.join(__dirname, 'client/dist')));
-    
+if (process.env.NODE_ENV === "production") {
+    app.use(express.static(path.join(__dirname, "client/dist")));
+
     // Handle client routing, return all requests to the app
-    app.get('*', (req, res) => {
-        res.sendFile(path.join(__dirname, 'client/dist', 'index.html'));
+    app.get("*", (req, res) => {
+        res.sendFile(path.join(__dirname, "client/dist", "index.html"));
     });
 }
 
@@ -63,7 +64,7 @@ app.use((req, res, next) => {
     // Handle 404 errors
     res.status(404).json({
         success: false,
-        message: `Not found: ${req.method} ${req.originalUrl}`
+        message: `Not found: ${req.method} ${req.originalUrl}`,
     });
 });
 
@@ -97,24 +98,26 @@ const startServer = async () => {
             setupAssociations();
 
             // Create uploads directory if it doesn't exist
-            const fs = require('fs');
-            const uploadDir = path.join(__dirname, 'uploads');
-            const tempDir = path.join(__dirname, 'uploads/temp');
-            
+            const fs = require("fs");
+            const uploadDir = path.join(__dirname, "uploads");
+            const tempDir = path.join(__dirname, "uploads/temp");
+
             if (!fs.existsSync(uploadDir)) {
                 fs.mkdirSync(uploadDir, { recursive: true });
-                logger.info('Created uploads directory');
+                logger.info("Created uploads directory");
             }
-            
+
             if (!fs.existsSync(tempDir)) {
                 fs.mkdirSync(tempDir, { recursive: true });
-                logger.info('Created uploads/temp directory');
+                logger.info("Created uploads/temp directory");
             }
 
             // Start the server
             app.listen(PORT, () => {
                 logger.info(`Server running on port ${PORT}`);
-                logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
+                logger.info(
+                    `Environment: ${process.env.NODE_ENV || "development"}`
+                );
                 logger.info(`API available at http://localhost:${PORT}/api`);
             });
         } else {
@@ -133,19 +136,19 @@ const startServer = async () => {
 };
 
 // Handle uncaught exceptions and rejections
-process.on('uncaughtException', (err) => {
-    logger.error('Uncaught Exception', {
+process.on("uncaughtException", (err) => {
+    logger.error("Uncaught Exception", {
         error: err.message,
-        stack: err.stack
+        stack: err.stack,
     });
     process.exit(1);
 });
 
-process.on('unhandledRejection', (reason, promise) => {
-    logger.error('Unhandled Rejection', {
+process.on("unhandledRejection", (reason, promise) => {
+    logger.error("Unhandled Rejection", {
         reason: reason.message || reason,
-        stack: reason.stack || 'No stack trace',
-        promise
+        stack: reason.stack || "No stack trace",
+        promise,
     });
     process.exit(1);
 });

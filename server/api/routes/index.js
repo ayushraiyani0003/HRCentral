@@ -5,6 +5,7 @@ const router = express.Router();
 // Import route files
 const uploadRoutes = require('./upload.routes');
 const whatsappRoutes = require('./whatsapp.routes');
+const slipGenerateRoutes = require('./slipGenerate.routes');
 // Uncomment when ready to use
 // const salaryRoutes = require('./salary.routes');
 // const employeeRoutes = require('./employee.routes');
@@ -12,6 +13,7 @@ const whatsappRoutes = require('./whatsapp.routes');
 // Mount routes on their respective paths
 router.use('/upload', uploadRoutes);
 router.use('/whatsapp', whatsappRoutes);
+router.use('/slip-generate', slipGenerateRoutes);
 // Uncomment when ready to use
 // router.use('/salary', salaryRoutes);
 // router.use('/employee', employeeRoutes);
@@ -24,6 +26,7 @@ router.get('/', (req, res) => {
     endpoints: {
       upload: '/api/upload',
       whatsapp: '/api/whatsapp',
+      slipGenerate: '/api/slip-generate',
       // Uncomment when ready to use
       // salary: '/api/salary',
       // employee: '/api/employee',

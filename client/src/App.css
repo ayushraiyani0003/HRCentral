@@ -14,6 +14,11 @@
     --font-heading: 'Rubik', 'Inter', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 }
+
+body{
+    height: 100vh;
+}
+
 button:hover {
     cursor: pointer;
     text-decoration: none;

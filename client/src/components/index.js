@@ -27,6 +27,7 @@ import ToggleSwitch from "./ToggleSwitch/ToggleSwitch";
 import Tooltip from "./Tooltip/Tooltip";
 import Header from "./Header/Header";
 import Sidebar from "./Sidebar/Sidebar";
+import ImagePreview from "./ImagePreview/ImagePreview";
 
 export {
     Accordion,
@@ -58,4 +59,5 @@ export {
     useToast,
     Header,
     Sidebar,
+    ImagePreview,
 };

@@ -115,7 +115,7 @@ const Header = ({
                 <button
                     ref={buttonRef}
                     onClick={toggleProfileDropdown}
-                    className="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 border border-transparent hover:bg-gray-50 hover:border-gray-200"
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 border border-transparent"
                     aria-expanded={profileDropdownOpen}
                     aria-haspopup="true"
                 >
@@ -150,7 +150,11 @@ const Header = ({
                 {profileDropdownOpen && (
                     <div
                         ref={dropdownRef}
-                        className="profile-dropdown absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-10"
+                        className={`profile-dropdown absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-10 top-16 transition-all duration-300 ease-out ${
+                            profileDropdownOpen
+                                ? "opacity-100 translate-y-0"
+                                : "opacity-0 -translate-y-2 pointer-events-none"
+                        }`}
                     >
                         <ul>
                             {/* Profile menu item */}

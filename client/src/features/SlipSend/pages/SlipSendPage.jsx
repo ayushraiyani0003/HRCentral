@@ -412,10 +412,10 @@ const SlipSendPage = () => {
 
                 {whatsapp.isConnected && (
                     <>
+                    <div>
                         <div className="upload-section flex flex-row gap-3">
                                 <div className="flex-1">
                                     <FileUpload
-                                    height={"285px"}
                                         onFilesSelected={handleFileUpload}
                                         disabled={
                                             !whatsapp.isConnected ||
@@ -447,6 +447,7 @@ const SlipSendPage = () => {
                                         // If you have a specific selector, you can also use:
                                         // siblingSelector=".your-file-upload-selector"
                                     />
+                            </div>
                             </div>
 
                             {selectedFiles && selectedFiles.length > 0 && (
