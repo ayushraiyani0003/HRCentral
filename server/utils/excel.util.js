@@ -78,27 +78,17 @@ const processExcelFile = (excelFilePath) => {
  */
 const mapContactsToPDFs = (contacts, pdfFiles) => {
     return contacts.map((contact) => {
-        // Handle both string and numeric punch codes
-        // First ensure punchCode is a string
-        const punchCodeStr = contact.punchCode || "";
+        const punchCodeStr = contact.punchCode?.toString().trim();
+        if (!punchCodeStr) {
+            contact.status = "failed";
+            contact.errorMessage =
+                (contact.errorMessage || "") + " Missing punch code";
+            return contact;
+        }
 
-        // Search for PDF file with punch code in the filename
-        // Look for both formats: S253 and 253, and also {S253} and {253}
         const matchingPDF = pdfFiles.find((file) => {
             const fileName = path.basename(file, ".pdf").toLowerCase();
-
-            // If punchCode is something like "S253", also look for "253"
-            const numericPart = punchCodeStr
-                .replace(/^[a-z]/i, "")
-                .toLowerCase();
-
-            // Check for various formats
-            return (
-                fileName.includes(punchCodeStr.toLowerCase()) ||
-                (numericPart && fileName.includes(numericPart)) ||
-                fileName.includes(`{${punchCodeStr.toLowerCase()}}`) ||
-                fileName.includes(`{${numericPart}}`)
-            );
+            return fileName === punchCodeStr.toLowerCase(); // ✅ exact match only
         });
 
         if (matchingPDF) {
@@ -112,6 +102,7 @@ const mapContactsToPDFs = (contacts, pdfFiles) => {
         return contact;
     });
 };
+
 
 module.exports = {
     processExcelFile,

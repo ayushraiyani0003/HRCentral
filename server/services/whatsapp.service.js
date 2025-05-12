@@ -356,33 +356,42 @@ const sendPDF = async (contact) => {
   if (!whatsappClient || sessionState.status !== 'connected') {
     throw new Error('WhatsApp client not connected');
   }
-  
-  if (!contact.pdfFile || !fs.existsSync(contact.pdfFile)) {
-    throw new Error('PDF file not found');
+
+  if (!contact.pdfFile) {
+    throw new Error('No PDF file specified in contact');
   }
-  
+
+  const filePath = path.resolve(contact.pdfFile); // Full path resolution
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`PDF file not found at path: ${filePath}`);
+  }
+
+  const expectedFileName = `${contact.punchCode}.pdf`;
+  const actualFileName = path.basename(filePath);
+
+  if (actualFileName !== expectedFileName) {
+    throw new Error(`Filename mismatch: expected "${expectedFileName}", got "${actualFileName}"`);
+  }
+
+  const cleanNumber = contact.phoneNo.toString().replace(/\D/g, '');
+
+  if (cleanNumber.length !== 10) {
+    throw new Error(`Invalid phone number (must be 10 digits): ${contact.phoneNo}`);
+  }
+
   try {
-    // Format phone number (remove any non-digits and ensure it starts with +91)
-    const cleanNumber = contact.phoneNo.toString().replace(/\D/g, '');
-    
-    // Remove any existing country code if present and add +91
-    const phoneNumber = cleanNumber.replace(/^91/, '');
-    
-    // Create caption text
+    const media = MessageMedia.fromFilePath(filePath);
     const caption = `Salary Slip for ${contact.name}`;
-    
-    // Send the document with +91 prefix for WhatsApp API
-    const media = MessageMedia.fromFilePath(contact.pdfFile);
-    await whatsappClient.sendMessage(`91${phoneNumber}@c.us`, media, {
-      caption: caption
-    });
-    
+
+    await whatsappClient.sendMessage(`91${cleanNumber}@c.us`, media, { caption });
+
     return true;
   } catch (error) {
     console.error('Error sending PDF:', error);
     throw new Error(`Failed to send PDF: ${error.message}`);
   }
 };
+
 
 module.exports = {
   initializeClient,
