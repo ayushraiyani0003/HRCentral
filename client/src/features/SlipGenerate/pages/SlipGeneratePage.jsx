@@ -13,12 +13,19 @@ function SlipGeneratePage() {
         handleFileUpload,
         startSlipGeneration,
         loading,
+        streaming,
+        isProcessing,
         success,
+        completed,
         error,
         progress,
+        progressPercentage,
         zipFiles,
         slipData,
     } = useSlipGenerator();
+
+    console.log(slipData);
+    
 
     const [tableData, setTableData] = useState([]);
     const [stats, setStats] = useState({
@@ -117,7 +124,7 @@ function SlipGeneratePage() {
                             maxFiles={1}
                             buttonText="Choose Excel File"
                             dragDropText="Drag & drop Excel file here"
-                            label="Upload Excel file (containing the all details need to generate the slip)"
+                            label="Upload Excel file (containing all details to generate the slip)"
                             errorText="Please select a valid Excel file"
                             showPreview={true}
                         />
@@ -143,9 +150,13 @@ function SlipGeneratePage() {
                         <button
                             className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded"
                             onClick={startSlipGeneration}
-                            disabled={loading}
+                            disabled={isProcessing}
                         >
-                            Upload
+                            {loading
+                                ? "Uploading..."
+                                : streaming
+                                ? "Processing..."
+                                : "Upload"}
                         </button>
                     </div>
                 )}
@@ -161,6 +172,7 @@ function SlipGeneratePage() {
                 </div>
             )}
 
+            {/* Progress bar */}
             <div className="w-full mt-4 flex items-center gap-4">
                 <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
                     File Generate Progress
@@ -169,12 +181,12 @@ function SlipGeneratePage() {
                     <div
                         className="bg-gradient-to-r from-blue-500 to-blue-700 h-[9px] transition-all duration-500 ease-in-out"
                         style={{
-                            width: `${Array.isArray(progress) ? (progress.length || 0) : 0}%`,
+                            width: `${progressPercentage}%`,
                         }}
                     ></div>
                 </div>
                 <span className="text-sm font-semibold text-gray-800 whitespace-nowrap">
-                    {Array.isArray(progress) ? (progress.length || 0) : 0}%
+                    {progressPercentage}%
                 </span>
             </div>
 
@@ -184,9 +196,9 @@ function SlipGeneratePage() {
                     <h3 className="text-md font-medium text-gray-700 mb-2">Download Generated Slips:</h3>
                     <div className="flex flex-wrap gap-2">
                         {zipFiles.map((zipFile, index) => (
-                            <a 
+                            <a
                                 key={index}
-                                href={zipFile.url} 
+                                href={zipFile.url}
                                 download={zipFile.name}
                                 className="bg-green-500 hover:bg-green-600 text-white font-medium py-1 px-3 rounded text-sm flex items-center"
                             >
@@ -301,12 +313,12 @@ function SlipGeneratePage() {
                     </h2>
                     <CustomTable
                         columns={columns}
-                        data={slipData || []}
+                        data={tableData}
                         pagination={true}
                         itemsPerPage={10}
                         searchable={true}
                         filterableColumns={["status", "errorMessage"]}
-                        loading={loading}
+                        loading={isProcessing}
                     />
                 </div>
             </div>
