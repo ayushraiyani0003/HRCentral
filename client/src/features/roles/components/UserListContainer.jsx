@@ -5,7 +5,7 @@ import {
     CustomTable,
 } from "../../../components";
 import "./UserListContainer.css";
-import colorPalette from "../../../utils/colorPalatte";
+import {colorPalette} from "../../../utils/colorPalatte";
 
 function UserListContainer() {
     // this variable is the use for the color generate for each different role

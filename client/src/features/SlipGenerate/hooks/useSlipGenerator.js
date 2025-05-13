@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux';
-import { useCallback, useEffect, useState, useMemo } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   generateSlips,
   resetSlipGeneration,
@@ -8,40 +8,65 @@ import {
 export const useSlipGenerator = () => {
   const dispatch = useDispatch();
   const [selectedFiles, setSelectedFiles] = useState([]);
+  const [tableLoading, setTableLoading] = useState(false);
+  const [isUploadDone, setIsUploadDone] = useState(false);
   
+  // Select the entire slipGenerate state from Redux
   const slipState = useSelector((state) => state.slipGenerate);
-  const { 
-    loading, 
-    streaming, 
-    success, 
-    error, 
-    progress, 
-    zipFiles, 
-    rows,
-    completed 
+  const {
+    loading, // File upload in progress
+    streaming, // SSE streaming in progress
+    success, // Operation completed successfully
+    error, // Any error that occurred
+    completed, // Processing completed flag
+    
+    // Progress tracking data directly from Redux
+    total,
+    generated,
+    failed,
+    pending,
+    processed,
+    percentage,
+    
+    // Results data
+    tracking, // Individual employee tracking data (replacing rows)
+    zipPath, // Path to generated ZIP
+    zipFilename, // Filename of the ZIP
+    
+    // Download status
+    downloading,
+    downloadSuccess,
+    downloadError,
+    message // Status message
   } = slipState;
 
-  // New stats calculation for slips
-  const [stats, setStats] = useState({
-    total: 0,
-    generated: 0,
-    failed: 0,
-    pending: 0,
-  });
-
+  // File upload handler
   const handleFileUpload = useCallback((files) => {
-    setSelectedFiles(files);
-  }, []);
+    setSelectedFiles(files);11.90
 
+  }, []);
+  
+  // Start generation process
   const startSlipGeneration = useCallback(() => {
     if (!selectedFiles.length) return;
-
+    
+    // Set table loading state
+    setTableLoading(true);
+    setIsUploadDone(true);
+    
     const formData = new FormData();
     formData.append('file', selectedFiles[0]);
-
+    
     // Trigger the slip generation action
     dispatch(generateSlips(formData));
   }, [dispatch, selectedFiles]);
+
+  // Reset handler
+  const resetGeneration = useCallback(() => {
+    dispatch(resetSlipGeneration());
+    setSelectedFiles([]);
+    setTableLoading(false);
+  }, [dispatch]);
 
   // Reset slip generation when component unmounts
   useEffect(() => {
@@ -49,53 +74,68 @@ export const useSlipGenerator = () => {
       dispatch(resetSlipGeneration());
     };
   }, [dispatch]);
+  
+  // Update tableLoading state based on tracking data
+  useEffect(() => {
+    // If we have tracking data and it's not empty, we can turn off table loading
+    if (tracking && tracking.length > 0) {
+      setTableLoading(false);
+    }
+    
+    // Also turn off loading when processing is complete or if there's an error
+    if (completed || error) {
+      setTableLoading(false);
+    }
+  }, [tracking, completed, error]);
 
-  // Calculate overall status for processing state
+  // Calculate overall processing state
   const isProcessing = loading || streaming;
   
-  // Calculate progress percentage for the progress bar
-  const progressPercentage = useMemo(() => {
-    if (!progress || !Array.isArray(progress) || progress.length === 0) return 0;
+  // Determine if table should show loading state
+  const isTableLoading = tableLoading && !error && tracking.length === 0;
 
-    // If progress items have a status property
-    if (progress[0] && 'status' in progress[0]) {
-      const total = progress.length;
-      const completedCount = progress.filter(
-        (item) => item.status === 'completed' || item.status === 'success'
-      ).length;
-      return Math.round((completedCount / total) * 100);
-    }
-
-    // Otherwise, fallback to using the array length
-    return progress.length;
-  }, [progress]);
-
-  // Update statistics whenever rows data changes
-  useEffect(() => {
-    if (rows && rows.length > 0) {
-      const total = rows.length;
-      const generated = rows.filter((d) => d.status === 'success').length;
-      const failed = rows.filter((d) => d.status === 'failed').length;
-      const pending = rows.filter((d) => d.status === 'pending').length;
-
-      setStats({ total, generated, failed, pending });
-    }
-  }, [rows]);
+  // Stats object for convenience
+  const stats = {
+    total,
+    generated,
+    failed,
+    pending
+  };
 
   return {
+    // File selection
     selectedFiles,
     handleFileUpload,
+    
+    // Actions
     startSlipGeneration,
-    loading,          // File upload in progress
-    streaming,        // SSE streaming in progress
-    isProcessing,     // Either loading or streaming
-    success,          // Operation completed successfully
-    completed,        // Streaming completed (terminal state)
-    error,            // Any error that occurred
-    progress,         // Progress data array
-    progressPercentage, // Calculated progress percentage
-    zipFiles,         // Download files
-    slipData: rows,   // Data rows for the table
-    stats,            // Statistics for total, generated, failed, and pending
+    resetGeneration,
+    
+    // Status flags
+    loading,
+    streaming,
+    isProcessing,
+    isTableLoading, // New flag specifically for table loading state
+    success,
+    completed,
+    error,
+    message,
+    
+    // Progress data
+    progressPercentage: percentage, // Use the percentage directly from Redux
+    slipData: tracking, // Data rows for the table (tracking array)
+    
+    // Download info
+    zipPath,
+    zipFilename,
+    downloading,
+    downloadSuccess,
+    downloadError,
+    
+    // Consolidated stats
+    stats,
+
+    // Upload completion state
+    isUploadDone
   };
 };

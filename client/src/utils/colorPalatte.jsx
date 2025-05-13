@@ -29,6 +29,44 @@ const colorPalette = [
     ["bg-deepPurple-100", "text-deepPurple-800"],
     ["bg-brown-100", "text-brown-800"],
     ["bg-lightGreen-100", "text-lightGreen-800"]
-];
+]; // Removed trailing comma (optional fix)
 
-export default colorPalette;
+const colorMap = {
+    green: {
+        border: "border-green-500",
+        bg: "bg-green-100",
+        text: "text-green-500"
+    },
+    amber: {
+        border: "border-amber-500",
+        bg: "bg-amber-100",
+        text: "text-amber-500"
+    },
+    red: {
+        border: "border-red-500",
+        bg: "bg-red-100",
+        text: "text-red-500"
+    },
+    blue: {
+        border: "border-blue-500",
+        bg: "bg-blue-100",
+        text: "text-blue-500"
+    },
+    purple: {
+        border: "border-purple-500",
+        bg: "bg-purple-100",
+        text: "text-purple-500"
+    },
+    indigo: {
+        border: "border-indigo-500",
+        bg: "bg-indigo-100",
+        text: "text-indigo-500"
+    },
+    lightdfPink: {
+        border: "border-pink-500",
+        bg: "bg-pink-100",
+        text: "text-pink-500"
+    },
+}; // Removed trailing comma (optional fix)
+
+export { colorPalette, colorMap };

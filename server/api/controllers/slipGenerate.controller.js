@@ -6,7 +6,7 @@ const archiver = require("archiver");
 const multer = require("multer");
 const { editPayslip } = require("../../services/slipGenerate.service");
 
-const TEMP_DIR = path.join(__dirname, "../uploads/temp");
+const TEMP_DIR = path.join(__dirname, "../../uploads/temp");
 
 // Ensure temp directories exist
 const ensureTempDirs = async () => {
@@ -114,18 +114,33 @@ const uploadAndGenerateSlips = async (req, res) => {
 const streamSlipProgress = async (req, res) => {
     let isConnectionClosed = false;
 
+    // Set appropriate headers for SSE
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
     res.setHeader("X-Accel-Buffering", "no");
+    
+    // Ensure immediate flushing
+    res.flushHeaders();
 
+    // Detect when client disconnects
     req.on("close", () => {
         isConnectionClosed = true;
+        console.log("Client connection closed");
     });
 
+    // Helper function to send SSE events
     const sendEvent = (eventType, data) => {
         if (!isConnectionClosed) {
-            res.write(`event: ${eventType}\ndata: ${JSON.stringify(data)}\n\n`);
+            const eventString = `event: ${eventType}\ndata: ${JSON.stringify(data)}\n\n`;
+            res.write(eventString);
+            
+            // Force flush the stream to ensure immediate delivery
+            try {
+                if (res.flush) res.flush();
+            } catch (err) {
+                console.error("Error flushing response:", err);
+            }
         }
     };
 
@@ -137,8 +152,10 @@ const streamSlipProgress = async (req, res) => {
             return res.end();
         }
 
+        // Send initial info event
         sendEvent("info", { message: "Processing started" });
 
+        // Load the Excel file
         const workbook = new ExcelJS.Workbook();
         await workbook.xlsx.readFile(filePath);
         const worksheet = workbook.worksheets[0];
@@ -148,11 +165,13 @@ const streamSlipProgress = async (req, res) => {
             return res.end();
         }
 
+        // Extract headers
         const headers = [];
         worksheet.getRow(1).eachCell((cell, colNumber) => {
             headers[colNumber - 1] = cell.value ? cell.value.toString().trim() : "";
         });
 
+        // Parse data rows
         const rawData = [];
         for (let i = 2; i <= worksheet.rowCount; i++) {
             const row = worksheet.getRow(i);
@@ -174,6 +193,8 @@ const streamSlipProgress = async (req, res) => {
         const total = rawData.length;
         let generated = 0;
         let failed = 0;
+        
+        // Initialize tracking array for all employees
         const tracking = rawData.map((row) => ({
             employeeName: row["Name"] || "contact HR office",
             punchCode: row["User_ID"] || "contact HR office",
@@ -182,18 +203,29 @@ const streamSlipProgress = async (req, res) => {
             reason: "",
         }));
 
-        const outputFolders = new Set();
-        sendEvent("progress", { total, generated, failed, pending: total });
+        // Send initial progress event - simplified to match expected format
+        sendEvent("progress", { 
+            total, 
+            generated, 
+            failed, 
+            pending: total 
+        });
 
+        const outputFolders = new Set();
+
+        // Process each row and generate PDFs
         for (let i = 0; i < rawData.length; i++) {
-            if (isConnectionClosed) break;
+            if (isConnectionClosed) {
+                console.log("Connection closed, stopping processing");
+                break;
+            }
 
             const row = rawData[i];
             const data = mapExcelRowToPayslipData(row);
             const trackItem = tracking[i];
-            trackItem.status = "processing";
-
+            
             try {
+                // Generate payslip PDF
                 const folderPath = await editPayslip(data);
 
                 if (!folderPath) throw new Error("No output folder path returned");
@@ -207,77 +239,146 @@ const streamSlipProgress = async (req, res) => {
                 failed++;
             }
 
-            if (i % Math.max(1, Math.floor(total / 20)) === 0 || i === total - 1) {
-                const pending = total - generated - failed;
+            // Send progress update after each item or periodically for larger datasets
+            // Simplify the output to match expected format
+            const pending = total - generated - failed;
+            const percentage = Math.round(((i + 1) / total) * 100);
+            
+            // Only send progress updates periodically or after processing each item
+            const updateFrequency = Math.max(1, Math.floor(total / 100));
+            if (i % updateFrequency === 0 || i === total - 1) {
                 sendEvent("progress", {
                     total,
                     generated,
                     failed,
                     pending,
                     processed: i + 1,
-                    percentage: Math.round(((i + 1) / total) * 100),
-                    tracking,
+                    percentage,
+                    tracking
                 });
             }
         }
 
+        // All PDFs processed, create ZIP if any were generated successfully
         if (generated > 0 && outputFolders.size > 0 && !isConnectionClosed) {
             const zipFilename = `payslips-${Date.now()}.zip`;
             const zipPath = path.join(TEMP_DIR, zipFilename);
             const output = fs.createWriteStream(zipPath);
             const archive = archiver("zip", { zlib: { level: 9 } });
 
+            // Set up event handlers for archiver
+            output.on("close", () => {
+                const zipSize = archive.pointer();
+                
+                // Simplified done event to match expected format
+                sendEvent("done", {
+                    zipPath: zipPath.replace(/\\/g, "/"),
+                    zipFilename,
+                    zipSize,
+                    total,
+                    generated,
+                    failed
+                });
+                
+                if (!isConnectionClosed) {
+                    res.end();
+                }
+            });
+
+            archive.on("error", (err) => {
+                sendEvent("error", { error: `ZIP creation error: ${err.message}` });
+                if (!isConnectionClosed) {
+                    res.end();
+                }
+            });
+
             archive.pipe(output);
 
+            // Add all generated PDFs to the ZIP
             for (const folder of outputFolders) {
                 if (fs.existsSync(folder)) {
                     const files = fs.readdirSync(folder);
-                    files.forEach((file) => {
+                    
+                    for (const file of files) {
                         const filePath = path.join(folder, file);
                         if (fs.statSync(filePath).isFile()) {
                             archive.file(filePath, { name: file });
                         }
-                    });
+                    }
                 }
             }
 
-            // ➕ Create and add summary Excel
+            // Create and add summary Excel with all employee statuses
             const summaryExcelPath = await createSummaryExcel(tracking);
             if (fs.existsSync(summaryExcelPath)) {
-                archive.file(summaryExcelPath, { name: "summary.xlsx" });
+                archive.file(summaryExcelPath, { name: "contact.xlsx" });
             }
 
-            await new Promise((resolve, reject) => {
-                output.on("close", resolve);
-                archive.on("error", reject);
-                archive.finalize();
-            });
-
-            if (!isConnectionClosed) {
-                sendEvent("done", {
-                    zipPath: zipPath.replace(/\\/g, "/"),
-                    zipFilename,
-                    total,
-                    generated,
-                    failed,
-                });
-            }
+            // Finalize the ZIP
+            archive.finalize();
         } else {
+            // No successful payslips were generated
             sendEvent("error", {
                 error: generated === 0
                     ? "No payslips were successfully generated"
                     : "Processing completed but ZIP was not created",
             });
+            
+            if (!isConnectionClosed) {
+                res.end();
+            }
         }
     } catch (error) {
         console.error("Stream error:", error);
         if (!isConnectionClosed) {
             sendEvent("error", { error: error.message || "Server error during processing" });
-        }
-    } finally {
-        if (!isConnectionClosed) {
             res.end();
         }
+    }
+};
+// Route: GET /download-zip?filePath=...
+// This route is used to download the generated ZIP file
+// It is assumed that the filePath is passed as a query parameter
+// and that the file is located in the TEMP_DIR
+const downloadZip = async (req, res) => {
+    console.log("Download ZIP request received");
+    console.log(req.query);
+
+    try {
+        const filePath = req.query.filePath;
+
+        // Basic validation
+        if (!filePath) {
+            return res.status(400).json({ success: false, error: "Missing file path" });
+        }
+
+        const tempDir = path.resolve(process.env.TEMP_DIR || "../../uploads/temp");
+
+        // Resolve the absolute path relative to the tempDir
+        const resolvedPath = path.resolve(tempDir, filePath);
+
+        // Security check: Make sure the resolved path is still under tempDir
+        if (!resolvedPath.startsWith(tempDir + path.sep)) {
+            return res.status(403).json({ success: false, error: "Access denied to the requested file" });
+        }
+
+        // Check if the file exists
+        if (!fs.existsSync(resolvedPath)) {
+            return res.status(404).json({ success: false, error: "ZIP file not found" });
+        }
+
+        // Send the file
+        return res.download(resolvedPath, (err) => {
+            if (err) {
+                console.error("Error sending ZIP file:", err);
+                if (!res.headersSent) {
+                    res.status(500).json({ success: false, error: "Failed to send the ZIP file" });
+                }
+            }
+        });
+    } catch (error) {
+        console.error("Unexpected error in downloadZip:", error);
+        res.status(500).json({ success: false, error: "Server error while processing download" });
     }
 };
 
@@ -306,7 +407,7 @@ async function createSummaryExcel(trackingData) {
         });
     });
 
-    const excelFilePath = path.join(TEMP_DIR, "summary.xlsx");
+    const excelFilePath = path.join(TEMP_DIR, "contact.xlsx");
     await workbook.xlsx.writeFile(excelFilePath);
     return excelFilePath;
 }
@@ -317,7 +418,7 @@ function mapExcelRowToPayslipData(row) {
         phoneNo: row["Mobile_No"] || "contact HR office",
         punchCode: row["User_ID"] || "contact HR office",
         employeeName: row["Name"] || "contact HR office",
-        month: row["Department"] || "contact HR office",
+        month: row["month"] || "contact HR office",
         workingHrCmd: safeRound(row["Expected_Hours"]),
         payableHr: safeRound(row["Net_Work_Hours"]),
         presentHr: safeRound(row["Net_Work_Hours"]),
@@ -357,14 +458,32 @@ function mapExcelRowToPayslipData(row) {
     };
 }
 
-// helper funcytoion
+// Helper function for safe rounding
 function safeRound(value) {
     const num = parseFloat(value);
     return isNaN(num) ? 0 : Math.round(num);
 }
 
-
 module.exports = {
     uploadAndGenerateSlips,
     streamSlipProgress,
+    downloadZip
 };
+
+// the result of the stream of prossess is like this.
+// event: info
+// data: {"message":"Processing started"}
+
+// event: progress
+// data: {"total":2,"generated":0,"failed":0,"pending":2}
+
+// event: progress
+// data: {"total":2,"generated":1,"failed":0,"pending":1,"processed":1,"percentage":50,"tracking":[{"employeeName":"Khuman Prafulkumar Virjibhai","punchCode":"k6","phoneNo":9725319972,"status":"success","reason":""},{"employeeName":"Pansuriya Pradip Ratilal","punchCode":"S10","phoneNo":9870013371,"status":"pending","reason":""}]}
+
+// event: progress
+// data: {"total":2,"generated":2,"failed":0,"pending":0,"processed":2,"percentage":100,"tracking":[{"employeeName":"Khuman Prafulkumar Virjibhai","punchCode":"k6","phoneNo":9725319972,"status":"success","reason":""},{"employeeName":"Pansuriya Pradip Ratilal","punchCode":"S10","phoneNo":9870013371,"status":"success","reason":""}]}
+
+// event: done
+// data: {"zipPath":"/home/ayush-rayani/Desktop/Aysuh Raiyani/Ayush Raiyani/website/HRCentral/server/api/uploads/temp/payslips-1747108780804.zip","zipFilename":"payslips-1747108780804.zip","total":2,"generated":2,"failed":0}
+
+// the result is send to the client in the form of event stream.

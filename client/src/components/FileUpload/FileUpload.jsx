@@ -12,8 +12,6 @@ const FileUpload = forwardRef(
             maxFiles = 5,
             onFilesSelected,
             onFileRemove,
-            onUploadProgress,
-            onUploadComplete,
             onError,
             width = "100%",
             height = "100%",
@@ -32,8 +30,6 @@ const FileUpload = forwardRef(
     ) => {
         const [files, setFiles] = useState([]);
         const [isDragging, setIsDragging] = useState(false);
-        const [isUploading, setIsUploading] = useState(false);
-        const [uploadProgress, setUploadProgress] = useState({});
         const fileInputRef = useRef(null);
         const dropAreaRef = useRef(null);
 
@@ -320,21 +316,6 @@ const FileUpload = forwardRef(
             }
         };
 
-        // Simulate file upload (for demo purposes)
-        // Modify this in the FileUpload component
-        // Replace the simulateUpload function in FileUpload.jsx
-        const simulateUpload = () => {
-            if (files.length === 0) return;
-
-            // Instead of simulating progress, just pass the files to the parent
-            if (onFilesSelected) {
-                onFilesSelected(files);
-            }
-
-            // You might also want to clear the file input after "uploading"
-            setFiles([]);
-        };
-
         // Size class mapping
         const sizeClasses = {
             small: "file-upload-small",
@@ -362,9 +343,12 @@ const FileUpload = forwardRef(
             width: width,
             height: height,
         };
-        
+
         return (
-            <div className={`file-upload-container ${className}`} style={containerStyle}>
+            <div
+                className={`file-upload-container ${className}`}
+                style={containerStyle}
+            >
                 {label && (
                     <label className="file-upload-label">
                         {label}
@@ -443,7 +427,6 @@ const FileUpload = forwardRef(
 
                 {files.length > 0 && showPreview && (
                     <div className="file-upload-preview">
-                        
                         <ul className="file-upload-preview-list">
                             {files.map((file, index) => (
                                 <li
@@ -465,44 +448,25 @@ const FileUpload = forwardRef(
                                         </div>
                                     </div>
 
-                                    {isUploading ? (
-                                        <div className="file-upload-progress">
-                                            <div
-                                                className="file-upload-progress-bar"
-                                                style={{
-                                                    width: `${
-                                                        uploadProgress[index] ||
-                                                        0
-                                                    }%`,
-                                                }}
-                                            ></div>
-                                            <span className="file-upload-progress-text">
-                                                {uploadProgress[index] || 0}%
-                                            </span>
-                                        </div>
-                                    ) : (
-                                        <button
-                                            type="button"
-                                            className="file-upload-action-button remove-button"
-                                            onClick={() =>
-                                                handleRemoveFile(index)
-                                            }
-                                            aria-label="Remove file"
+                                    <button
+                                        type="button"
+                                        className="file-upload-action-button remove-button"
+                                        onClick={() => handleRemoveFile(index)}
+                                        aria-label="Remove file"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 20 20"
+                                            fill="currentColor"
+                                            className="remove-icon"
                                         >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 20 20"
-                                                fill="currentColor"
-                                                className="remove-icon"
-                                            >
-                                                <path
-                                                    fillRule="evenodd"
-                                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                                                    clipRule="evenodd"
-                                                />
-                                            </svg>
-                                        </button>
-                                    )}
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                    </button>
                                 </li>
                             ))}
                         </ul>

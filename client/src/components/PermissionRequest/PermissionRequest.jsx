@@ -126,10 +126,11 @@ const PermissionRequest = ({
                             setPermissionStatus(permissionStatus.state);
                             onPermissionChange(permissionStatus.state);
                         } catch (error) {
-                            console.log(
-                                "Permission API not fully supported, status unknown"
-                            );
+                            // console.log(
+                            //     "Permission API not fully supported, status unknown"
+                            // );
                             setPermissionStatus("prompt");
+                            
                         }
                     }
                 } else if (

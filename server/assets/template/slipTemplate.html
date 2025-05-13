@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Employee Slip</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        padding: 0;
+      }
+
+      h1 {
+        text-align: center;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 8px 0;
+      }
+
+      td,
+      th {
+        border: 1px solid #000;
+        padding: 3px 5px;
+        font-size: 14px;
+      }
+      .bold {
+        font-weight: bold;
+      }
+
+      th {
+        background-color: #f2f2f2;
+      }
+
+      .section-title {
+        font-weight: bold;
+        text-align: center;
+      }
+
+      /* Row coloring */
+      table:nth-of-type(1) tr:first-child {
+        background-color: #dfdfdf;
+      }
+
+      table:nth-of-type(2) tr:first-child th,
+      table:nth-of-type(2) tr:last-child td {
+        background-color: #d9ead3 !important;
+      }
+
+      table:nth-of-type(3) tr:first-child th,
+      table:nth-of-type(3) tr:last-child td {
+        background-color: #fce4d6 !important;
+      }
+
+      table:last-of-type tr:last-child td {
+        background-color: #8eaada;
+      }
+
+      .space-between {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+      }
+      .center {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <table>
+      <tr>
+        <td colspan="2" class="center"><strong>SLIP</strong></td>
+        <td width="20%"><strong>Month</strong></td>
+        <td width="20%" class="bold">{{month}}</td>
+      </tr>
+      <tr>
+        <td width="30%"><strong>Employee Name</strong></td>
+        <td colspan="3" class="bold">{{employeeName}}</td>
+      </tr>
+      <tr>
+        <td><strong>Working Hours</strong></td>
+        <td class="bold">{{workingHrCmd}}</td>
+        <td><strong>Payable Hours</strong></td>
+        <td class="bold">{{payableHr}}</td>
+      </tr>
+    </table>
+
+    <table>
+      <tr>
+        <th colspan="4" class="section-title">EARNING</th>
+      </tr>
+      <tr>
+        <td>
+          <span width="20%" class="space-between"
+            >Present Hours<span>{{presentHr}}</span></span
+          >
+        </td>
+        <td width="20%" class="bold">{{presentSalary}}</td>
+        <td width="20%">Zink 3 Exp</td>
+        <td width="20%" class="bold">{{zink3Ex}}</td>
+      </tr>
+      <tr>
+        <td>
+          <span class="space-between"
+            >Over Time Hours<span>{{otHr}}</span></span
+          >
+        </td>
+        <td class="bold">{{otSalary}}</td>
+        <td>Chol Exp</td>
+        <td class="bold">{{cholEx}}</td>
+      </tr>
+      <tr>
+        <td>
+          <span class="space-between"
+            >Festival Hours<span>{{festivalHr}}</span></span
+          >
+        </td>
+        <td class="bold">{{festivalSalary}}</td>
+        <td>Unit 5 Zink Exp</td>
+        <td class="bold">{{unit5zinkEx}}</td>
+      </tr>
+      <tr>
+        <td>
+          <span class="space-between"
+            >Pending Hours<span>{{pendingHr}}</span></span
+          >
+        </td>
+        <td class="bold">{{pendingSalary}}</td>
+        <td>Fabrication Exp</td>
+        <td class="bold">{{fabEx}}</td>
+      </tr>
+      <tr>
+        <td>
+          <span class="space-between"
+            >OT Hrs Expenses<span>{{otExHr}}</span></span
+          >
+        </td>
+        <td class="bold">{{otExSalary}}</td>
+        <td>Outdoor Exp</td>
+        <td class="bold">{{outdoorEx}}</td>
+      </tr>
+      <tr>
+        <td>
+          <span class="space-between"
+            >Night Hrs Expenses<span>{{nightExHr}}</span></span
+          >
+        </td>
+        <td class="bold">{{nightExSalary}}</td>
+        <td>Roll-Forming Exp</td>
+        <td class="bold">{{rollFormEx}}</td>
+      </tr>
+      <tr>
+        <td>
+          <span class="space-between"
+            >Vehicle Expenses<span>{{vehicleEx}}</span></span
+          >
+        </td>
+        <td class="bold">{{vehicleExSalary}}</td>
+        <td>Transportation Exp</td>
+        <td class="bold">{{transportEx}}</td>
+      </tr>
+      <tr>
+        <td>
+          <span class="space-between">Shoes Add<span></span></span>
+        </td>
+        <td class="bold">{{shoesAddSalary}}</td>
+        <td>Pending Exp</td>
+        <td class="bold">{{pendingEx}}</td>
+      </tr>
+      <tr>
+        <td colspan="2" class="center bold">Total Earning</td>
+        <td colspan="2" class="center bold">{{totalEarning}}</td>
+      </tr>
+    </table>
+
+    <table>
+      <tr>
+        <th colspan="4" class="section-title">DEDUCTION</th>
+      </tr>
+      <tr>
+        <td width="25%">Canteen</td>
+        <td width="25%" class="bold">{{CanDed}}</td>
+        <td width="25%">Loan</td>
+        <td width="25%" class="bold">{{LoneDed}}</td>
+      </tr>
+      <tr>
+        <td>PF</td>
+        <td class="bold">{{PfDed}}</td>
+        <td>Fine</td>
+        <td class="bold">{{fineDed}}</td>
+      </tr>
+      <tr>
+        <td>PT</td>
+        <td class="bold">{{PtDed}}</td>
+        <td>Shoes Less</td>
+        <td class="bold">{{ShoesDed}}</td>
+      </tr>
+      <tr>
+        <td>T-Shirt Less</td>
+        <td class="bold">{{tShirtDed}}</td>
+        <td>Other Deduction</td>
+        <td class="bold">{{otherDed}}</td>
+      </tr>
+      <tr>
+        <td colspan="2" class="center"><strong>Total Deduction</strong></td>
+        <td colspan="2" class="center"><strong>{{totalDed}}</strong></td>
+      </tr>
+    </table>
+
+    <table>
+      <tr>
+        <td class="center"><strong>Net Payment</strong></td>
+        <td class="center"><strong>{{netSalary}}</strong></td>
+      </tr>
+    </table>
+  </body>
+</html>

@@ -1,137 +1,168 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { uploadSlipExcel, connectToSlipProgressStream } from "../services/slipGenerateService";
+import {
+    uploadSlipExcel,
+    connectToSlipProgressStream
+} from "../services/slipGenerateService";
 
-// Thunk for uploading the file
+// Upload and start slip generation
 export const generateSlips = createAsyncThunk(
     "slipGenerate/generateSlips",
     async (formData, { rejectWithValue, dispatch }) => {
         try {
-            // Upload the file
             const uploadResponse = await uploadSlipExcel(formData);
 
             if (uploadResponse.success && uploadResponse.filePath) {
-                // Start streaming the progress after file upload
                 dispatch(startStreamProgress(uploadResponse.filePath));
                 return uploadResponse;
             } else {
-                return rejectWithValue("Upload successful but no file path returned");
+                return rejectWithValue(uploadResponse.error || "Upload successful but no file path returned");
             }
         } catch (err) {
-            return rejectWithValue(err.response?.data || err.message);
+            return rejectWithValue(err.message || "Failed to upload file");
         }
     }
 );
 
-// Thunk to handle the streaming progress
+// Connect to SSE for progress tracking
 export const startStreamProgress = createAsyncThunk(
     "slipGenerate/startStreamProgress",
     async (filePath, { dispatch }) => {
-        // This doesn't return anything immediately - it sets up the SSE connection
-        // and dispatches actions as messages arrive
         const progressStream = connectToSlipProgressStream(filePath, {
-            onProgress: (data) => {
-                dispatch(updateProgress(data));
-            },
-            onComplete: (data) => {
-                dispatch(streamCompleted(data));
-            },
-            onError: (error) => {
-                dispatch(streamError(error));
-            }
+            onInfo: (data) => dispatch(updateInfo(data)),
+            onProgress: (data) => dispatch(updateProgress(data)),
+            onComplete: (data) => dispatch(streamCompleted(data)),
+            onError: (error) => dispatch(streamError(error))
         });
 
         return { started: true, filePath, progressStream };
     }
 );
 
+const initialState = {
+    loading: false,
+    streaming: false,
+    success: false,
+    error: null,
+    message: "",
+
+    total: 0,
+    generated: 0,
+    failed: 0,
+    pending: 0,
+    processed: 0,
+    percentage: 0,
+    tracking: [],
+
+    zipPath: null,
+    zipFilename: null,
+    completed: false,
+
+    downloading: false,
+    downloadSuccess: false,
+    downloadError: null,
+};
+
 const slipGenerateSlice = createSlice({
     name: "slipGenerate",
-    initialState: {
-        loading: false,
-        streaming: false,
-        success: false,
-        error: null,
-        progress: [],
-        zipFiles: [],
-        rows: [],
-        completed: false,
-    },
+    initialState,
     reducers: {
-        resetSlipGeneration: (state) => {
-            state.loading = false;
-            state.streaming = false;
-            state.success = false;
-            state.error = null;
-            state.progress = [];
-            state.zipFiles = [];
-            state.rows = [];
-            state.completed = false;
-        },
-        updateProgress: (state, action) => {
-            // Track ongoing progress (e.g., percentage or status updates)
-            state.progress = action.payload.tracking || state.progress;
-            state.zipFiles = action.payload.zipFiles || state.zipFiles;
+        resetSlipGeneration: () => ({ ...initialState }),
 
-            if (Array.isArray(action.payload.slipRows)) {
-                state.rows = action.payload.slipRows;
+        updateInfo: (state, action) => {
+            state.message = action.payload.message || "";
+        },
+
+        updateProgress: (state, action) => {
+            const payload = action.payload;
+            if (payload.total !== undefined) state.total = payload.total;
+            if (payload.generated !== undefined) state.generated = payload.generated;
+            if (payload.failed !== undefined) state.failed = payload.failed;
+            if (payload.pending !== undefined) state.pending = payload.pending;
+            if (payload.processed !== undefined) state.processed = payload.processed;
+            if (payload.percentage !== undefined) state.percentage = payload.percentage;
+            if (payload.tracking) state.tracking = payload.tracking;
+            if (payload.message) state.message = payload.message;
+            if (payload.error) {
+                state.error = payload.error;
+                state.streaming = false;
             }
         },
+
         streamCompleted: (state, action) => {
-            // Mark streaming as complete and set the necessary data
+            const payload = action.payload;
             state.streaming = false;
             state.completed = true;
             state.success = true;
-
-            if (action.payload) {
-                state.progress = action.payload.tracking || state.progress;
-                state.zipFiles = action.payload.zipFiles || state.zipFiles;
-
-                if (Array.isArray(action.payload.slipRows)) {
-                    state.rows = action.payload.slipRows;
-                }
-            }
+            state.message = "Processing completed successfully";
+            if (payload.zipPath) state.zipPath = payload.zipPath;
+            if (payload.zipFilename) state.zipFilename = payload.zipFilename;
+            if (payload.total !== undefined) state.total = payload.total;
+            if (payload.generated !== undefined) state.generated = payload.generated;
+            if (payload.failed !== undefined) state.failed = payload.failed;
+            if (payload.tracking) state.tracking = payload.tracking;
+            state.percentage = 100;
         },
+
         streamError: (state, action) => {
-            // Mark streaming as failed
             state.streaming = false;
             state.error = action.payload || "Stream connection error";
+            state.message = "Processing failed: " + (action.payload || "Unknown error");
         },
     },
     extraReducers: (builder) => {
         builder
             .addCase(generateSlips.pending, (state) => {
-                state.loading = true;
-                state.streaming = false;
-                state.success = false;
-                state.error = null;
-                state.progress = [];
-                state.zipFiles = [];
-                state.rows = [];
-                state.completed = false;
+                Object.assign(state, {
+                    loading: true,
+                    streaming: false,
+                    success: false,
+                    error: null,
+                    message: "Uploading file...",
+                    completed: false,
+                    total: 0,
+                    generated: 0,
+                    failed: 0,
+                    pending: 0,
+                    processed: 0,
+                    percentage: 0,
+                    tracking: [],
+                    zipPath: null,
+                    zipFilename: null,
+                });
             })
             .addCase(generateSlips.fulfilled, (state) => {
                 state.loading = false;
-                // Do not set success=true here since the process continues with streaming
+                state.message = "File uploaded successfully. Starting processing...";
             })
             .addCase(generateSlips.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload || "Failed to generate slips.";
+                state.error = action.payload || "Failed to upload file";
+                state.message = "Upload failed: " + (action.payload || "Unknown error");
             })
+
             .addCase(startStreamProgress.pending, (state) => {
                 state.streaming = true;
+                state.message = "Connecting to stream...";
             })
             .addCase(startStreamProgress.fulfilled, (state) => {
-                // This action only confirms that streaming has started
-                state.success = true;
-            });
+                state.message = "Processing payslips...";
+            })
+            .addCase(startStreamProgress.rejected, (state, action) => {
+                state.streaming = false;
+                state.error = action.payload || "Failed to connect to stream";
+                state.message = "Connection failed: " + (action.payload || "Unknown error");
+            })
+
+           
     },
 });
 
-export const { 
-    resetSlipGeneration, 
-    updateProgress, 
-    streamCompleted, 
-    streamError 
+export const {
+    resetSlipGeneration,
+    updateInfo,
+    updateProgress,
+    streamCompleted,
+    streamError
 } = slipGenerateSlice.actions;
 
 export default slipGenerateSlice.reducer;
