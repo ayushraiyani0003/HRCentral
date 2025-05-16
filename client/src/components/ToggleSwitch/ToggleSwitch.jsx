@@ -102,7 +102,7 @@ const ToggleSwitch = forwardRef(
         return (
             <div className={`toggle-switch-container ${className}`}>
                 <div
-                    className={`toggle-switch-wrapper ${
+                    className={`toggle-switch-wrapper gap-2 ${
                         labelPositionClasses[labelPosition] ||
                         "toggle-label-right"
                     }`}

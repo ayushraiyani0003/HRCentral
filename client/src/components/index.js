@@ -28,9 +28,12 @@ import Tooltip from "./Tooltip/Tooltip";
 import Header from "./Header/Header";
 import Sidebar from "./Sidebar/Sidebar";
 import ImagePreview from "./ImagePreview/ImagePreview";
+import DashedLine from "./DashedLine/DashedLine";
+import SlidingPanel from "./SlidingPanel/SlidingPanel";
+import TextButton from "./TextButton/TextButton";
 
 export {
-    Accordion,
+    Accordion, // An accordion is a menu composed of vertically stacked headers that reveal more details when triggered 
     BadgeCounter,
     ConfirmationButton,
     CustomButton,
@@ -60,4 +63,7 @@ export {
     Header,
     Sidebar,
     ImagePreview,
+    DashedLine,
+    SlidingPanel,
+    TextButton,
 };

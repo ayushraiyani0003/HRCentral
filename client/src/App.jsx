@@ -14,16 +14,8 @@ import { HomeIcon, DashboardIcon } from "./utils/SvgIcon";
 import RolesPermissions from "./features/roles/pages/RolesPermissions";
 import ErrorPage from "./pages/ErrorPage/ErrorPage";
 import SlipGeneratePage from "./features/SlipGenerate/pages/SlipGeneratePage";
+import DashboardPage from "./features/dashboard/pages/DashboardPage";
 
-// Example page components - replace these with your actual page components
-const Dashboard = () => {
-    const contentItems = Array.from({ length: 85 }, (_, index) => (
-        <div key={index} className="p-2 mb-2 bg-gray-100 rounded shadow">
-            Dashboard Content {index + 1}
-        </div>
-    ));
-    return <div className="p-4 w-auto">{contentItems}</div>;
-};
 const Analytics = () => <div className="p-4">Analytics Content</div>;
 const Projects = () => <div className="p-4">Projects Content</div>;
 const Settings = () => <div className="p-4">Settings Content</div>;
@@ -74,7 +66,7 @@ function App() {
                                 isAuthenticated ? (
                                     <MainLayout menuItems={menuItems}>
                                         <Routes>
-                                            <Route path="/" element={<Dashboard />} />
+                                            <Route path="/" element={<DashboardPage />} />
                                             <Route path="/analytics" element={<Analytics />} />
                                             <Route path="/projects" element={<Projects />} />
                                             <Route path="/settings" element={<Settings />} />

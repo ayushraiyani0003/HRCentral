@@ -111,6 +111,7 @@ const CustomDropdown = ({
     tokenSeparators = [","],
     className = "",
     maxTagCount = 3,
+    isSearchable= true,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
@@ -381,6 +382,7 @@ const CustomDropdown = ({
             {/* Dropdown menu */}
             {isOpen && (
                 <div className="custom-dropdown-menu">
+                    { isSearchable &&
                     <div className="dropdown-search-container">
                         <input
                             ref={inputRef}
@@ -392,7 +394,7 @@ const CustomDropdown = ({
                             onClick={(e) => e.stopPropagation()}
                         />
                     </div>
-
+}
                     <div className="dropdown-options-list">
                         {filteredOptions.length > 0 ? (
                             filteredOptions.map((option) => (

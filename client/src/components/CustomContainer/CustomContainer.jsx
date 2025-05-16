@@ -27,6 +27,8 @@ const CustomContainer = forwardRef(
             headerBorder = true,
             icon = null,
             titleCssClass = "",
+            overflowContent=false,
+            isFixedFooter,
             ...rest
         },
         ref
@@ -90,18 +92,19 @@ const CustomContainer = forwardRef(
                     >
                         {title && (
                             <div className="container-title flex flex-col justify-start">
+                                <div className="flex flex-row gap-1.5 items-center">
+                                    {icon && (
+                                        <div className="container-icon">{icon}</div>
+                                    )}
                                 <h3 className={`title-text ${titleCssClass}`}>
                                     {title}
                                     {titleRequired && (
                                         <span className="required-mark">*</span>
                                     )}
-                                </h3>
+                                </h3></div>
                                 <h4 className="title-subtext">
                                     {description}
                                 </h4>
-                                {icon && (
-                                    <div className="container-icon">{icon}</div>
-                                )}
                             </div>
                         )}
                         {headerActions && (
@@ -113,7 +116,7 @@ const CustomContainer = forwardRef(
                 )}
 
                 {/* Container Content */}
-                <div className="container-content">{children}</div>
+                <div className={`container-content ${overflowContent ? "overflow-content" : ""}`} >{children}</div>
 
                 {/* Container Footer */}
                 {footerContent && (
