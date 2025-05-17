@@ -74,8 +74,8 @@ export const connectToSlipProgressStream = (filePath, handlers = {}) => {
         `${API_URL}/api/slip-generate/stream-slip-progress?filePath=${encodedFilePath}`
     );
 
-    console.log("SSE connection established to:", 
-        `${API_URL}/api/slip-generate/stream-slip-progress?filePath=${encodedFilePath}`);
+    // console.log("SSE connection established to:", 
+    //     `${API_URL}/api/slip-generate/stream-slip-progress?filePath=${encodedFilePath}`); // debug only
 
     // Create a safe close function
     const safeCloseConnection = () => {
@@ -90,8 +90,8 @@ export const connectToSlipProgressStream = (filePath, handlers = {}) => {
             eventSource.onerror = null;
             
             // Then close the connection
-            eventSource.close();
-            console.log("SSE connection closed successfully");
+            eventSource.close(); 
+            // console.log("SSE connection closed successfully"); // debug only
         }
     };
 
@@ -99,7 +99,7 @@ export const connectToSlipProgressStream = (filePath, handlers = {}) => {
     function infoHandler(event) {
         try {
             const data = JSON.parse(event.data);
-            console.log("SSE info event:", data);
+            // console.log("SSE info event:", data); // debug only
             
             if (onInfo) onInfo(data);
             
@@ -117,7 +117,7 @@ export const connectToSlipProgressStream = (filePath, handlers = {}) => {
     function progressHandler(event) {
         try {
             const data = JSON.parse(event.data);
-            console.log("SSE progress event:", data);
+            // console.log("SSE progress event:", data); // debug only
             
             // Update internal progress state
             progressState = {
@@ -135,7 +135,7 @@ export const connectToSlipProgressStream = (filePath, handlers = {}) => {
     function doneHandler(event) {
         try {
             const data = JSON.parse(event.data);
-            console.log("SSE done event:", data);
+            // console.log("SSE done event:", data); // debug only
     
             const finalState = {
                 ...progressState,
@@ -192,7 +192,7 @@ export const connectToSlipProgressStream = (filePath, handlers = {}) => {
     function errorHandler(event) {
         // If we're expecting the connection to close, don't treat it as an error
         if (expectedClose) {
-            console.log("Ignoring error event after expected close");
+            // console.log("Ignoring error event after expected close"); // debug only
             return;
         }
         
@@ -227,7 +227,7 @@ export const connectToSlipProgressStream = (filePath, handlers = {}) => {
     eventSource.onerror = (event) => {
         // If we're expecting the connection to close, don't treat it as an error
         if (expectedClose) {
-            console.log("Ignoring onerror event after expected close");
+            // console.log("Ignoring onerror event after expected close"); // debug only
             return;
         }
         
@@ -250,7 +250,7 @@ export const connectToSlipProgressStream = (filePath, handlers = {}) => {
     return {
         // Method to manually close the connection
         close: () => {
-            console.log("Manually closing SSE connection");
+            // console.log("Manually closing SSE connection"); // debug only
             safeCloseConnection();
         },
         

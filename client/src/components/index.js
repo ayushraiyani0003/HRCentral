@@ -31,6 +31,7 @@ import ImagePreview from "./ImagePreview/ImagePreview";
 import DashedLine from "./DashedLine/DashedLine";
 import SlidingPanel from "./SlidingPanel/SlidingPanel";
 import TextButton from "./TextButton/TextButton";
+import CustomBarChart from "./CustomBarChart/CustomBarChart";
 
 export {
     Accordion, // An accordion is a menu composed of vertically stacked headers that reveal more details when triggered 
@@ -66,4 +67,5 @@ export {
     DashedLine,
     SlidingPanel,
     TextButton,
+    CustomBarChart
 };

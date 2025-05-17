@@ -92,19 +92,19 @@ function UserListContainer() {
 
     // Handle viewing user details
     const handleViewDetails = (user) => {
-        console.log("View details for user:", user);
+        // console.log("View details for user:", user); // debug only
         // Implement navigation to user details page or show modal
     };
 
     // Handle editing user
     const handleEdit = (user) => {
-        console.log("Edit user:", user);
+        // console.log("Edit user:", user); // debug only
         // Implement edit functionality
     };
 
     // Handle deleting user
     const handleDelete = (userId) => {
-        console.log("Delete user with ID:", userId);
+        // console.log("Delete user with ID:", userId); // debug only
         // Implement delete confirmation and functionality
         if (window.confirm(`Are you sure you want to delete user ${userId}?`)) {
             setUserData(userData.filter((user) => user.id !== userId));
@@ -113,7 +113,7 @@ function UserListContainer() {
 
     // Handle toggling user status
     const handleToggleStatus = (userId, currentStatus) => {
-        console.log(`Toggle status for user ${userId} from ${currentStatus}`);
+        // console.log(`Toggle status for user ${userId} from ${currentStatus}`); // debug only
         setUserData(
             userData.map((user) => {
                 if (user.id === userId) {

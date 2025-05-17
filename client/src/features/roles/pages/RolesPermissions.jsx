@@ -104,12 +104,12 @@ function RolesPermissions() {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setSelectedRole(null);
-        console.log("Modal closed");
+        // console.log("Modal closed"); // debug only
     };
     
     const handleSaveRole = (roleData) => {
         // Process the role data here
-        console.log("Role saved:", roleData);
+        // console.log("Role saved:", roleData); // debug only
 
         // do other stuf hear
 

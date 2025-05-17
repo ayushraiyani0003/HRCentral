@@ -250,7 +250,7 @@ function TaskPanel({ panels, togglePanel }) {
         }
     };
 
-    console.log(dueDate);
+    // console.log(dueDate); // debug only
 
     return (
         <SlidingPanel

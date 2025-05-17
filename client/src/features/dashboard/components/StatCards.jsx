@@ -12,7 +12,7 @@ import { CustomContainer } from "../../../components";
 import { DashedLine } from "../../../components"; // Import the DashedLine component
 import "./StatCards.css";
 
-function StatCards({ employeesTrack = null, yesterdayAttendance, ...prop }) {
+function StatCards({ employeesTrack = null, yesterdayAttendance,className, ...prop }) {
     const [data, setData] = useState([]);
     const [comparisonIndex, setComparisonIndex] = useState(0);
     const comparisonPeriods = ["yesterday", "last week", "last month"];
@@ -374,7 +374,7 @@ function StatCards({ employeesTrack = null, yesterdayAttendance, ...prop }) {
                 rounded="medium"
                 backgroundColor="white"
                 width="full"
-                className={prop}
+                className={className}
             >
                 {/* Single row layout with all cards */}
                 <div className="flex flex-wrap lg:flex-nowrap justify-between relative h-full">

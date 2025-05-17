@@ -1,6 +1,11 @@
 import React, { useState } from "react";
-import { StatCards, TaskCard, TaskPanel } from "../components/";
-import { CustomButton, SlidingPanel } from "../../../components";
+import {
+    PayRollChartCard,
+    StatCards,
+    TaskCard,
+    TaskPanel,
+} from "../components/";
+import { CustomBarChart } from "../../../components";
 
 function DashboardPage() {
     const data = [
@@ -362,15 +367,127 @@ function DashboardPage() {
             jobApplicants: 6,
         },
     ];
+
+    const [employeeData] = useState([
+        { name: "John", payable: 1200, overtime: 300, expense: 250 },
+        { name: "Sarah", payable: 1500, overtime: 200, expense: 400 },
+        { name: "Mike", payable: 1100, overtime: 400, expense: 300 },
+        { name: "Anna", payable: 1300, overtime: 150, expense: 350 },
+        { name: "David", payable: 1400, overtime: 250, expense: 200 },
+        { name: "Emily", payable: 1600, overtime: 100, expense: 500 },
+        { name: "James", payable: 1250, overtime: 350, expense: 280 },
+        { name: "Olivia", payable: 1550, overtime: 220, expense: 320 },
+        { name: "Liam", payable: 1350, overtime: 180, expense: 400 },
+        { name: "Sophia", payable: 1450, overtime: 270, expense: 330 },
+        { name: "Daniel", payable: 1200, overtime: 310, expense: 210 },
+        { name: "Chloe", payable: 1500, overtime: 230, expense: 390 },
+    ]);
+
+    const [attendanceData] = useState([
+        { department: "HR", present: 85, },
+        { department: "Engineering", present: 92,  },
+        { department: "Sales", present: 78,  },
+        { department: "Marketing", present: 88, },
+        { department: "Finance", present: 90,  },
+        { department: "Legal", present: 83,  },
+        { department: "Operations", present: 87,  },
+        { department: "Customer Service", present: 80,  },
+        { department: "IT Support", present: 91,  },
+        { department: "R&D", present: 86,  },
+        { department: "QA", present: 89,  },
+        { department: "Procurement", present: 82, },
+        { department: "Administration", present: 84,  },
+        { department: "Security", present: 93,  },
+        { department: "Training", present: 79,  },
+        { department: "Product", present: 88,  },
+        { department: "Logistics", present: 81,  },
+        { department: "Compliance", present: 90,  },
+        { department: "Strategy", present: 85,  },
+        { department: "Business Intelligence", present: 94, },
+    ]);
+    
+    // Example of different unit types
+    const [unitType] = useState("currency");
+    const [attnunitType] = useState("percent");
+
+    // Legend position state
+    const [legendPosition] = useState("topright");
+
+    // Chart orientation
+    const [layout] = useState("horizontal");
+
+    // Bar styling
+    const [roundedBars] = useState(true);
+
+    // Custom tooltip formatter
+    const tooltipFormatter = (value) => {
+        switch (unitType) {
+            case "currency":
+                return `$${value.toLocaleString()}`;
+            case "percent":
+                return `${value}%`;
+            default:
+                return value;
+        }
+    };
+    const depTooltipFormatter = (value) => {
+        switch (attnunitType) {
+            case "currency":
+                return `$${value.toLocaleString()}`;
+            case "percent":
+                return `${value}%`;
+            default:
+                return value;
+        }
+    };
+    const customColors = [
+        "#4A90E2", // calm blue
+        "#50E3C2", // soft teal
+        "#F5A623", // warm golden orange
+    ];
+
     return (
         <div className="w-full p-0">
             <div className="w-full flex flex-col md:flex-row gap-3">
-                <div className="w-full md:w-2/3 lg:w-3/4">
+                <div className="w-full md:w-2/3 lg:w-3/4 gap-3 flex flex-col">
                     <StatCards
-                        className="w-full h-full"
+                        className="w-full h-full !m-0 !shadow-none"
                         employeesTrack={data}
                         yesterdayAttendance={600}
                     />
+
+                    <div className="flex flex-row gap-3">
+                        <div className="w-full md:w-1/2">
+                            <PayRollChartCard
+                                employeeData={employeeData}
+                                unitType={unitType}
+                                customColors={customColors}
+                                legendPosition={legendPosition}
+                                layout={layout}
+                                roundedBars={roundedBars}
+                                tooltipFormatter={tooltipFormatter}
+                                keys={["payable", "overtime", "expense"]}
+                                xAxisLabel={"Employees"}
+                                labelKey={"name"}
+                                yDomain={[0, "auto"]}
+                            />
+                        </div>
+                        <div className="w-full md:w-1/2">
+                            <PayRollChartCard
+                                employeeData={attendanceData}
+                                unitType={"percent"}
+                                customColors={customColors}
+                                legendPosition={legendPosition}
+                                layout={layout}
+                                roundedBars={roundedBars}
+                                tooltipFormatter={depTooltipFormatter}
+                                keys={["present", "absent"]}
+                                xAxisLabel={"department"}
+                                labelKey={"department"}
+                                yDomain={[0, 120]}
+                            />
+                        </div>
+                    </div>
                 </div>
                 <div className="w-full md:w-1/3 lg:w-1/4 mt-3 md:mt-0 overflow-hidden">
                     <TaskCard className="w-full h-full" />
