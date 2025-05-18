@@ -41,6 +41,42 @@ function RecruiteeListCard({ className = "" }) {
             position: "DevOps Engineer",
             status: "Hired",
         },
+        {
+            id: 7,
+            name: "Tom Brown",
+            position: "DevOps Engineer",
+            status: "Hired",
+        },
+        {
+            id: 8,
+            name: "Towdfm Brodwn",
+            position: "DevOps Engineer",
+            status: "Hired",
+        },
+        {
+            id: 9,
+            name: "Towdfm Brodwn",
+            position: "DevOps Engineer",
+            status: "Hired",
+        },
+        {
+            id: 10,
+            name: "Towdfm Brodwn",
+            position: "DevOps Engineer",
+            status: "Hired",
+        },
+        {
+            id: 11,
+            name: "Towdfm Brodwn",
+            position: "DevOps Engineer",
+            status: "Hired",
+        },
+        {
+            id: 12,
+            name: "Tow Brown",
+            position: "It Engineer",
+            status: "Hired",
+        },
     ];
 
     const getStatusColor = (status) => {
@@ -104,7 +140,7 @@ function RecruiteeListCard({ className = "" }) {
             overflowContent={true} // Enable overflow content
             isFixedFooter={false}
         >
-            <div className="flex flex-col w-full relative h-full max-h-56 overflow-scroll custom-scrollbar">
+            <div className="flex flex-col w-full relative h-full max-h-110 overflow-scroll custom-scrollbar">
                 {recruitees.map((recruitee) => (
                     <div
                         key={recruitee.id}

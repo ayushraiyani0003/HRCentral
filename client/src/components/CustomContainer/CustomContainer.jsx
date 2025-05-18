@@ -25,6 +25,7 @@ const CustomContainer = forwardRef(
             footerContent = null,
             footerBorder = true,
             headerBorder = true,
+            headerClassName = "",
             icon = null,
             titleCssClass = "",
             overflowContent=false,
@@ -88,7 +89,9 @@ const CustomContainer = forwardRef(
                     <div
                         className={`container-header ${
                             headerBorder ? "with-border" : ""
-                        }`}
+                        }
+                        ${headerClassName}
+                        `}
                     >
                         {title && (
                             <div className="container-title flex flex-col justify-start">
