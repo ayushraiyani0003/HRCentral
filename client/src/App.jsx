@@ -14,7 +14,7 @@ import { HomeIcon, DashboardIcon } from "./utils/SvgIcon";
 import RolesPermissions from "./features/roles/pages/RolesPermissions";
 import ErrorPage from "./pages/ErrorPage/ErrorPage";
 import SlipGeneratePage from "./features/SlipGenerate/pages/SlipGeneratePage";
-import DashboardPage from "./features/dashboard/pages/DashboardPage";
+import FlexibleDashboardPage from "./features/dashboard/pages/DashboardPage";
 
 const Analytics = () => <div className="p-4">Analytics Content</div>;
 const Projects = () => <div className="p-4">Projects Content</div>;
@@ -66,7 +66,7 @@ function App() {
                                 isAuthenticated ? (
                                     <MainLayout menuItems={menuItems}>
                                         <Routes>
-                                            <Route path="/" element={<DashboardPage />} />
+                                            <Route path="/" element={<FlexibleDashboardPage />} />
                                             <Route path="/analytics" element={<Analytics />} />
                                             <Route path="/projects" element={<Projects />} />
                                             <Route path="/settings" element={<Settings />} />

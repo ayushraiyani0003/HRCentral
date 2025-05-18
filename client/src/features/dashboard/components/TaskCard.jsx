@@ -13,7 +13,7 @@ function TaskCard({ className = "" }) {
     });
 
     const togglePanel = (direction) => {
-        console.log("Toggle panel:", direction);
+        // console.log("Toggle panel:", direction);
         setPanels((prev) => ({
             ...prev,
             [direction]: !prev[direction],

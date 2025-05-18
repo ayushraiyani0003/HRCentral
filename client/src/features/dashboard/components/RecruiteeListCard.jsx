@@ -97,7 +97,7 @@ function RecruiteeListCard({ className = "" }) {
     };
 
     const handleViewDetails = (recruiteeId) => {
-        console.log(`View details for recruitee ${recruiteeId}`);
+        // console.log(`View details for recruitee ${recruiteeId}`);
     };
 
     return (
@@ -127,7 +127,7 @@ function RecruiteeListCard({ className = "" }) {
                     </p>
                     <TextButton
                         text="View All"
-                        onClick={() => console.log("View Recruitee List")}
+                        // onClick={() => console.log("View Recruitee List")}
                         icon={<ArrowRight size={16} />}
                         iconEnd={true}
                     />
