@@ -335,7 +335,7 @@ const CustomBarChart = ({
                 x={x}
                 y={y + gap / 2}
                 width={width}
-                height={height - gap}
+                height={Math.max(0, height - gap)}
                 fill={fill}
                 rx={roundedBars ? barRadius : 0}
                 ry={roundedBars ? barRadius : 0}
@@ -443,6 +443,10 @@ const CustomBarChart = ({
                             }
                             wrapperStyle={{
                                 paddingTop: legendPosition === "0",
+                                top: legendPosition.includes("top")
+                                    ? 0
+                                    : undefined,
+                                left: 60,
                             }}
                         />
                     )}

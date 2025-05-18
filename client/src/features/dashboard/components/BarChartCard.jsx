@@ -1,6 +1,6 @@
 import React from "react";
 import { CustomContainer,CustomBarChart } from "../../../components";
-function PayRollChartCard({
+function BarChartCard({
     employeeData,
     unitType,
     customColors,
@@ -12,11 +12,14 @@ function PayRollChartCard({
     xAxisLabel,
     labelKey,
     yDomain,
+    chartTitle,
+    unitSymbol,
   }
 ) {
     return (
         <CustomContainer 
-        className={`!m-0 !px-3 !py-0`}
+        className={`!m-0 !px-3 !py-2`}
+        title={chartTitle}
         >
             <CustomBarChart
                 data={employeeData}
@@ -47,11 +50,12 @@ function PayRollChartCard({
                         ? "Percentage (%)"
                         : "Value"
                 }
+                unitSymbol={unitSymbol}
                 yDomain={yDomain}
-                height={430}
+                height={360}
             />
         </CustomContainer>
     );
 }
 
-export default PayRollChartCard;
+export default BarChartCard;
