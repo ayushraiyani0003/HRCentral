@@ -6,7 +6,7 @@ import {
     TaskCard,
     TaskPanel,
     RecruiteeListCard,
-    EmploymentStatusCard
+    EmploymentStatusCard,
 } from "../components/";
 import { CustomBarChart } from "../../../components";
 
@@ -197,15 +197,19 @@ function DashboardPage() {
             name: "My Goals",
             component: <GoalsCard className="w-full h-full" />,
         },
-        recruiteeList: {    
+        recruiteeList: {
             id: "RecruiteeList",
             name: "Recruitee List",
-            component: <RecruiteeListCard className="w-full h-full !max-h-[490px]" />,
+            component: (
+                <RecruiteeListCard className="w-full h-full !max-h-[490px]" />
+            ),
         },
         employmentStatus: {
             id: "employmentStatus",
-            name: "Employment Status",  
-            component : <EmploymentStatusCard className="w-full h-full !m-0 !max-h-[300px]" />,
+            name: "Employment Status",
+            component: (
+                <EmploymentStatusCard className="w-full h-full !m-0 !max-h-[300px]" />
+            ),
         },
     };
 
@@ -470,7 +474,7 @@ function DashboardPage() {
                     </div>
                 )}
 
-{console.log(!children, "zone name", zoneName)}
+                {console.log(!children, "zone name", zoneName)}
                 {/* Zone content */}
                 <div className={isHovered ? "opacity-30" : ""}>
                     {children.length === 0 &&
@@ -480,7 +484,7 @@ function DashboardPage() {
                         <div className="flex items-center justify-center h-24 text-blue-600 font-medium">
                             Release to drop component here
                         </div>
-                    ) : (children.length === 0 || !children ) ? (
+                    ) : children.length === 0 || !children ? (
                         <div className="flex items-center justify-center h-24 text-gray-400">
                             Empty zone - Use drag handle to move components here
                         </div>
@@ -580,7 +584,9 @@ function DashboardPage() {
                 <div className="w-full md:w-1/3 lg:w-1/4 mt-3 md:mt-0 overflow-hidden">
                     <div className="flex flex-col gap-3">
                         <DropZone zoneName="sidebar" className="w-full h-full">
-                            {dashboardLayout.sidebar.includes("employmentStatus") && (
+                            {dashboardLayout.sidebar.includes(
+                                "employmentStatus"
+                            ) && (
                                 <DraggableWrapper
                                     key={"employmentStatus"}
                                     componentId={"employmentStatus"}

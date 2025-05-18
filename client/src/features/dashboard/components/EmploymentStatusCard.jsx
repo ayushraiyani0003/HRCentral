@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import { CustomContainer, TextButton } from "../../../components";
-import { ArrowRight } from "lucide-react";
+import { Ellipsis } from "lucide-react";
 
 const DynamicProgressBar = ({ segments = [], legend = false }) => {
     const containerRef = useRef(null);
@@ -177,12 +177,14 @@ function EmploymentStatusCard({ className = "" }) {
                 </svg>
             }
             headerActions={
-                <div className="mb-0 flex flex-row gap-2 items-center">
+                <div className="mb-0 flex flex-row gap-0 items-center">
                     <TextButton
                         text=""
                         onClick={() => console.log("View Recruitee List")}
-                        icon={<ArrowRight size={16} />}
+                        icon={<Ellipsis size={16} />}
                         iconEnd={true}
+                        textClassName="hidden"
+                        className="!p-0 !w-8 !h-8 !rounded-full"
                     />
                 </div>
             }
@@ -193,47 +195,47 @@ function EmploymentStatusCard({ className = "" }) {
             isFixedFooter={false}
             headerClassName={"!mb-2"}
         >
-                {/* Dynamic Progress Bar */}
-                <div className="mb-2">
-                    <DynamicProgressBar segments={employmentData} />
-                </div>
+            {/* Dynamic Progress Bar */}
+            <div className="mb-2">
+                <DynamicProgressBar segments={employmentData} />
+            </div>
 
-                {/* Status Cards Row */}
-                <div className="flex rounded-lg border border-gray-200 overflow-hidden">
-                    {employmentData.map((item, index) => (
-                        <React.Fragment key={index}>
-                            <div className="flex-1 px-4 py-2 text-left">
-                                {/* Color Indicator and Text */}
-                                <div className="flex items-center justify-start gap-2 mb-3">
-                                    <div
-                                        className="w-3 h-3 rounded-sm"
-                                        style={{
-                                            backgroundColor: item.indicator,
-                                        }}
-                                    />
-                                    <span className="text-sm text-gray-600">
-                                        {item.type}
-                                    </span>
-                                </div>
-
-                                {/* Count */}
-                                <div className="text-3xl font-bold text-gray-900 mb-1">
-                                    {item.value}
-                                </div>
-
-                                {/* Percentage */}
-                                <div className="text-[15px] text-gray-500">
-                                    {item.percentage}%
-                                </div>
+            {/* Status Cards Row */}
+            <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+                {employmentData.map((item, index) => (
+                    <React.Fragment key={index}>
+                        <div className="flex-1 px-4 py-2 text-left">
+                            {/* Color Indicator and Text */}
+                            <div className="flex items-center justify-start gap-2 mb-3">
+                                <div
+                                    className="w-3 h-3 rounded-sm"
+                                    style={{
+                                        backgroundColor: item.indicator,
+                                    }}
+                                />
+                                <span className="text-sm text-gray-600">
+                                    {item.type}
+                                </span>
                             </div>
 
-                            {/* Divider */}
-                            {index < employmentData.length - 1 && (
-                                <div className="w-px bg-gray-200" />
-                            )}
-                        </React.Fragment>
-                    ))}
-                </div>
+                            {/* Count */}
+                            <div className="text-3xl font-bold text-gray-900 mb-1">
+                                {item.value}
+                            </div>
+
+                            {/* Percentage */}
+                            <div className="text-[15px] text-gray-500">
+                                {item.percentage}%
+                            </div>
+                        </div>
+
+                        {/* Divider */}
+                        {index < employmentData.length - 1 && (
+                            <div className="w-px bg-gray-200" />
+                        )}
+                    </React.Fragment>
+                ))}
+            </div>
         </CustomContainer>
     );
 }
