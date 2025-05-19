@@ -128,22 +128,43 @@ function DashboardPage() {
         },
     };
 
-    // Helper function to get all non-empty zones in order
-    const getNonEmptyZones = (prefix, count) => {
+    // Helper function to get zones to display - ensures minimum number of zones are shown
+    const getZonesToDisplay = (prefix, totalCount, minToShow) => {
         const zones = [];
-        for (let i = 1; i <= count; i++) {
+        
+        // First, collect all non-empty zones
+        for (let i = 1; i <= totalCount; i++) {
             const zoneName = `${prefix}${i}`;
             if (dashboardLayout[zoneName] && dashboardLayout[zoneName].length > 0) {
                 zones.push(zoneName);
             }
         }
+        
+        // If we have fewer zones than the minimum required, add empty zones
+        if (zones.length < minToShow) {
+            // Find the next available empty zones
+            for (let i = 1; i <= totalCount && zones.length < minToShow; i++) {
+                const zoneName = `${prefix}${i}`;
+                if (!zones.includes(zoneName)) {
+                    zones.push(zoneName);
+                }
+            }
+        }
+        
+        // Sort zones to maintain proper order (main1, main2, etc.)
+        zones.sort((a, b) => {
+            const numA = parseInt(a.replace(prefix, ''));
+            const numB = parseInt(b.replace(prefix, ''));
+            return numA - numB;
+        });
+        
         return zones;
     };
 
-    // Get occupied zones
-    const mainZones = getNonEmptyZones("main", 6);
-    const sidebarZones = getNonEmptyZones("sidebar", 5);
-    const bottomZones = getNonEmptyZones("bottomZone", 6);
+    // Get zones to display with minimum requirements
+    const mainZones = getZonesToDisplay("main", 7, 7); // At least 3 main zones
+    const sidebarZones = getZonesToDisplay("sidebar", 5, 4); // At least 2 sidebar zones
+    const bottomZones = getZonesToDisplay("bottomZone", 6, 3); // No minimum for bottom zones
 
     // Draggable Component Wrapper
     const DraggableWrapper = ({
@@ -226,6 +247,9 @@ function DashboardPage() {
     const DropZone = ({ zoneName, children, className = "" }) => {
         const isHovered =
             hoveredZone === zoneName && isLongPress && draggedItem;
+        
+        // Check if the zone is empty
+        const isEmpty = !dashboardLayout[zoneName] || dashboardLayout[zoneName].length === 0;
 
         return (
             <div
@@ -234,6 +258,8 @@ function DashboardPage() {
                         ? "border-green-400 bg-green-50 scale-102"
                         : isLongPress && draggedItem
                         ? "border-blue-400 bg-blue-50"
+                        : isEmpty
+                        ? "border-gray-400 bg-gray-50" // Style for empty zones
                         : "border-gray-300"
                 }`}
                 data-drop-zone={zoneName}
@@ -260,16 +286,17 @@ function DashboardPage() {
 
                 {/* Zone content */}
                 <div className={isHovered ? "opacity-30" : ""}>
-                    {children.length === 0 &&
-                    isLongPress &&
-                    draggedItem &&
-                    !isHovered ? (
+                    {isEmpty && isLongPress && draggedItem && !isHovered ? (
                         <div className="flex items-center justify-center h-24 text-blue-600 font-medium">
                             Release to drop component here
                         </div>
-                    ) : children.length === 0 ? (
+                    ) : isEmpty ? (
                         <div className="flex items-center justify-center h-24 text-gray-400">
-                            Empty zone - Use drag handle to move components here
+                            <div className="text-center">
+                                <div className="text-lg mb-1">📦</div>
+                                <div className="text-sm">Empty zone - Drag components here</div>
+                                <div className="text-xs text-gray-300 mt-1">{zoneName}</div>
+                            </div>
                         </div>
                     ) : (
                         children
@@ -282,7 +309,7 @@ function DashboardPage() {
     // Render components for a specific zone
     const renderZoneComponents = (zoneName) => {
         if (!dashboardLayout[zoneName] || dashboardLayout[zoneName].length === 0) {
-            return null;
+            return [];
         }
 
         return dashboardLayout[zoneName].map((componentId) => {
@@ -318,98 +345,30 @@ function DashboardPage() {
             <div className="w-full flex flex-col md:flex-row gap-3 mb-6">
                 <div className="w-full md:w-2/3 lg:w-3/4 gap-3 flex flex-col">
                     {/* Stats Area - Main1 */}
-                    {mainZones.includes("main1") && (
-                        <DropZone zoneName="main1" className="w-full">
-                            {renderZoneComponents("main1")}
-                        </DropZone>
-                    )}
+                    <DropZone zoneName="main1" className="w-full">
+                        {renderZoneComponents("main1")}
+                    </DropZone>
 
-                    {/* Charts Area */}
+                    {/* Charts Area - Show at least 6 main zones */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {/* First Chart - Main2 */}
-                        {mainZones.includes("main2") && (
-                            <div>
-                                <DropZone zoneName="main2" className="w-full h-full">
-                                    {renderZoneComponents("main2")}
+                        {mainZones.slice(1).map((zoneName) => (
+                            <div key={zoneName} className="w-full h-full relative" >
+                                <DropZone zoneName={zoneName} className="w-full h-full">
+                                    {renderZoneComponents(zoneName)}
                                 </DropZone>
                             </div>
-                        )}
-
-                        {/* Second Chart - Main3 */}
-                        {mainZones.includes("main3") && (
-                            <div>
-                                <DropZone zoneName="main3" className="w-full h-full">
-                                    {renderZoneComponents("main3")}
-                                </DropZone>
-                            </div>
-                        )}
-
-                        {/* Third Chart - Main4 */}
-                        {mainZones.includes("main4") && (
-                            <div>
-                                <DropZone zoneName="main4" className="w-full h-full">
-                                    {renderZoneComponents("main4")}
-                                </DropZone>
-                            </div>
-                        )}
-
-                        {/* Fourth Chart - Main5 */}
-                        {mainZones.includes("main5") && (
-                            <div>
-                                <DropZone zoneName="main5" className="w-full h-full">
-                                    {renderZoneComponents("main5")}
-                                </DropZone>
-                            </div>
-                        )}
-
-                        {/* Fifth Chart - Main6 */}
-                        {mainZones.includes("main6") && (
-                            <div>
-                                <DropZone zoneName="main6" className="w-full h-full">
-                                    {renderZoneComponents("main6")}
-                                </DropZone>
-                            </div>
-                        )}
+                        ))}
                     </div>
                 </div>
 
-                {/* Sidebar Area */}
+                {/* Sidebar Area - Show at least 5 sidebar zones */}
                 <div className="w-full md:w-1/3 lg:w-1/4 mt-3 md:mt-0 overflow-hidden">
                     <div className="flex flex-col gap-3">
-                        {/* Sidebar1 */}
-                        {sidebarZones.includes("sidebar1") && (
-                            <DropZone zoneName="sidebar1" className="w-full h-full">
-                                {renderZoneComponents("sidebar1")}
+                        {sidebarZones.map((zoneName) => (
+                            <DropZone key={zoneName} zoneName={zoneName} className="w-full h-full">
+                                {renderZoneComponents(zoneName)}
                             </DropZone>
-                        )}
-                        
-                        {/* Sidebar2 */}
-                        {sidebarZones.includes("sidebar2") && (
-                            <DropZone zoneName="sidebar2" className="w-full h-full">
-                                {renderZoneComponents("sidebar2")}
-                            </DropZone>
-                        )}
-                        
-                        {/* Sidebar3 */}
-                        {sidebarZones.includes("sidebar3") && (
-                            <DropZone zoneName="sidebar3" className="w-full h-full">
-                                {renderZoneComponents("sidebar3")}
-                            </DropZone>
-                        )}
-                        
-                        {/* Sidebar4 */}
-                        {sidebarZones.includes("sidebar4") && (
-                            <DropZone zoneName="sidebar4" className="w-full h-full">
-                                {renderZoneComponents("sidebar4")}
-                            </DropZone>
-                        )}
-                        
-                        {/* Sidebar5 */}
-                        {sidebarZones.includes("sidebar5") && (
-                            <DropZone zoneName="sidebar5" className="w-full h-full">
-                                {renderZoneComponents("sidebar5")}
-                            </DropZone>
-                        )}
+                        ))}
                     </div>
                 </div>
             </div>
@@ -423,54 +382,35 @@ function DashboardPage() {
                         </h3>
 
                         {/* Top Row - 3 columns */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                            {/* BottomZone1 */}
-                            {bottomZones.includes("bottomZone1") && (
-                                <DropZone zoneName="bottomZone1" className="col-span-1">
-                                    {renderZoneComponents("bottomZone1")}
-                                </DropZone>
-                            )}
-                            
-                            {/* BottomZone2 */}
-                            {bottomZones.includes("bottomZone2") && (
-                                <DropZone zoneName="bottomZone2" className="col-span-1">
-                                    {renderZoneComponents("bottomZone2")}
-                                </DropZone>
-                            )}
-                            
-                            {/* BottomZone3 */}
-                            {bottomZones.includes("bottomZone3") && (
-                                <DropZone zoneName="bottomZone3" className="col-span-1">
-                                    {renderZoneComponents("bottomZone3")}
-                                </DropZone>
-                            )}
-                        </div>
+                        {bottomZones.slice(0, 3).length > 0 && (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                {bottomZones.slice(0, 3).map((zoneName) => (
+                                    <DropZone key={zoneName} zoneName={zoneName} className="col-span-1">
+                                        {renderZoneComponents(zoneName)}
+                                    </DropZone>
+                                ))}
+                            </div>
+                        )}
 
                         {/* Middle Row - 2 columns */}
-                        {(bottomZones.includes("bottomZone4") || bottomZones.includes("bottomZone5")) && (
+                        {bottomZones.slice(3, 5).length > 0 && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                                {/* BottomZone4 */}
-                                {bottomZones.includes("bottomZone4") && (
-                                    <DropZone zoneName="bottomZone4" className="col-span-1">
-                                        {renderZoneComponents("bottomZone4")}
+                                {bottomZones.slice(3, 5).map((zoneName) => (
+                                    <DropZone key={zoneName} zoneName={zoneName} className="col-span-1">
+                                        {renderZoneComponents(zoneName)}
                                     </DropZone>
-                                )}
-                                
-                                {/* BottomZone5 */}
-                                {bottomZones.includes("bottomZone5") && (
-                                    <DropZone zoneName="bottomZone5" className="col-span-1">
-                                        {renderZoneComponents("bottomZone5")}
-                                    </DropZone>
-                                )}
+                                ))}
                             </div>
                         )}
 
                         {/* Bottom Row - 1 full width column */}
-                        {bottomZones.includes("bottomZone6") && (
+                        {bottomZones.slice(5, 6).length > 0 && (
                             <div className="grid grid-cols-1 gap-4">
-                                <DropZone zoneName="bottomZone6" className="col-span-1">
-                                    {renderZoneComponents("bottomZone6")}
-                                </DropZone>
+                                {bottomZones.slice(5, 6).map((zoneName) => (
+                                    <DropZone key={zoneName} zoneName={zoneName} className="col-span-1">
+                                        {renderZoneComponents(zoneName)}
+                                    </DropZone>
+                                ))}
                             </div>
                         )}
                     </div>
@@ -506,6 +446,10 @@ function DashboardPage() {
                     <li>
                         • Drop zones turn green when hovered during drag
                         mode
+                    </li>
+                    <li>
+                        • Empty zones are clearly marked and ready to receive
+                        components
                     </li>
                 </ul>
             </div>
