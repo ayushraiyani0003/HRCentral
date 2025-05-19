@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Header, Sidebar } from "../components";
 
-const MainLayout = ({ children, menuItems }) => {
+const MainLayout = ({ children, menuItems, selected }) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const sidebarRef = useRef(null);
     const mainContentRef = useRef(null);
@@ -77,6 +77,7 @@ const MainLayout = ({ children, menuItems }) => {
                     isOpen={sidebarOpen}
                     onCloseSidebar={closeSidebar}
                     menuItems={menuItems}
+                    selected={selected}
                 />
             </div>
 
