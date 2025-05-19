@@ -22,7 +22,7 @@ const FloatingActionButton = () => {
         <div className="fixed bottom-6 right-6 z-50">
             {/* Options Menu */}
             <div
-                className={`absolute bottom-16 right-1 transition-all duration-300 ${
+                className={`absolute bottom-16 right-0 transition-all duration-300 ${
                     isOpen
                         ? "opacity-100 scale-100"
                         : "opacity-0 scale-95 pointer-events-none"

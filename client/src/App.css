@@ -63,3 +63,26 @@ input[type="password"] {
     appearance: none;
 }
 
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 100, 100, 0.7) transparent; /* darker thumb */
+}
+
+/* WebKit-based browsers */
+*::-webkit-scrollbar {
+  width: 7px; /* slightly bigger */
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: rgba(100, 100, 100, 0.5);
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-button {
+  display: none;
+}
