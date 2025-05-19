@@ -7,6 +7,7 @@ import RecruiteeListCard from "./RecruiteeListCard";
 import EmploymentStatusCard from "./EmploymentStatusCard";
 import InterviewVsHiredCard from "./InterviewVsHiredCard"
 import HiringStatusCard from "./HiringStatusCard";
+import FloatingActionButton from "./FloatingActionButton";
 
 export {
     StatCards,
@@ -17,5 +18,6 @@ export {
     RecruiteeListCard,
     EmploymentStatusCard,
     InterviewVsHiredCard,
-    HiringStatusCard
+    HiringStatusCard,
+    FloatingActionButton,
 };

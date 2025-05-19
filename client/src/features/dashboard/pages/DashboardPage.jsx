@@ -9,6 +9,7 @@ import {
     EmploymentStatusCard,
     InterviewVsHiredCard,
     HiringStatusCard,
+    FloatingActionButton,
 } from "../components";
 import { CustomBarChart } from "../../../components";
 import useEmployeeDashboardData from "../hooks/useDashboardHook";
@@ -506,6 +507,9 @@ function DashboardPage() {
                     </li>
                 </ul>
             </div>
+
+            {/* in thid disply the one floating button in the bottom right corner, and open transperent option list bottom to top, and only icon button with rounde circle is disply and on hover that button use can and name is display.  this floating button always top of all elements, and fixed in thair position.*/}
+            <FloatingActionButton />
         </div>
     );
 }
