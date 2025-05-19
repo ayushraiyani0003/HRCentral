@@ -84,7 +84,7 @@ const hiringStageData = {
     }, [timePeriod]);
 
     const tooltipFormatter = (value) => `${value}`;
-    const colors = ["#FFB347", "#6495ED", "#3CB371", "#FF6F61", "#8B0000"];
+    const colors = ["#73946B", "#6495ED", "#3CB371", "#FF6F61", "#8B0000"];
 
     return (
         <CustomContainer
@@ -129,6 +129,7 @@ const hiringStageData = {
                     stacked={false}
                     colors={colors}
                     colorByData={true}
+                    isDifferentColor={true}
                     legendPosition="topright"
                     layout="horizontal"
                     roundedBars={true}
@@ -137,7 +138,7 @@ const hiringStageData = {
                     }
                     yTickCount={8}
                     tooltipFormatter={tooltipFormatter}
-                    barSize={20}
+                    barSize={45}
                     isGridDisplay={true}
                     responsive={true}
                     showLegend={false}

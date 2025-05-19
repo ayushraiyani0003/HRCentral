@@ -40,6 +40,7 @@ const CustomBarChart = ({
     // Colors
     colors = DEFAULT_COLORS,
     colorByData = false, // If true, colors bars based on data values
+    isDifferentColor = false, // If true, colors bars differently
     colorFn = null, // Custom function to determine bar colors
 
     // Axis configuration
@@ -489,7 +490,7 @@ const CustomBarChart = ({
                             )}
 
                             {/* Only add Cells if colorByData is true, otherwise use the color from colors array */}
-                            {colorByData
+                            {colorByData || isDifferentColor
                                 ? processedData.map((entry, index) => (
                                       <div className="mb-1">
                                           <Cell

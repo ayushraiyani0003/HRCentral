@@ -16,9 +16,6 @@ function BarChartCard({
     unitSymbol,
   }
 ) {
-    console.log(unitType);
-    console.log(tooltipFormatter);
-    
     return (
         <CustomContainer 
         className={`!m-0 !px-3 !py-2`}

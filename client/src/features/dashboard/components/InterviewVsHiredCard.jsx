@@ -1,37 +1,41 @@
 import React, { useState, useEffect } from "react";
-import { CustomContainer, CustomDropdown, CustomBarChart } from "../../../components";
+import {
+    CustomContainer,
+    CustomDropdown,
+    CustomBarChart,
+} from "../../../components";
 
 function InterviewVsHiredCard({ className = "" }) {
     // State for department/designation type
     const [viewType, setViewType] = useState("department");
-    
+
     // State for time period
     const [timePeriod, setTimePeriod] = useState("thisMonth");
-    
+
     // Sample data for interviews vs hired - ensure all data points have both properties
     const [employeeData, setEmployeeData] = useState([
         { name: "HR", interviewed: 30, hired: 10 },
         { name: "Engineering", interviewed: 45, hired: 15 },
         { name: "Marketing", interviewed: 25, hired: 8 },
         { name: "Sales", interviewed: 35, hired: 12 },
-        { name: "Finance", interviewed: 20, hired: 5 }
+        { name: "Finance", interviewed: 20, hired: 5 },
     ]);
-    
+
     // Sample data for designation view - ensure all data points have both properties
     const designationData = [
         { name: "Manager", interviewed: 18, hired: 5 },
         { name: "Developer", interviewed: 40, hired: 12 },
         { name: "Designer", interviewed: 22, hired: 7 },
         { name: "Analyst", interviewed: 25, hired: 8 },
-        { name: "Assistant", interviewed: 15, hired: 4 }
+        { name: "Assistant", interviewed: 15, hired: 4 },
     ];
-    
+
     // Options for view type dropdown
     const viewTypeOptions = [
         { label: "Department", value: "department" },
-        { label: "Designation", value: "designation" }
+        { label: "Designation", value: "designation" },
     ];
-    
+
     // Options for time period dropdown
     const timePeriodOptions = [
         { label: "Today", value: "today" },
@@ -41,9 +45,9 @@ function InterviewVsHiredCard({ className = "" }) {
         { label: "This Month", value: "thisMonth" },
         { label: "Last Month", value: "lastMonth" },
         { label: "This Year", value: "thisYear" },
-        { label: "Last Year", value: "lastYear" }
+        { label: "Last Year", value: "lastYear" },
     ];
-    
+
     // Update data based on view type
     useEffect(() => {
         if (viewType === "department") {
@@ -52,29 +56,28 @@ function InterviewVsHiredCard({ className = "" }) {
                 { name: "Engineering", interviewed: 45, hired: 15 },
                 { name: "Marketing", interviewed: 25, hired: 8 },
                 { name: "Sales", interviewed: 35, hired: 12 },
-                { name: "Finance", interviewed: 20, hired: 5 }
+                { name: "Finance", interviewed: 20, hired: 5 },
             ]);
         } else {
             setEmployeeData(designationData);
         }
     }, [viewType]);
-    
+
     // In a real application, you would fetch data based on timePeriod as well
     useEffect(() => {
         // Simulate data fetch based on time period
-        console.log(`Fetching data for time period: ${timePeriod}`);
+        // console.log(`Fetching data for time period: ${timePeriod}`);
         // This would be an API call in a real application
     }, [timePeriod]);
-    
+
     // Chart configuration
     const unitType = "number";
     const legendPosition = "topright";
     const layout = "horizontal"; // Note: using lowercase to match typical React props convention
     const roundedBars = true;
-    
+
     const customColors = ["#F79B72", "rgba(42, 71, 89, 0.85)"];
 
-    
     // Tooltip formatter function
     const tooltipFormatter = (value) => {
         switch (unitType) {
@@ -88,13 +91,13 @@ function InterviewVsHiredCard({ className = "" }) {
                 return value;
         }
     };
-    
+
     // Explicitly define keys and labelKey
     const keys = ["interviewed", "hired"];
     const labelKey = "name";
     const xAxisLabel = viewType === "department" ? "Department" : "Designation";
-    const yDomain = [0, 'auto']; // Using 'auto' for max value
-    
+    const yDomain = [0, "auto"]; // Using 'auto' for max value
+
     return (
         <CustomContainer
             className={`!m-0 !px-3 !py-2 h-full relative flex flex-col ${className}`}
@@ -116,7 +119,7 @@ function InterviewVsHiredCard({ className = "" }) {
                 </svg>
             }
             headerActions={
-                <div className="mb-0 flex flex-row gap-2 items-center">
+                <div className="mb-0 flex flex-row gap-2 items-center flex-wrap justify-end">
                     <CustomDropdown
                         options={viewTypeOptions}
                         value={viewType}
