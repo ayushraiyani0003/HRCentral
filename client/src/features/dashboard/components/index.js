@@ -5,6 +5,8 @@ import BarChartCard from "./BarChartCard";
 import GoalsCard from "./GoalsCard";
 import RecruiteeListCard from "./RecruiteeListCard";
 import EmploymentStatusCard from "./EmploymentStatusCard";
+import InterviewVsHiredCard from "./InterviewVsHiredCard"
+import HiringStatusCard from "./HiringStatusCard";
 
 export {
     StatCards,
@@ -14,4 +16,6 @@ export {
     GoalsCard,
     RecruiteeListCard,
     EmploymentStatusCard,
+    InterviewVsHiredCard,
+    HiringStatusCard
 };

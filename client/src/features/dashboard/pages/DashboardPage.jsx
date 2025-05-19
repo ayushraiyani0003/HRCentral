@@ -7,6 +7,8 @@ import {
     TaskPanel,
     RecruiteeListCard,
     EmploymentStatusCard,
+    InterviewVsHiredCard,
+    HiringStatusCard,
 } from "../components";
 import { CustomBarChart } from "../../../components";
 import useEmployeeDashboardData from "../hooks/useDashboardHook";
@@ -119,27 +121,48 @@ function DashboardPage() {
         recruiteeList: {
             id: "RecruiteeList",
             name: "Recruitee List",
-            component: <RecruiteeListCard className="w-full h-full !max-h-[490px]" />,
+            component: (
+                <RecruiteeListCard className="w-full h-full !max-h-[490px]" />
+            ),
         },
         employmentStatus: {
             id: "employmentStatus",
             name: "Employment Status",
-            component: <EmploymentStatusCard className="w-full h-full !m-0 !max-h-[300px]" />,
+            component: (
+                <EmploymentStatusCard className="w-full h-full !m-0 !max-h-[300px]" />
+            ),
+        },
+        interviewVsHired: {
+            id: "interviewVsHired",
+            name: "Interview Vs Hired",
+            component: (
+                <InterviewVsHiredCard className="w-full h-full !m-0 !max-h-[490px]" />
+            ),
+        },
+        hiringStatus: {
+            id: "hiringStatus",
+            name: "Hiring Status",
+            component: (
+                <HiringStatusCard className="w-full h-full !m-0 !max-h-[490px]" />
+            ),
         },
     };
 
     // Helper function to get zones to display - ensures minimum number of zones are shown
     const getZonesToDisplay = (prefix, totalCount, minToShow) => {
         const zones = [];
-        
+
         // First, collect all non-empty zones
         for (let i = 1; i <= totalCount; i++) {
             const zoneName = `${prefix}${i}`;
-            if (dashboardLayout[zoneName] && dashboardLayout[zoneName].length > 0) {
+            if (
+                dashboardLayout[zoneName] &&
+                dashboardLayout[zoneName].length > 0
+            ) {
                 zones.push(zoneName);
             }
         }
-        
+
         // If we have fewer zones than the minimum required, add empty zones
         if (zones.length < minToShow) {
             // Find the next available empty zones
@@ -150,14 +173,14 @@ function DashboardPage() {
                 }
             }
         }
-        
+
         // Sort zones to maintain proper order (main1, main2, etc.)
         zones.sort((a, b) => {
-            const numA = parseInt(a.replace(prefix, ''));
-            const numB = parseInt(b.replace(prefix, ''));
+            const numA = parseInt(a.replace(prefix, ""));
+            const numB = parseInt(b.replace(prefix, ""));
             return numA - numB;
         });
-        
+
         return zones;
     };
 
@@ -247,9 +270,11 @@ function DashboardPage() {
     const DropZone = ({ zoneName, children, className = "" }) => {
         const isHovered =
             hoveredZone === zoneName && isLongPress && draggedItem;
-        
+
         // Check if the zone is empty
-        const isEmpty = !dashboardLayout[zoneName] || dashboardLayout[zoneName].length === 0;
+        const isEmpty =
+            !dashboardLayout[zoneName] ||
+            dashboardLayout[zoneName].length === 0;
 
         return (
             <div
@@ -294,8 +319,12 @@ function DashboardPage() {
                         <div className="flex items-center justify-center h-24 text-gray-400">
                             <div className="text-center">
                                 <div className="text-lg mb-1">📦</div>
-                                <div className="text-sm">Empty zone - Drag components here</div>
-                                <div className="text-xs text-gray-300 mt-1">{zoneName}</div>
+                                <div className="text-sm">
+                                    Empty zone - Drag components here
+                                </div>
+                                <div className="text-xs text-gray-300 mt-1">
+                                    {zoneName}
+                                </div>
                             </div>
                         </div>
                     ) : (
@@ -308,13 +337,16 @@ function DashboardPage() {
 
     // Render components for a specific zone
     const renderZoneComponents = (zoneName) => {
-        if (!dashboardLayout[zoneName] || dashboardLayout[zoneName].length === 0) {
+        if (
+            !dashboardLayout[zoneName] ||
+            dashboardLayout[zoneName].length === 0
+        ) {
             return [];
         }
 
         return dashboardLayout[zoneName].map((componentId) => {
             if (!components[componentId]) return null;
-            
+
             return (
                 <DraggableWrapper
                     key={componentId}
@@ -352,8 +384,14 @@ function DashboardPage() {
                     {/* Charts Area - Show at least 6 main zones */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {mainZones.slice(1).map((zoneName) => (
-                            <div key={zoneName} className="w-full h-full relative" >
-                                <DropZone zoneName={zoneName} className="w-full h-full">
+                            <div
+                                key={zoneName}
+                                className="w-full h-full relative"
+                            >
+                                <DropZone
+                                    zoneName={zoneName}
+                                    className="w-full h-full"
+                                >
                                     {renderZoneComponents(zoneName)}
                                 </DropZone>
                             </div>
@@ -365,7 +403,11 @@ function DashboardPage() {
                 <div className="w-full md:w-1/3 lg:w-1/4 mt-3 md:mt-0 overflow-hidden">
                     <div className="flex flex-col gap-3">
                         {sidebarZones.map((zoneName) => (
-                            <DropZone key={zoneName} zoneName={zoneName} className="w-full h-full">
+                            <DropZone
+                                key={zoneName}
+                                zoneName={zoneName}
+                                className="w-full h-full"
+                            >
                                 {renderZoneComponents(zoneName)}
                             </DropZone>
                         ))}
@@ -385,7 +427,11 @@ function DashboardPage() {
                         {bottomZones.slice(0, 3).length > 0 && (
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                                 {bottomZones.slice(0, 3).map((zoneName) => (
-                                    <DropZone key={zoneName} zoneName={zoneName} className="col-span-1">
+                                    <DropZone
+                                        key={zoneName}
+                                        zoneName={zoneName}
+                                        className="col-span-1"
+                                    >
                                         {renderZoneComponents(zoneName)}
                                     </DropZone>
                                 ))}
@@ -396,7 +442,11 @@ function DashboardPage() {
                         {bottomZones.slice(3, 5).length > 0 && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                                 {bottomZones.slice(3, 5).map((zoneName) => (
-                                    <DropZone key={zoneName} zoneName={zoneName} className="col-span-1">
+                                    <DropZone
+                                        key={zoneName}
+                                        zoneName={zoneName}
+                                        className="col-span-1"
+                                    >
                                         {renderZoneComponents(zoneName)}
                                     </DropZone>
                                 ))}
@@ -407,7 +457,11 @@ function DashboardPage() {
                         {bottomZones.slice(5, 6).length > 0 && (
                             <div className="grid grid-cols-1 gap-4">
                                 {bottomZones.slice(5, 6).map((zoneName) => (
-                                    <DropZone key={zoneName} zoneName={zoneName} className="col-span-1">
+                                    <DropZone
+                                        key={zoneName}
+                                        zoneName={zoneName}
+                                        className="col-span-1"
+                                    >
                                         {renderZoneComponents(zoneName)}
                                     </DropZone>
                                 ))}
@@ -424,12 +478,12 @@ function DashboardPage() {
                 </h4>
                 <ul className="text-blue-700 text-sm space-y-1">
                     <li>
-                        • Look for the drag handle icon (⠇) at the top-right
-                        of each component
+                        • Look for the drag handle icon (⠇) at the top-right of
+                        each component
                     </li>
                     <li>
-                        • Press and hold (1 second) on the handle to enter
-                        drag mode
+                        • Press and hold (1 second) on the handle to enter drag
+                        mode
                     </li>
                     <li>
                         • The component will follow your mouse cursor as you
@@ -440,12 +494,11 @@ function DashboardPage() {
                         component placement
                     </li>
                     <li>
-                        • Release the mouse button while hovering over a
-                        zone to drop the component
+                        • Release the mouse button while hovering over a zone to
+                        drop the component
                     </li>
                     <li>
-                        • Drop zones turn green when hovered during drag
-                        mode
+                        • Drop zones turn green when hovered during drag mode
                     </li>
                     <li>
                         • Empty zones are clearly marked and ready to receive
