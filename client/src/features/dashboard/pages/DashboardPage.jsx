@@ -106,6 +106,7 @@ function DashboardPage() {
                     yDomain={[0, "auto"]}
                     chartTitle="Employee Salary"
                     unitSymbol="₹"
+                    stackedBarGap={3}
                 />
             ),
         },

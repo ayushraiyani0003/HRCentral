@@ -14,6 +14,7 @@ function BarChartCard({
     yDomain,
     chartTitle,
     unitSymbol,
+    stackedBarGap
   }
 ) {
     return (
@@ -53,6 +54,7 @@ function BarChartCard({
                 unitSymbol={unitSymbol}
                 yDomain={yDomain}
                 height={360}
+                stackedBarGap={stackedBarGap}
             />
         </CustomContainer>
     );

@@ -108,6 +108,9 @@ const CustomBarChart = ({
 
     // Reference lines
     referenceLines = [],
+
+    //stackedBar gap for display bars
+    stackedBarGap = 2,
 }) => {
     const [processedData, setProcessedData] = useState([]);
     const [activeIndex, setActiveIndex] = useState(null);
@@ -329,14 +332,13 @@ const CustomBarChart = ({
 
     const GappedBar = (props) => {
         const { x, y, width, height, fill } = props;
-        const gap = 2; // Adjust gap between stacked segments
 
         return (
             <rect
                 x={x}
-                y={y + gap / 2}
+                y={y + stackedBarGap / 2}
                 width={width}
-                height={Math.max(0, height - gap)}
+                height={Math.max(0, height - stackedBarGap)}
                 fill={fill}
                 rx={roundedBars ? barRadius : 0}
                 ry={roundedBars ? barRadius : 0}
