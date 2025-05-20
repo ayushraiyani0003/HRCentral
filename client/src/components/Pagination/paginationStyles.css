@@ -60,21 +60,10 @@
 .pagination-arrow {
     width: 0.5rem;
     height: 0.5rem;
-    border-style: solid;
+    /* border-style: solid; */
     border-width: 0 2px 2px 0;
     display: inline-block;
 }
-
-.left-arrow {
-    transform: rotate(135deg);
-    margin-right: 0.25rem;
-}
-
-.right-arrow {
-    transform: rotate(-45deg);
-    margin-left: 0.25rem;
-}
-
 /* Page Buttons Container */
 .pagination-pages {
     display: flex;

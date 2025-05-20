@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./paginationStyles.css";
+import {LeftArrowIcon, RightArrowIcon} from "../../utils/SvgIcon"; // Adjust the import path as needed
 
 const Pagination = ({
     currentPage = 1,
@@ -141,8 +142,8 @@ const Pagination = ({
                     disabled={currentPage <= 1 || disableNavigation}
                     aria-label="Go to previous page"
                 >
-                    <span className="pagination-arrow left-arrow"></span>
-                    <span className="pagination-button-text">
+                    <span className="pagination-button-text flex flex-row">
+                        <LeftArrowIcon width={16}/>
                         {previousLabel}
                     </span>
                 </button>
@@ -183,8 +184,7 @@ const Pagination = ({
                     disabled={currentPage >= totalPages || disableNavigation}
                     aria-label="Go to next page"
                 >
-                    <span className="pagination-button-text">{nextLabel}</span>
-                    <span className="pagination-arrow right-arrow"></span>
+                    <span className="pagination-button-text flex flex-row">{nextLabel} <RightArrowIcon width={16}/></span>
                 </button>
             </div>
 
