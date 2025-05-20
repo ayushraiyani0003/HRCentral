@@ -86,6 +86,12 @@ const mockEmployees = [
             "Spanish (Intermediate)",
             "French (Basic)",
         ],
+        referInformation: {
+            punchCode: "EMP002",
+            name: "John Doe",
+            relationship: "Friend",
+            phone: "+1-202-555-0123",
+        },
     }
 ];
 

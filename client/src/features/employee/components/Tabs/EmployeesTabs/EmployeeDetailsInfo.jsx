@@ -1,12 +1,266 @@
 import React, { useState } from "react";
-import { CustomContainer } from "../../../../../components";
-import {EditIcon} from "../../../../../utils/SvgIcon";
+import { EditIcon, CopyIcon } from "../../../../../utils/SvgIcon";
 
-function EmployeeDetailsInfo({ selectedEmployee }) {
+// Reusable components
+const CustomContainer = ({ children, title, headerActions, className }) => (
+    <div
+        className={`bg-white rounded-md border border-gray-200 shadow-sm ${
+            className || ""
+        }`}
+    >
+        <div className="flex flex-wrap justify-between items-center px-3 py-3 border-b border-gray-200">
+            <h3 className="font-medium text-gray-800 mb-1 md:mb-0">{title}</h3>
+            {headerActions && <div>{headerActions}</div>}
+        </div>
+        <div className="p-3 md:p-4">{children}</div>
+    </div>
+);
+
+const InfoItem = ({ label, value }) => (
+    <div className="flex flex-col sm:flex-row sm:items-center sm:gap-1 mb-2 sm:mb-0">
+        <p className="text-sm text-gray-500">{label} :</p>
+        <p className="font-medium">{value}</p>
+    </div>
+);
+
+const CopyableText = ({ label, value }) => {
+    const [copied, setCopied] = useState(false);
+
+    const copyToClipboard = () => {
+        navigator.clipboard.writeText(value);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    return (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:gap-1 mb-2 sm:mb-0">
+            <p className="text-sm text-gray-500">{label} :</p>
+            <div className="flex items-center">
+                <p className="font-medium mr-1 break-all">{value}</p>
+                <button
+                    title={copied ? "Copied!" : "Copy to Clipboard"}
+                    onClick={copyToClipboard}
+                    className="text-gray-500 hover:text-blue-600 flex-shrink-0"
+                    aria-label="Copy to clipboard"
+                >
+                    <CopyIcon className="h-4 w-4" />
+                </button>
+            </div>
+        </div>
+    );
+};
+
+const Badge = ({ text, color = "blue" }) => {
+    const colorMap = {
+        blue: "bg-blue-50 text-blue-800 border-blue-200",
+        green: "bg-green-50 text-green-800 border-green-200",
+        purple: "bg-purple-50 text-purple-800 border-purple-200",
+    };
+
+    return (
+        <span
+            className={`${colorMap[color]} rounded-md px-2 py-1 text-sm m-1 md:m-2 border inline-block`}
+        >
+            {text}
+        </span>
+    );
+};
+
+const EditButton = () => (
+    <button className="px-2 py-1 flex flex-row items-center rounded-md text-blue-600 bg-blue-50 text-xs font-medium border border-blue-600">
+        <EditIcon className="mr-1 h-3.5 w-3.5" />
+        <span>Edit</span>
+    </button>
+);
+
+// Tab sections
+const PersonalInformationSection = ({ employee }) => (
+    <CustomContainer
+        title="Personal Information"
+        headerActions={<EditButton />}
+        className="mb-3"
+    >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 text-sm">
+            <CopyableText label="Date of Birth" value={employee.dateOfBirth} />
+            <InfoItem label="Gender" value={employee.gender} />
+            <InfoItem label="Nationality" value={employee.nationality} />
+            <InfoItem label="Marital Status" value={employee.maritalStatus} />
+            <InfoItem label="Joined Date" value={employee.joinedDate} />
+        </div>
+    </CustomContainer>
+);
+
+const IdentificationSection = ({ employee }) => (
+    <CustomContainer
+        title="Identification"
+        headerActions={<EditButton />}
+        className="mb-3"
+    >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 text-sm">
+            <CopyableText label="National ID" value={employee.nationalId} />
+            <CopyableText
+                label="Social Insurance Number"
+                value={employee.socialInsuranceNumber}
+            />
+            <CopyableText
+                label="Personal Tax ID"
+                value={employee.personalTaxId}
+            />
+            <CopyableText
+                label="Health Insurance Number"
+                value={employee.healthInsuranceNumber}
+            />
+            <CopyableText
+                label="Driving License"
+                value={employee.drivingLicense}
+            />
+        </div>
+    </CustomContainer>
+);
+
+const ContactInformationSection = ({ employee }) => (
+    <CustomContainer
+        title="Contact Information"
+        headerActions={<EditButton />}
+        className="mb-3"
+    >
+        <div className="grid grid-cols-1 gap-3 mb-3 md:mb-4 text-sm">
+            <CopyableText label="Address" value={employee.address} />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 text-sm">
+            <InfoItem label="City" value={employee.city} />
+            <InfoItem label="Country" value={employee.country} />
+            <InfoItem label="Postal/Zip Code" value={employee.postalCode} />
+            <CopyableText label="Home Phone" value={employee.homePhone} />
+            <CopyableText label="Work Phone" value={employee.workPhone} />
+            <CopyableText label="Private Email" value={employee.privateEmail} />
+            <CopyableText label="Mobile Number" value={employee.mobileNumber} />
+            <CopyableText label="WhatsApp" value={employee.whatsappNumber} />
+        </div>
+    </CustomContainer>
+);
+
+const JobDetailsSection = ({ employee }) => (
+    <CustomContainer
+        title="Job Details"
+        headerActions={<EditButton />}
+        className="mb-3"
+    >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 text-sm">
+            <InfoItem label="Job Title" value={employee.designation} />
+            <InfoItem
+                label="Employee Status"
+                value={employee.employmentStatus}
+            />
+            <InfoItem label="Department" value={employee.department} />
+            <InfoItem label="Manager" value={employee.manager} />
+            <InfoItem label="Company" value={employee.company} />
+            <InfoItem label="Reporting Group" value={employee.reportingGroup} />
+            <InfoItem label="Location" value={employee.location} />
+            <InfoItem label="Net Hours" value={employee.netHours} />
+            <InfoItem label="Week Off" value={employee.weekOff.join(", ")} />
+            <InfoItem label="Shift Timing" value={employee.shiftTiming} />
+        </div>
+    </CustomContainer>
+);
+
+const EmergencyContactSection = ({ emergencyContact }) => (
+    <CustomContainer
+        title="Emergency Contact"
+        headerActions={<EditButton />}
+        className="mb-3"
+    >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 text-sm">
+            <InfoItem label="Name" value={emergencyContact.name} />
+            <InfoItem
+                label="Relationship"
+                value={emergencyContact.relationship}
+            />
+            <CopyableText label="Phone" value={emergencyContact.phone} />
+        </div>
+    </CustomContainer>
+);
+
+const ReferInformationSection = ({ referInformation }) => (
+    <CustomContainer
+        title="Refer Information"   
+        headerActions={<EditButton />}
+        className="mb-3"
+    >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 text-sm">
+            <CopyableText label="Punch code" value={referInformation.punchCode} />
+            <InfoItem label="Name" value={referInformation.name} />
+            <InfoItem label="Relationship" value={referInformation.relationship} />
+            <CopyableText label="Phone" value={referInformation.phone} />
+        </div>
+    </CustomContainer>
+)
+
+const SkillsSection = ({ skills }) => (
+    <CustomContainer
+        title="Skills"
+        headerActions={<EditButton />}
+        className="mb-3"
+    >
+        <div className="flex flex-wrap -m-1">
+            {skills.map((skill, index) => (
+                <Badge key={index} text={skill} color="blue" />
+            ))}
+        </div>
+    </CustomContainer>
+);
+
+const EducationSection = ({ education }) => (
+    <CustomContainer
+        title="Education"
+        headerActions={<EditButton />}
+        className="mb-3"
+    >
+        {education.map((edu, index) => (
+            <div key={index} className="mb-4 last:mb-0">
+                <div className="font-medium">{edu.degree}</div>
+                <div className="text-sm text-gray-600">
+                    {edu.institution} • {edu.year}
+                </div>
+            </div>
+        ))}
+    </CustomContainer>
+);
+
+const CertificationsSection = ({ certifications }) => (
+    <CustomContainer
+        title="Certifications"
+        headerActions={<EditButton />}
+        className="mb-3"
+    >
+        <div className="flex flex-wrap -m-1">
+            {certifications.map((cert, index) => (
+                <Badge key={index} text={cert} color="green" />
+            ))}
+        </div>
+    </CustomContainer>
+);
+
+const LanguagesSection = ({ languages }) => (
+    <CustomContainer
+        title="Languages"
+        headerActions={<EditButton />}
+        className="mb-3"
+    >
+        <div className="flex flex-wrap -m-1">
+            {languages.map((language, index) => (
+                <Badge key={index} text={language} color="purple" />
+            ))}
+        </div>
+    </CustomContainer>
+);
+
+// Main component
+function EmployeeDetailsInfo({selectedEmployee}) {
     const [activeTab, setActiveTab] = useState("basicInfo");
 
-    // Mock employee data if no selected employee is provided
-    const employee = selectedEmployee || {
+    // Mock employee data
+    const employee = selectedEmployee ? selectedEmployee :{
         // Basic Info
         designation: "Software Engineer",
         department: "Engineering",
@@ -84,22 +338,20 @@ function EmployeeDetailsInfo({ selectedEmployee }) {
             "Spanish (Intermediate)",
             "French (Basic)",
         ],
+        referInformation: {
+            punchCode: "EMP002",
+            name: "John Doe",
+            relationship: "Friend",
+            phone: "+1-296602-555-0123",
+        },
     };
 
-    // Edit button component for card header actions
-    const EditButton = () => (
-        <button className="px-3 py-1 flex flex-row items-center rounded-md text-blue-600 bg-blue-50 text-xs font-medium border border-blue-600">
-            <EditIcon className="mr-1 h-3.5 w-3.5" />
-            <span>Edit</span>
-        </button>
-    );
-
     return (
-        <div className="bg-gray-50 p-6">
+        <div className="bg-gray-50 p-3 md:p-6 rounded-md">
             {/* Tab Headers */}
-            <div className="flex border-b mb-6">
+            <div className="flex flex-wrap border-b mb-4 md:mb-6">
                 <button
-                    className={`pb-2 px-4 font-medium ${
+                    className={`pb-2 px-2 md:px-4 font-medium ${
                         activeTab === "basicInfo"
                             ? "border-b-2 border-blue-600 text-blue-600"
                             : "text-gray-500"
@@ -109,7 +361,7 @@ function EmployeeDetailsInfo({ selectedEmployee }) {
                     Basic Information
                 </button>
                 <button
-                    className={`pb-2 px-4 font-medium ${
+                    className={`pb-2 px-2 md:px-4 font-medium ${
                         activeTab === "qualifications"
                             ? "border-b-2 border-blue-600 text-blue-600"
                             : "text-gray-500"
@@ -120,415 +372,36 @@ function EmployeeDetailsInfo({ selectedEmployee }) {
                 </button>
             </div>
 
-            {/* Basic Information Tab */}
+            {/* Tab Content */}
             {activeTab === "basicInfo" && (
-                <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
-                    {/* Personal Information Card */}
-                    <CustomContainer
-                        title="Personal Information"
-                        elevation="low"
-                        padding="medium"
-                        border={true}
-                        rounded="medium"
-                        headerActions={<EditButton />}
-                        className={"!mb-0"}
-                    >
-                        <div className="grid grid-cols-3 gap-4 text-sm">
-                            <div className="flex flex-row wrap-normal gap-1">
-                                <p className="text-sm text-gray-500">
-                                    Date of Birth : 
-                                </p>
-                                <p className="font-medium">
-                                    {employee.dateOfBirth}
-                                </p>
-                            </div>
-                            <div className="flex flex-row wrap-normal gap-1">
-                                <p className="text-sm text-gray-500">Gender</p>
-                                <p className="font-medium">{employee.gender}</p>
-                            </div>
-                            <div className="flex flex-row wrap-normal gap-1">
-                                <p className="text-sm text-gray-500">
-                                    Nationality :
-                                </p>
-                                <p className="font-medium">
-                                    {employee.nationality}
-                                </p>
-                            </div>
-                            <div className="flex flex-row wrap-normal gap-1">
-                                <p className="text-sm text-gray-500">
-                                    Marital Status :
-                                </p>
-                                <p className="font-medium">
-                                    {employee.maritalStatus}
-                                </p>
-                            </div>
-                            <div className="flex flex-row wrap-normal gap-1">
-                                <p className="text-sm text-gray-500">
-                                    Joined Date :
-                                </p>
-                                <p className="font-medium">
-                                    {employee.joinedDate}
-                                </p>
-                            </div>
-                        </div>
-                    </CustomContainer>
-
-                    {/* Identification Card */}
-                    <CustomContainer
-                        title="Identification"
-                        elevation="low"
-                        padding="medium"
-                        border={true}
-                        rounded="medium"
-                        headerActions={<EditButton />}
-
-                        className={"!mb-0"}
-                    >
-                        <div className="grid grid-cols-3 gap-4 text-sm">
-                            <div className="flex flex-row wrap-normal gap-1">
-                                <p className="text-sm text-gray-500">
-                                    National ID :
-                                </p>
-                                <p className="font-medium">
-                                    {employee.nationalId}
-                                </p>
-                            </div>
-                            <div className="flex flex-row wrap-normal gap-1">
-                                <p className="text-sm text-gray-500">
-                                    Social Insurance Number :
-                                </p>
-                                <p className="font-medium">
-                                    {employee.socialInsuranceNumber}
-                                </p>
-                            </div>
-                            <div className="flex flex-row wrap-normal gap-1">
-                                <p className="text-sm text-gray-500">
-                                    Personal Tax ID :
-                                </p>
-                                <p className="font-medium">
-                                    {employee.personalTaxId}
-                                </p>
-                            </div>
-                            <div className="flex flex-row wrap-normal gap-1">
-                                <p className="text-sm text-gray-500">
-                                    Health Insurance Number :
-                                </p>
-                                <p className="font-medium">
-                                    {employee.healthInsuranceNumber}
-                                </p>
-                            </div>
-                            <div className="flex flex-row wrap-normal gap-1">
-                                <p className="text-sm text-gray-500">
-                                    Driving License : 
-                                </p>
-                                <p className="font-medium">
-                                    {employee.drivingLicense}
-                                </p>
-                            </div>
-                        </div>
-                    </CustomContainer>
-
-                    {/* Contact Information Card */}
-                    <CustomContainer
-                        title="Contact Information"
-                        elevation="low"
-                        padding="medium"
-                        border={true}
-                        rounded="medium"
-                        headerActions={<EditButton />}
-
-                        className={"!mb-0"}
-                    >
-                        <div className="grid grid-cols-1 gap-4 mb-4 text-sm">
-                            <div className="flex flex-row wrap-normal gap-1">
-                                <p className="text-sm text-gray-500">Address :</p>
-                                <p className="font-medium">
-                                    {employee.address}
-                                </p>
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-3 gap-4 text-sm">
-                            <div className="flex flex-row wrap-normal gap-1">
-                                <p className="text-sm text-gray-500">City : </p>
-                                <p className="font-medium">{employee.city}</p>
-                            </div>
-                            <div className="flex flex-row wrap-normal gap-1">
-                                <p className="text-sm text-gray-500">Country :</p>
-                                <p className="font-medium">
-                                    {employee.country}
-                                </p>
-                            </div>
-                            <div className="flex flex-row wrap-normal gap-1">
-                                <p className="text-sm text-gray-500">
-                                    Postal/Zip Code :
-                                </p>
-                                <p className="font-medium">
-                                    {employee.postalCode}
-                                </p>
-                            </div>
-                            <div className="flex flex-row wrap-normal gap-1">
-                                <p className="text-sm text-gray-500">
-                                    Home Phone :
-                                </p>
-                                <p className="font-medium">
-                                    {employee.homePhone}
-                                </p>
-                            </div>
-                            <div className="flex flex-row wrap-normal gap-1">
-                                <p className="text-sm text-gray-500">
-                                    Work Phone :
-                                </p>
-                                <p className="font-medium">
-                                    {employee.workPhone}
-                                </p>
-                            </div>
-                            <div className="flex flex-row wrap-normal gap-1">
-                                <p className="text-sm text-gray-500">
-                                    Private Email :
-                                </p>
-                                <p className="font-medium">
-                                    {employee.privateEmail}
-                                </p>
-                            </div>
-                            <div className="flex flex-row wrap-normal gap-1">
-                                <p className="text-sm text-gray-500">
-                                    Mobile Number :
-                                </p>
-                                <p className="font-medium">
-                                    {employee.mobileNumber}
-                                </p>
-                            </div>
-                            <div className="flex flex-row wrap-normal gap-1">
-                                <p className="text-sm text-gray-500">
-                                    WhatsApp :
-                                </p>
-                                <p className="font-medium">
-                                    {employee.whatsappNumber}
-                                </p>
-                            </div>
-                        </div>
-                    </CustomContainer>
-
-                    {/* Job Details Card */}
-                    <CustomContainer
-                        title="Job Details"
-                        elevation="low"
-                        padding="medium"
-                        border={true}
-                        rounded="medium"
-                        headerActions={<EditButton />}
-
-                        className={"!mb-0"}
-                    >
-                        <div className="grid grid-cols-3 gap-4 text-sm">
-                            <div  className="flex flex-row wrap-normal gap-1">
-                                <p className="text-sm text-gray-500">
-                                    Job Title :
-                                </p>
-                                <p className="font-medium">
-                                    {employee.designation}
-                                </p>
-                            </div>
-                            <div  className="flex flex-row wrap-normal gap-1">
-                                <p className="text-sm text-gray-500">
-                                    Employee Status :
-                                </p>
-                                <p className="font-medium">
-                                    {employee.employmentStatus}
-                                </p>
-                            </div>
-                            <div  className="flex flex-row wrap-normal gap-1">
-                                <p className="text-sm text-gray-500">
-                                    Department :
-                                </p>
-                                <p className="font-medium">
-                                    {employee.department}
-                                </p>
-                            </div>
-                            <div className="flex flex-row wrap-normal gap-1" >
-                                <p className="text-sm text-gray-500">Manager :</p>
-                                <p className="font-medium">
-                                    {employee.manager}
-                                </p>
-                            </div>
-                            <div className="flex flex-row wrap-normal gap-1" >
-                                <p className="text-sm text-gray-500">Company :</p>
-                                <p className="font-medium">
-                                    {employee.company}
-                                </p>
-                            </div>
-                            <div className="flex flex-row wrap-normal gap-1" >
-                                <p className="text-sm text-gray-500">
-                                    Reporting Group :
-                                </p> 
-                                <p className="font-medium">
-                                    {employee.reportingGroup}
-                                </p>
-                            </div>
-                            <div className="flex flex-row wrap-normal gap-1" >
-                                <p className="text-sm text-gray-500">
-                                    Location :
-                                </p>
-                                <p className="font-medium">
-                                    {employee.location}
-                                </p>
-                            </div>
-                            <div className="flex flex-row wrap-normal gap-1" >
-                                <p className="text-sm text-gray-500">
-                                    Net Hours :
-                                </p>
-                                <p className="font-medium">
-                                    {employee.netHours}
-                                </p>
-                            </div>
-                            <div className="flex flex-row wrap-normal gap-1" >
-                                <p className="text-sm text-gray-500">
-                                    Week Off :
-                                </p>
-                                <p className="font-medium">
-                                    {employee.weekOff.join(", ")}
-                                </p>
-                            </div>
-                            <div className="flex flex-row wrap-normal gap-1" >
-                                <p className="text-sm text-gray-500">
-                                    Shift Timing :
-                                </p>
-                                <p className="font-medium">
-                                    {employee.shiftTiming}
-                                </p>
-                            </div>
-                        </div>
-                    </CustomContainer>
-
-                    {/* Emergency Contact Card */}
-                    <CustomContainer
-                        title="Emergency Contact"
-                        elevation="low"
-                        padding="medium"
-                        border={true}
-                        rounded="medium"
-                        headerActions={<EditButton />}
-
-                        className={"!mb-0"}
-                    >
-                        <div className="grid grid-cols-3 gap-4">
-                            <div className="flex flex-row wrap-normal gap-1" >
-                                <p className="text-sm text-gray-500">Name :</p>
-                                <p className="font-medium">
-                                    {employee.emergencyContact.name}
-                                </p>
-                            </div>
-                            <div className="flex flex-row wrap-normal gap-1" >
-                                <p className="text-sm text-gray-500">
-                                    Relationship :
-                                </p>
-                                <p className="font-medium">
-                                    {employee.emergencyContact.relationship}
-                                </p>
-                            </div>
-                            <div className="flex flex-row wrap-normal gap-1" >
-                                <p className="text-sm text-gray-500">Phone :</p>
-                                <p className="font-medium">
-                                    {employee.emergencyContact.phone}
-                                </p>
-                            </div>
-                        </div>
-                    </CustomContainer>
+                <div className="grid grid-cols-1 gap-3">
+                    <PersonalInformationSection employee={employee} />
+                    <IdentificationSection employee={employee} />
+                    <ContactInformationSection employee={employee} />
+                    <JobDetailsSection employee={employee} />
+                    <EmergencyContactSection
+                        emergencyContact={employee.emergencyContact}
+                    />
+                    <ReferInformationSection referInformation={employee.referInformation} />
                 </div>
             )}
 
-            {/* Qualifications Tab */}
             {activeTab === "qualifications" && (
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    {/* Skills Card */}
-                    <CustomContainer
-                        title="Skills"
-                        elevation="low"
-                        padding="medium"
-                        border={true}
-                        rounded="medium"
-                        headerActions={<EditButton />}
-
-                        className={"!mb-0"}
-                    >
-                        <div className="flex flex-wrap">
-                            {employee.skills.map((skill, index) => (
-                                <span
-                                    key={index}
-                                    className="bg-blue-50 text-blue-800 rounded-md px-3 py-1 text-sm m-2 border border-blue-200"
-                                >
-                                    {skill}
-                                </span>
-                            ))}
-                        </div>
-                    </CustomContainer>
-
-                    {/* Education Card */}
-                    <CustomContainer
-                        title="Education"
-                        elevation="low"
-                        padding="medium"
-                        border={true}
-                        rounded="medium"
-                        headerActions={<EditButton />}
-
-                        className={"!mb-0"}
-                    >
-                        {employee.education.map((edu, index) => (
-                            <div key={index} className="mb-4 last:mb-0">
-                                <div className="font-medium">{edu.degree}</div>
-                                <div className="text-sm text-gray-600">
-                                    {edu.institution} • {edu.year}
-                                </div>
-                            </div>
-                        ))}
-                    </CustomContainer>
-
-                    {/* Certifications Card */}
-                    <CustomContainer
-                        title="Certifications"
-                        elevation="low"
-                        padding="medium"
-                        border={true}
-                        rounded="medium"
-                        headerActions={<EditButton />}
-
-                        className={"!mb-0"}
-                    >
-                        <div className="flex flex-wrap">
-                            {employee.certifications.map((cert, index) => (
-                                <span
-                                    key={index}
-                                    className="bg-green-50 text-green-800 rounded-md px-3 py-1 text-sm m-2 border border-green-200"
-                                >
-                                    {cert}
-                                </span>
-                            ))}
-                        </div>
-                    </CustomContainer>
-
-                    {/* Languages Card */}
-                    <CustomContainer
-                        title="Languages"
-                        elevation="low"
-                        padding="medium"
-                        border={true}
-                        rounded="medium"
-                        headerActions={<EditButton />}
-
-                        className={"!mb-0"}
-                    >
-                        <div className="flex flex-wrap">
-                            {employee.languages.map((language, index) => (
-                                <span
-                                    key={index}
-                                    className="bg-purple-50 text-purple-800 rounded-md px-3 py-1 text-sm m-2 border border-purple-200"
-                                >
-                                    {language}
-                                </span>
-                            ))}
-                        </div>
-                    </CustomContainer>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+                    <div className="sm:col-span-2 lg:col-span-4">
+                        <SkillsSection skills={employee.skills} />
+                    </div>
+                    <div className="sm:col-span-2 lg:col-span-2">
+                        <EducationSection education={employee.education} />
+                    </div>
+                    <div className="sm:col-span-1 lg:col-span-1">
+                        <CertificationsSection
+                            certifications={employee.certifications}
+                        />
+                    </div>
+                    <div className="sm:col-span-1 lg:col-span-1">
+                        <LanguagesSection languages={employee.languages} />
+                    </div>
                 </div>
             )}
         </div>
