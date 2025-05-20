@@ -62,7 +62,30 @@ const mockEmployees = [
             name: "Mary Doe",
             relationship: "Sister",
             phone: "+1-202-555-7890"
-        }
+        },
+        skills: ["JavaScript", "React", "Node.js", "HTML", "CSS"],
+        education: [
+            {
+                degree: "Bachelor of Science in Computer Science",
+                institution: "MIT",
+                year: "2010",
+            },
+            {
+                degree: "Master of Science in Software Engineering",
+                institution: "Stanford",
+                year: "2012",
+            },
+        ],
+        certifications: [
+            "AWS Certified Developer",
+            "Google Cloud Professional",
+            "Scrum Master",
+        ],
+        languages: [
+            "English (Native)",
+            "Spanish (Intermediate)",
+            "French (Basic)",
+        ],
     }
 ];
 

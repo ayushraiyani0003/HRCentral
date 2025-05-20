@@ -5,7 +5,9 @@ import {
     PhoneIcon,
     DepartmentIcon,
     DesignationIcon,
+    EditIcon,
 } from "../../../../../utils/SvgIcon";
+import EmployeeDetailsInfo from "./EmployeeDetailsInfo";
 
 function EmployeeInfo({ selectedEmployee }) {
     // Function to handle copy to clipboard
@@ -45,7 +47,8 @@ function EmployeeInfo({ selectedEmployee }) {
             <div className="border-b border-gray-200 p-4 flex justify-between items-center">
                 <h2 className="text-xl font-semibold">Employee Information</h2>
                 <div className="flex space-x-2">
-                    <button className="px-3 py-1 rounded-md text-blue-600 bg-blue-50 text-xs font-medium border border-blue-600">
+                    <button className="px-3 py-1 flex flex-row items-center rounded-md text-blue-600 bg-blue-50 text-xs font-medium border border-blue-600">
+                        <EditIcon className="mr-1 h-3.5 w-3.5" />
                         Edit
                     </button>
                     <button className="px-3 py-1 rounded-md text-green-600 bg-green-50 text-xs font-medium border border-green-600">
@@ -64,7 +67,7 @@ function EmployeeInfo({ selectedEmployee }) {
             </div>
 
             {/* Main content */}
-            <div className="p-6">
+            <div className="p-5 border-b border-gray-200 mb-3">
                 <div className="flex items-center">
                     <img
                         src={selectedEmployee.avatar}
@@ -87,7 +90,7 @@ function EmployeeInfo({ selectedEmployee }) {
                                 onClick={() => handleCopy("(555) 123-4567")}
                                 className="text-gray-500 hover:text-gray-700"
                             >
-                                <CopyIcon className="w-4 h-4" />
+                                <CopyIcon className="w-4 h-4 text-blue-400" />
                             </button>
                         </div>
 
@@ -106,7 +109,7 @@ function EmployeeInfo({ selectedEmployee }) {
                                 }
                                 className="text-gray-500 hover:text-gray-700"
                             >
-                                <CopyIcon className="w-4 h-4" />
+                                <CopyIcon className="w-4 h-4 text-blue-400" />
                             </button>
                         </div>
 
@@ -125,7 +128,7 @@ function EmployeeInfo({ selectedEmployee }) {
                                 }
                                 className="text-gray-500 hover:text-gray-700"
                             >
-                                <CopyIcon className="w-4 h-4" />
+                                <CopyIcon className="w-4 h-4 text-blue-400" />
                             </button>
                         </div>
 
@@ -144,12 +147,13 @@ function EmployeeInfo({ selectedEmployee }) {
                                 }
                                 className="text-gray-500 hover:text-gray-700"
                             >
-                                <CopyIcon className="w-4 h-4" />
+                                <CopyIcon className="w-4 h-4 text-blue-400" />
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
+            <EmployeeDetailsInfo selectedEmployee={selectedEmployee} />
         </div>
     );
 }
