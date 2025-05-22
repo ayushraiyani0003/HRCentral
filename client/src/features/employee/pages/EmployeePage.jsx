@@ -11,10 +11,10 @@ import {
     Heart,
     Lock,
 } from "lucide-react";
-import { EmployeesTabs } from "../components/";
+import { EmployeesTabs, WorkHistoryTabs } from "../components/";
 
 function EmployeePage() {
-    const [selectedTab, setSelectedTab] = useState(0);
+    const [selectedTab, setSelectedTab] = useState(1);
 
     // Basic tabs example
     const tabs = [
@@ -23,16 +23,9 @@ function EmployeePage() {
             content: <EmployeesTabs />,
         },
         {
-            label: "Profile",
+            label: "Work History",
             content: (
-                <div className="p-4">
-                    <h3 className="text-lg font-medium text-gray-900 mb-3">
-                        Profile Tab Content
-                    </h3>
-                    <p className="text-gray-700">
-                        Here you can see your profile information and settings.
-                    </p>
-                </div>
+                <WorkHistoryTabs />
             ),
         },
         {
@@ -56,7 +49,7 @@ function EmployeePage() {
             <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
                 <CustomTabs
                     tabs={tabs}
-                    defaultActiveTab={0}
+                    defaultActiveTab={selectedTab}
                     variant="indicator"
                     onChange={setSelectedTab}
                     indicatorColor="#4A90E2"

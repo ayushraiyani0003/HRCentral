@@ -193,7 +193,7 @@ th.sortable {
     user-select: none;
 }
 
-.th-content {
+.custom-table-th-content {
     display: flex;
     align-items: center;
     justify-content: space-between;
