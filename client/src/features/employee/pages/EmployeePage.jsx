@@ -12,6 +12,7 @@ import {
     Lock,
 } from "lucide-react";
 import { EmployeesTabs, WorkHistoryTabs } from "../components/";
+import ExitedEmployeeTabs from "../components/Tabs/ExitedEmployeeTabs/ExitedEmployeeTabs";
 
 function EmployeePage() {
     const [selectedTab, setSelectedTab] = useState(1);
@@ -29,16 +30,8 @@ function EmployeePage() {
             ),
         },
         {
-            label: "Settings",
-            content: (
-                <div className="p-4">
-                    <h3 className="text-lg font-medium text-gray-900 mb-3">
-                        Settings Tab Content
-                    </h3>
-                    <p className="text-gray-700">
-                        Adjust your account settings and preferences here.
-                    </p>
-                </div>
+            label: "Edited Employees",
+            content: (<ExitedEmployeeTabs />
             ),
         },
     ];
