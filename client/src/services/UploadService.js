@@ -1,8 +1,7 @@
 // src/services/UploadService.js
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL || "";
-const UPLOAD_ENDPOINT = `${API_URL}/api/upload`;
+const UPLOAD_ENDPOINT = `/api/upload`;
 
 // Create axios instance with base URL
 const uploadApi = axios.create({

@@ -1,7 +1,5 @@
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL || "";
-
 /**
  * Function to upload the Excel file for payslip generation
  * @param {FormData} formData - Form data containing the Excel file
@@ -10,7 +8,7 @@ const API_URL = import.meta.env.VITE_API_URL || "";
 export const uploadSlipExcel = async (formData) => {
     try {
         const response = await axios.post(
-            `${API_URL}/api/slip-generate/upload`,
+            `/api/slip-generate/upload`,
             formData,
             {
                 headers: {
@@ -71,7 +69,7 @@ export const connectToSlipProgressStream = (filePath, handlers = {}) => {
     
     // Create a new EventSource connection with a unique cache-busting parameter
     const eventSource = new EventSource(
-        `${API_URL}/api/slip-generate/stream-slip-progress?filePath=${encodedFilePath}`
+        `/api/slip-generate/stream-slip-progress?filePath=${encodedFilePath}`
     );
 
     // console.log("SSE connection established to:", 
@@ -155,7 +153,7 @@ export const connectToSlipProgressStream = (filePath, handlers = {}) => {
             expectedClose = true;
     
             // Trigger file download from server using filePath
-            const downloadUrl = `${API_URL}/api/slip-generate/download?filePath=${encodeURIComponent(data.zipPath)}`;
+            const downloadUrl = `/api/slip-generate/download?filePath=${encodeURIComponent(data.zipPath)}`;
     
             const response = axios.get(downloadUrl, {
                 responseType: "blob"

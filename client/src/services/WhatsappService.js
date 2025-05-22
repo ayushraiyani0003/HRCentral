@@ -1,8 +1,7 @@
 // src/services/WhatsappService.js
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL || "";
-const WHATSAPP_ENDPOINT = `${API_URL}/api/whatsapp`;
+const WHATSAPP_ENDPOINT = `/api/whatsapp`;
 
 // Create axios instance with base URL and default headers
 const whatsappApi = axios.create({
