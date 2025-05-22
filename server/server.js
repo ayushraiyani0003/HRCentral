@@ -1,10 +1,7 @@
 const express = require("express");
-const cors = require("cors");
 const morgan = require("morgan");
-const helmet = require("helmet");
 const path = require("path");
 const initDb = require("./config/initDb");
-const setupAssociations = require("./models/associations");
 const logger = require("./utils/logger");
 require("dotenv").config();
 
@@ -14,10 +11,6 @@ const { processPayslips }= require("./api/controllers/slipGenerate.controller");
 
 // Create Express app
 const app = express();
-
-// Middleware
-app.use(cors());
-app.use(helmet());
 
 // Use morgan with winston logger
 app.use(
@@ -94,10 +87,6 @@ const startServer = async () => {
         const dbInitialized = await initDb(false);
 
         if (dbInitialized) {
-            // Set up cross-database associations after database initialization
-            logger.info("Setting up database associations...");
-            setupAssociations();
-
             // Create uploads directory if it doesn't exist
             const fs = require("fs");
             const uploadDir = path.join(__dirname, "uploads");
