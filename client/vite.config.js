@@ -4,6 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 
 // https://vite.dev/config/
 export default defineConfig({
+
     plugins: [react(), tailwindcss()],
     assetsInclude: [
         "**/*.xlsx",
@@ -18,4 +19,9 @@ export default defineConfig({
         "**/*.ppt",
         "**/*.pptx",
     ],
+    server: {
+        proxy: {
+            '/api':  'http://localhost:5009',
+        },
+    },
 });
