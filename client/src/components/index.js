@@ -21,7 +21,7 @@ import Popover from "./Popover/Popover";
 import RichTextEditor from "./RichTextEditor/RichTextEditor";
 import ScrollToTop from "./ScrollToTop/ScrollToTop";
 import TagInput from "./TagInput/TagInput";
-import Timeline from "./Timeline/Timeline";
+import CustomizableTimeline from "./Timeline/Timeline";
 import { ToastProvider, useToast } from "./Toast/Toast";
 import ToggleSwitch from "./ToggleSwitch/ToggleSwitch";
 import Tooltip from "./Tooltip/Tooltip";
@@ -56,7 +56,7 @@ export {
     RichTextEditor,
     ScrollToTop,
     TagInput,
-    Timeline,
+    CustomizableTimeline,
     ToastProvider,
     ToggleSwitch,
     Tooltip,
