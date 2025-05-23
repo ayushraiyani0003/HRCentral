@@ -5,7 +5,7 @@ import EmployeeInfo from "./EmployeeInfo";
 
 // Mock employee data for demonstration
 const mockEmployees = [
-   {
+    {
         id: 1,
         punchCode: "EMP001",
         name: "John Doe",
@@ -95,7 +95,7 @@ const mockEmployees = [
     }
 ];
 
-function EmployeesTabs() {
+function EmployeesTabs({setAddEmployeeModelOpen, setUploadEmployeeModelOpen, }) {
     const [searchQuery, setSearchQuery] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedEmployee, setSelectedEmployee] = useState(mockEmployees[0]);
@@ -135,10 +135,21 @@ function EmployeesTabs() {
         setSelectedEmployee(employee);
     };
 
+    const handleAddEmployee = () => {
+        setAddEmployeeModelOpen(true);
+    };
+
+    const handleImportEmployees = () => {
+        setUploadEmployeeModelOpen(true);
+    };
+
     return (
         <div className="flex flex-col w-full h-full">
             {/* Buttons and info section */}
-            <HeaderButtons />
+            <HeaderButtons 
+                onAddEmployee={handleAddEmployee}
+                onImportEmployees={handleImportEmployees}
+            />
 
             {/* Main content with 3:8 flex ratio */}
             <div className="flex flex-row h-full p-2">
@@ -175,6 +186,8 @@ function EmployeesTabs() {
                     )}
                 </div>
             </div>
+
+            
         </div>
     );
 }

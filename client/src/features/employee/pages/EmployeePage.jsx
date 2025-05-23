@@ -11,28 +11,37 @@ import {
     Heart,
     Lock,
 } from "lucide-react";
-import { EmployeesTabs, WorkHistoryTabs } from "../components/";
+import {
+    EmployeesTabs,
+    WorkHistoryTabs,
+    EmployeePageModels,
+} from "../components/";
 import ExitedEmployeeTabs from "../components/Tabs/ExitedEmployeeTabs/ExitedEmployeeTabs";
 
 function EmployeePage() {
     const [selectedTab, setSelectedTab] = useState(1);
+    const [addEmployeeModelOpen, setAddEmployeeModelOpen] = useState(false);
+    const [uploadEmployeeModelOpen, setUploadEmployeeModelOpen] =
+        useState(false);
 
     // Basic tabs example
     const tabs = [
         {
             label: "Employees",
-            content: <EmployeesTabs />,
+            content: (
+                <EmployeesTabs
+                    setAddEmployeeModelOpen={setAddEmployeeModelOpen}
+                    setUploadEmployeeModelOpen={setUploadEmployeeModelOpen}
+                />
+            ),
         },
         {
             label: "Work History",
-            content: (
-                <WorkHistoryTabs />
-            ),
+            content: <WorkHistoryTabs />,
         },
         {
             label: "Edited Employees",
-            content: (<ExitedEmployeeTabs />
-            ),
+            content: <ExitedEmployeeTabs />,
         },
     ];
 
@@ -51,6 +60,12 @@ function EmployeePage() {
                     contentClassName={"min-h-[760px]"}
                 />
             </div>
+            <EmployeePageModels
+                addEmployeeModelOpen={addEmployeeModelOpen}
+                setAddEmployeeModelOpen={setAddEmployeeModelOpen}
+                uploadEmployeeModelOpen={uploadEmployeeModelOpen}
+                setUploadEmployeeModelOpen={setUploadEmployeeModelOpen}
+            />
         </div>
     );
 }
