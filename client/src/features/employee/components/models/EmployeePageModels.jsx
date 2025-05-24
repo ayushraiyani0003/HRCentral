@@ -91,12 +91,19 @@ function EmployeePageModels({
     setAddEmployeeModelOpen(false);
   };
 
-  // Handle form input changes
+  // Handle form input changes - FIXED VERSION
   const handleInputChange = (fieldName, value) => {
     setEmployeeFormData(prev => ({
       ...prev,
       [fieldName]: value
     }));
+  };
+
+  // Create individual setter functions for each field - THIS IS THE FIX
+  const createFieldSetter = (fieldName) => {
+    return (value) => {
+      handleInputChange(fieldName, value);
+    };
   };
 
   // Employee phases with form fields
@@ -177,7 +184,7 @@ function EmployeePageModels({
   };
 
   // Custom step content renderer
-  const renderStepContent = (step, stepIndex, status) => {
+  const renderStepContent = (step, stepIndex) => {
     const isActive = stepIndex === currentStep;
     const isCompleted = completedSteps.includes(stepIndex);
 
@@ -203,11 +210,11 @@ function EmployeePageModels({
                       label={field.label}
                       type="textarea"
                       value={employeeFormData[field.name] || ''}
-                      onChange={(e) => handleInputChange(field.name, e.target.value)}
+                      onChange={createFieldSetter(field.name)} // FIXED: Direct setter function
                       required={field.required}
                       placeholder={`Enter ${field.label.toLowerCase()}`}
-                      className="w-full"
-                    />
+                      className="w-full !mb-0"
+                    /> 
                   </div>
                 ) : field.type === 'dropdown' ? (
                   <CustomDropdown
@@ -236,11 +243,11 @@ function EmployeePageModels({
                     label={field.label}
                     type={field.type || 'text'}
                     value={employeeFormData[field.name] || ''}
-                    onChange={(e) => handleInputChange(field.name, e.target.value)}
+                    onChange={createFieldSetter(field.name)} // FIXED: Direct setter function
                     required={field.required}
                     placeholder={`Enter ${field.label.toLowerCase()}`}
                     onlyNumbers={field.type === 'number'}
-                    className="w-full"
+                    className="w-full !mb-0"
                   />
                 )}
               </div>
@@ -292,7 +299,7 @@ function EmployeePageModels({
         isOpen={addEmployeeModelOpen}
         onClose={handleModalClose}
         title="Add New Employee"
-        size="full"
+        size="large"
         showCloseButton={true}
         closeOnOverlayClick={false} // Prevent accidental closes
         closeOnEscape={true}
