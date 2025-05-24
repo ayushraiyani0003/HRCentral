@@ -9,6 +9,7 @@ import SlipGeneratePage from "./features/SlipGenerate/pages/SlipGeneratePage";
 import FlexibleDashboardPage from "./features/dashboard/pages/DashboardPage";
 import EmployeePage from "./features/employee/pages/EmployeePage";
 import CheckListPage from "./features/employee/pages/CheckListPage";
+import LeavesPage from './features/leaves/pages/LeavesPage'
 
 
-export {LoginPage, PassWordResetPage, SlipSendPage, MainLayout, FlexibleDashboardPage, EmployeePage, CheckListPage, RolesPermissions, ErrorPage, SlipGeneratePage, HomeIcon, DashboardIcon, ToastProvider};
+export {LoginPage, PassWordResetPage, SlipSendPage, MainLayout, FlexibleDashboardPage, EmployeePage, CheckListPage, RolesPermissions, ErrorPage, SlipGeneratePage, HomeIcon, DashboardIcon, ToastProvider, LeavesPage};

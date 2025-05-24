@@ -8,32 +8,48 @@ import {
     useLocation,
 } from "react-router-dom";
 import "./App.css";
-import {LoginPage, PassWordResetPage, SlipSendPage, MainLayout, FlexibleDashboardPage, EmployeePage, CheckListPage, RolesPermissions, ErrorPage, SlipGeneratePage, HomeIcon, DashboardIcon, ToastProvider} from "./index"
+import {
+    LoginPage,
+    PassWordResetPage,
+    SlipSendPage,
+    MainLayout,
+    FlexibleDashboardPage,
+    EmployeePage,
+    CheckListPage,
+    RolesPermissions,
+    ErrorPage,
+    SlipGeneratePage,
+    HomeIcon,
+    DashboardIcon,
+    ToastProvider,
+    LeavesPage,
+} from "./index";
 
 // Route components mapping
 const routeComponents = {
-    '/': FlexibleDashboardPage,
-    '/analytics/reports': () => <div className="p-4">Analytics Reports</div>,
-    '/analytics/realtime': () => <div className="p-4">Real-time Analytics</div>,
-    '/projects': () => <div className="p-4">Projects Content</div>,
-    '/calendar': () => <div className="p-4">Calendar Content</div>,
-    '/messages': () => <div className="p-4">Messages Content</div>,
-    '/settings': () => <div className="p-4">Settings Content</div>,
-    '/slip-send': SlipSendPage,
-    '/slip-generate': SlipGeneratePage,
-    '/roles': RolesPermissions,
-    '/employees': EmployeePage,
-    '/employees/checklist': CheckListPage,
-    '/missing': () => <div className="p-4">Missing Content</div>,
+    "/": FlexibleDashboardPage,
+    "/analytics/reports": () => <div className="p-4">Analytics Reports</div>,
+    "/analytics/realtime": () => <div className="p-4">Real-time Analytics</div>,
+    "/projects": () => <div className="p-4">Projects Content</div>,
+    "/calendar": () => <div className="p-4">Calendar Content</div>,
+    "/messages": () => <div className="p-4">Messages Content</div>,
+    "/leaves": LeavesPage,
+    "/settings": () => <div className="p-4">Settings Content</div>,
+    "/slip-send": SlipSendPage,
+    "/slip-generate": SlipGeneratePage,
+    "/roles": RolesPermissions,
+    "/employees": EmployeePage,
+    "/employees/checklist": CheckListPage,
+    "/missing": () => <div className="p-4">Missing Content</div>,
 };
 
 // Helper function to extract all valid paths from menu items
 const getAllValidPaths = (menuItems) => {
     const paths = new Set();
-    
+
     const extractPaths = (items) => {
-        items.forEach(item => {
-            if (item.path && item.path !== '/logout') {
+        items.forEach((item) => {
+            if (item.path && item.path !== "/logout") {
                 paths.add(item.path);
             }
             if (item.subMenu) {
@@ -41,7 +57,7 @@ const getAllValidPaths = (menuItems) => {
             }
         });
     };
-    
+
     extractPaths(menuItems);
     return Array.from(paths);
 };
@@ -57,34 +73,36 @@ const ProtectedRoutes = ({ isAuthenticated, menuItems }) => {
 
     // Get all valid paths from menu items
     const validPaths = getAllValidPaths(menuItems);
-    
+
     // Check if current path is valid (allow root path by default)
-    const isValidPath = validPaths.includes(currentPath) || currentPath === '/';
-    
+    const isValidPath = validPaths.includes(currentPath) || currentPath === "/";
+
     // Redirect invalid paths to error page
     if (!isValidPath) {
-        return <Navigate to="/error" replace state={{ 
-            errorCode: 403, 
-            message: "Access to this page is not authorized",
-            from: currentPath 
-        }} />;
+        return (
+            <Navigate
+                to="/error"
+                replace
+                state={{
+                    errorCode: 403,
+                    message: "Access to this page is not authorized",
+                    from: currentPath,
+                }}
+            />
+        );
     }
 
     return (
         <MainLayout menuItems={menuItems} selected={currentPath}>
             <Routes>
                 {/* Generate routes dynamically from menu items */}
-                {validPaths.map(path => {
+                {validPaths.map((path) => {
                     const Component = routeComponents[path];
                     return Component ? (
-                        <Route 
-                            key={path} 
-                            path={path} 
-                            element={<Component />} 
-                        />
+                        <Route key={path} path={path} element={<Component />} />
                     ) : null;
                 })}
-                
+
                 {/* Catch-all route for unmatched paths */}
                 <Route path="*" element={<ErrorPage errorCode={404} />} />
             </Routes>
@@ -108,7 +126,7 @@ function App() {
                 // Replace this with your actual API call
                 // const response = await fetch('/api/menu-items');
                 // const serverMenuItems = await response.json();
-                
+
                 // For now, using the static menu items
                 const serverMenuItems = [
                     { id: "1", title: "Dashboard", icon: HomeIcon, path: "/" },
@@ -131,10 +149,37 @@ function App() {
                             },
                         ],
                     },
-                    { id: "3", title: "Projects", icon: DashboardIcon, path: "/projects" },
-                    { id: "4", title: "Calendar", icon: DashboardIcon, path: "/calendar" },
-                    { id: "5", title: "Messages", icon: DashboardIcon, path: "/messages" },
-                    { id: "6", title: "Settings", icon: DashboardIcon, path: "/settings" },
+                    {
+                        id: "3",
+                        title: "Projects",
+                        icon: DashboardIcon,
+                        path: "/projects",
+                    },
+                    {
+                        id: "4",
+                        title: "Calendar",
+                        icon: DashboardIcon,
+                        path: "/calendar",
+                    },
+                    {
+                        id: "5",
+                        title: "Manage",
+                        icon: DashboardIcon,
+                        subMenu: [
+                            {
+                                id: "5_1",
+                                title: "Leaves",
+                                icon: DashboardIcon,
+                                path: "/leaves",
+                            },
+                        ],
+                    },
+                    {
+                        id: "6",
+                        title: "Settings",
+                        icon: DashboardIcon,
+                        path: "/settings",
+                    },
                     {
                         id: "7",
                         title: "Pay Roll",
@@ -151,8 +196,8 @@ function App() {
                                 title: "Slip Generate",
                                 icon: DashboardIcon,
                                 path: "/slip-generate",
-                            }
-                        ]
+                            },
+                        ],
                     },
                     {
                         id: "8",
@@ -179,14 +224,19 @@ function App() {
                             },
                         ],
                     },
-                    { id: "11", title: "Logout", icon: DashboardIcon, path: "/logout" },
+                    {
+                        id: "11",
+                        title: "Logout",
+                        icon: DashboardIcon,
+                        path: "/logout",
+                    },
                     // { id: "12", title: "missing", icon: DashboardIcon, path: "/missing" },
                 ];
-                
+
                 setMenuItems(serverMenuItems);
                 setIsLoading(false);
             } catch (error) {
-                console.error('Failed to fetch menu items:', error);
+                console.error("Failed to fetch menu items:", error);
                 setIsLoading(false);
                 // Handle error - maybe redirect to error page or show default menu
             }
@@ -218,7 +268,9 @@ function App() {
                             path="/login"
                             element={
                                 !isAuthenticated ? (
-                                    <LoginPage onLoginSuccess={handleLoginSuccess} />
+                                    <LoginPage
+                                        onLoginSuccess={handleLoginSuccess}
+                                    />
                                 ) : (
                                     <Navigate to="/" replace />
                                 )
