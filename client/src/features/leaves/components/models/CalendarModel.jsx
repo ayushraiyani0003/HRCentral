@@ -8,13 +8,16 @@ import {
     CustomDropdown,
 } from "../../../../components";
 
-function CalendarModel({ CalendarModelOpen, setCalendarModelOpen, selectedDate }) {
+function CalendarModel({
+    CalendarModelOpen,
+    setCalendarModelOpen,
+    selectedDate,
+}) {
     // Reset form when modal closes
     const handleModalClose = () => {
         setCalendarModelOpen(false);
     };
-    console.log(selectedDate);
-    
+
     return (
         <CustomModal
             isOpen={CalendarModelOpen}

@@ -20,12 +20,12 @@ function LeavesPage() {
     const [addEmployeeModelOpen, setAddEmployeeModelOpen] = useState(false);
     const [uploadEmployeeModelOpen, setUploadEmployeeModelOpen] = useState();
     const [calendarModelOpen, setCalendarModelOpen] = useState(false);
-    const [selectedDate, setSelectedDate] = useState(null); 
+    const [selectedDate, setSelectedDate] = useState(null);
 
     // Basic tabs example // each page add marzin top 3*0.25rem etc  px mt-3
     const tabs = [
         {
-            label: "Employees",
+            label: "Leave",
             content: (
                 // <EmployeesTabs
                 //     setAddEmployeeModelOpen={setAddEmployeeModelOpen}
@@ -35,20 +35,22 @@ function LeavesPage() {
             ),
         },
         {
-            label: "Work History",
+            label: "Leave",
             content: <div>hello</div>,
         },
         {
-            label: "Edited Employees",
+            label: "Leave",
             content: <div>hello</div>,
         },
         {
             label: "Leave calender",
-            content: <CalendarTab
-            setCalendarModelOpen={setCalendarModelOpen}
-            selectedDate={selectedDate}
-            setSelectedDate={setSelectedDate}
-            />,
+            content: (
+                <CalendarTab
+                    setCalendarModelOpen={setCalendarModelOpen}
+                    selectedDate={selectedDate}
+                    setSelectedDate={setSelectedDate}
+                />
+            ),
         },
     ];
 

@@ -17,6 +17,7 @@ function EmployeeInfo({ selectedEmployee }) {
             navigator.clipboard
                 .writeText(text)
                 .then(() => console.log("Copied to clipboard:", text))
+                // TODO : hear call the tost message display the message copied to clipboard.
                 .catch((err) => console.error("Clipboard write failed:", err));
         } else {
             // Fallback to execCommand
@@ -34,6 +35,7 @@ function EmployeeInfo({ selectedEmployee }) {
                         ? "Copied using fallback"
                         : "Fallback copy failed"
                 );
+                // TODO : hear call the tost message display the message for error handle the error correctly.
             } catch (err) {
                 console.error("Fallback copy failed", err);
             }

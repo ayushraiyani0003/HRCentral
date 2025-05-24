@@ -124,7 +124,6 @@ function InterviewVsHiredCard({ className = "" }) {
                         options={viewTypeOptions}
                         value={viewType}
                         onChange={(value) => {
-                            console.log(`View type selected: ${value}`);
                             setViewType(value);
                         }}
                         isSearchable={false}
@@ -135,7 +134,6 @@ function InterviewVsHiredCard({ className = "" }) {
                         options={timePeriodOptions}
                         value={timePeriod}
                         onChange={(value) => {
-                            console.log(`Time period selected: ${value}`);
                             setTimePeriod(value);
                         }}
                         isSearchable={false}
