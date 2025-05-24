@@ -1,5 +1,5 @@
 // App.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     BrowserRouter as Router,
     Routes,
@@ -10,126 +10,203 @@ import {
 import "./App.css";
 import {LoginPage, PassWordResetPage, SlipSendPage, MainLayout, FlexibleDashboardPage, EmployeePage, CheckListPage, RolesPermissions, ErrorPage, SlipGeneratePage, HomeIcon, DashboardIcon, ToastProvider} from "./index"
 
-const Analytics = () => <div className="p-4">Analytics Content</div>;
-const Projects = () => <div className="p-4">Projects Content</div>;
-const Settings = () => <div className="p-4">Settings Content</div>;
+// Route components mapping
+const routeComponents = {
+    '/': FlexibleDashboardPage,
+    '/analytics/reports': () => <div className="p-4">Analytics Reports</div>,
+    '/analytics/realtime': () => <div className="p-4">Real-time Analytics</div>,
+    '/projects': () => <div className="p-4">Projects Content</div>,
+    '/calendar': () => <div className="p-4">Calendar Content</div>,
+    '/messages': () => <div className="p-4">Messages Content</div>,
+    '/settings': () => <div className="p-4">Settings Content</div>,
+    '/slip-send': SlipSendPage,
+    '/slip-generate': SlipGeneratePage,
+    '/roles': RolesPermissions,
+    '/employees': EmployeePage,
+    '/employees/checklist': CheckListPage,
+    '/missing': () => <div className="p-4">Missing Content</div>,
+};
+
+// Helper function to extract all valid paths from menu items
+const getAllValidPaths = (menuItems) => {
+    const paths = new Set();
+    
+    const extractPaths = (items) => {
+        items.forEach(item => {
+            if (item.path && item.path !== '/logout') {
+                paths.add(item.path);
+            }
+            if (item.subMenu) {
+                extractPaths(item.subMenu);
+            }
+        });
+    };
+    
+    extractPaths(menuItems);
+    return Array.from(paths);
+};
 
 // Create a wrapper component to access useLocation inside Router
 const ProtectedRoutes = ({ isAuthenticated, menuItems }) => {
     const location = useLocation();
     const currentPath = location.pathname;
 
-    return isAuthenticated ? (
+    if (!isAuthenticated) {
+        return <Navigate to="/login" replace />;
+    }
+
+    // Get all valid paths from menu items
+    const validPaths = getAllValidPaths(menuItems);
+    
+    // Check if current path is valid (allow root path by default)
+    const isValidPath = validPaths.includes(currentPath) || currentPath === '/';
+    
+    // Redirect invalid paths to error page
+    if (!isValidPath) {
+        return <Navigate to="/error" replace state={{ 
+            errorCode: 403, 
+            message: "Access to this page is not authorized",
+            from: currentPath 
+        }} />;
+    }
+
+    return (
         <MainLayout menuItems={menuItems} selected={currentPath}>
             <Routes>
-                <Route path="/" element={<FlexibleDashboardPage />} />
-                <Route path="/analytics" element={<Analytics />} />
-                <Route
-                    path="/analytics/reports"
-                    element={<div className="p-4">Analytics Reports</div>}
-                />
-                <Route
-                    path="/analytics/realtime"
-                    element={<div className="p-4">Real-time Analytics</div>}
-                />
-                <Route path="/projects" element={<Projects />} />
-                <Route
-                    path="/calendar"
-                    element={<div className="p-4">Calendar Content</div>}
-                />
-                <Route
-                    path="/messages"
-                    element={<div className="p-4">Messages Content</div>}
-                />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/slip-send" element={<SlipSendPage />} />
-                <Route path="/roles" element={<RolesPermissions />} />
-                <Route path="/slip-generate" element={<SlipGeneratePage />} />
-                <Route path="/employees" element={<EmployeePage />} />
-                <Route
-                    path="/employees/checklist"
-                    element={<CheckListPage />}
-                />
+                {/* Generate routes dynamically from menu items */}
+                {validPaths.map(path => {
+                    const Component = routeComponents[path];
+                    return Component ? (
+                        <Route 
+                            key={path} 
+                            path={path} 
+                            element={<Component />} 
+                        />
+                    ) : null;
+                })}
+                
                 {/* Catch-all route for unmatched paths */}
                 <Route path="*" element={<ErrorPage errorCode={404} />} />
             </Routes>
         </MainLayout>
-    ) : (
-        <Navigate to="/login" replace />
     );
 };
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(true);
+    const [menuItems, setMenuItems] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     const handleLoginSuccess = () => {
         setIsAuthenticated(true);
     };
 
-    const [menuItems] = useState([
-        { id: "1", title: "Dashboard", icon: HomeIcon, path: "/" },
-        {
-            id: "2",
-            title: "Analytics",
-            icon: DashboardIcon,
-            subMenu: [
-                {
-                    id: "2_1",
-                    title: "Reports",
-                    icon: DashboardIcon,
-                    path: "/analytics/reports",
-                },
-                {
-                    id: "2_2",
-                    title: "Real-time",
-                    icon: DashboardIcon,
-                    path: "/analytics/realtime",
-                },
-            ],
-        },
-        { id: "3", title: "Projects", icon: DashboardIcon, path: "/projects" },
-        { id: "4", title: "Calendar", icon: DashboardIcon, path: "/calendar" },
-        { id: "5", title: "Messages", icon: DashboardIcon, path: "/messages" },
-        { id: "6", title: "Settings", icon: DashboardIcon, path: "/settings" },
-        {
-            id: "7",
-            title: "Slip Send",
-            icon: DashboardIcon,
-            path: "/slip-send",
-        },
-        {
-            id: "8",
-            title: "Roles & Permissions",
-            icon: DashboardIcon,
-            path: "/roles",
-        },
-        {
-            id: "9",
-            title: "Slip generate",
-            icon: DashboardIcon,
-            path: "/slip-generate",
-        },
-        {
-            id: "10",
-            title: "Employees",
-            icon: DashboardIcon,
-            subMenu: [
-                {
-                    id: "10_1",
-                    title: "Employees",
-                    icon: DashboardIcon,
-                    path: "/employees",
-                },
-                {
-                    id: "10_2",
-                    title: "Check-List",
-                    icon: DashboardIcon,
-                    path: "/employees/checklist",
-                },
-            ],
-        },
-        { id: "11", title: "Logout", icon: DashboardIcon, path: "/logout" },
-    ]);
+    // Simulate fetching menu items from server
+    useEffect(() => {
+        const fetchMenuItems = async () => {
+            try {
+                // Replace this with your actual API call
+                // const response = await fetch('/api/menu-items');
+                // const serverMenuItems = await response.json();
+                
+                // For now, using the static menu items
+                const serverMenuItems = [
+                    { id: "1", title: "Dashboard", icon: HomeIcon, path: "/" },
+                    {
+                        id: "2",
+                        title: "Analytics",
+                        icon: DashboardIcon,
+                        subMenu: [
+                            {
+                                id: "2_1",
+                                title: "Reports",
+                                icon: DashboardIcon,
+                                path: "/analytics/reports",
+                            },
+                            {
+                                id: "2_2",
+                                title: "Real-time",
+                                icon: DashboardIcon,
+                                path: "/analytics/realtime",
+                            },
+                        ],
+                    },
+                    { id: "3", title: "Projects", icon: DashboardIcon, path: "/projects" },
+                    { id: "4", title: "Calendar", icon: DashboardIcon, path: "/calendar" },
+                    { id: "5", title: "Messages", icon: DashboardIcon, path: "/messages" },
+                    { id: "6", title: "Settings", icon: DashboardIcon, path: "/settings" },
+                    {
+                        id: "7",
+                        title: "Pay Roll",
+                        icon: DashboardIcon,
+                        subMenu: [
+                            {
+                                id: "7_1",
+                                title: "Slip Send",
+                                icon: DashboardIcon,
+                                path: "/slip-send",
+                            },
+                            {
+                                id: "7_2",
+                                title: "Slip Generate",
+                                icon: DashboardIcon,
+                                path: "/slip-generate",
+                            }
+                        ]
+                    },
+                    {
+                        id: "8",
+                        title: "Roles & Permissions",
+                        icon: DashboardIcon,
+                        path: "/roles",
+                    },
+                    {
+                        id: "10",
+                        title: "Employees",
+                        icon: DashboardIcon,
+                        subMenu: [
+                            {
+                                id: "10_1",
+                                title: "Employees",
+                                icon: DashboardIcon,
+                                path: "/employees",
+                            },
+                            {
+                                id: "10_2",
+                                title: "Check-List",
+                                icon: DashboardIcon,
+                                path: "/employees/checklist",
+                            },
+                        ],
+                    },
+                    { id: "11", title: "Logout", icon: DashboardIcon, path: "/logout" },
+                    // { id: "12", title: "missing", icon: DashboardIcon, path: "/missing" },
+                ];
+                
+                setMenuItems(serverMenuItems);
+                setIsLoading(false);
+            } catch (error) {
+                console.error('Failed to fetch menu items:', error);
+                setIsLoading(false);
+                // Handle error - maybe redirect to error page or show default menu
+            }
+        };
+
+        if (isAuthenticated) {
+            fetchMenuItems();
+        } else {
+            setIsLoading(false);
+        }
+    }, [isAuthenticated]);
+
+    // Show loading while fetching menu items
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="text-lg">Loading...</div>
+            </div>
+        );
+    }
 
     return (
         <>
@@ -139,6 +216,18 @@ function App() {
                         {/* Login route - accessible when not authenticated */}
                         <Route
                             path="/login"
+                            element={
+                                !isAuthenticated ? (
+                                    <LoginPage onLoginSuccess={handleLoginSuccess} />
+                                ) : (
+                                    <Navigate to="/" replace />
+                                )
+                            }
+                        />
+
+                        {/* Password reset route */}
+                        <Route
+                            path="/password-reset"
                             element={
                                 !isAuthenticated ? (
                                     <PassWordResetPage />
