@@ -142,7 +142,10 @@ function EmailComposeModel({
     return (
         <CustomModal
             isOpen={showComposeModal}
-            onClose={() => setShowComposeModal(false)}
+            onClose={() => {
+                handleEnhancedClear();
+                setShowComposeModal(false);
+            }}
             title={isEditMode ? "✏️ Edit Draft Email" : "✍️ Compose New Email"}
             size="large"
             footer={
