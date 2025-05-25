@@ -28,7 +28,8 @@ const CustomContainer = forwardRef(
             headerClassName = "",
             icon = null,
             titleCssClass = "",
-            overflowContent=false,
+            overflowContent = false,
+            containerContentClassName = "",
             isFixedFooter,
             ...rest
         },
@@ -97,17 +98,22 @@ const CustomContainer = forwardRef(
                             <div className="container-title flex flex-col justify-start">
                                 <div className="flex flex-row gap-1.5 items-center">
                                     {icon && (
-                                        <div className="container-icon">{icon}</div>
+                                        <div className="container-icon">
+                                            {icon}
+                                        </div>
                                     )}
-                                <h3 className={`title-text ${titleCssClass}`}>
-                                    {title}
-                                    {titleRequired && (
-                                        <span className="required-mark">*</span>
-                                    )}
-                                </h3></div>
-                                <h4 className="title-subtext">
-                                    {description}
-                                </h4>
+                                    <h3
+                                        className={`title-text ${titleCssClass}`}
+                                    >
+                                        {title}
+                                        {titleRequired && (
+                                            <span className="required-mark">
+                                                *
+                                            </span>
+                                        )}
+                                    </h3>
+                                </div>
+                                <h4 className="title-subtext">{description}</h4>
                             </div>
                         )}
                         {headerActions && (
@@ -119,7 +125,13 @@ const CustomContainer = forwardRef(
                 )}
 
                 {/* Container Content */}
-                <div className={`container-content ${overflowContent ? "overflow-content" : ""}`} >{children}</div>
+                <div
+                    className={`container-content ${
+                        overflowContent ? "overflow-content" : ""
+                    } ${containerContentClassName}`}
+                >
+                    {children}
+                </div>
 
                 {/* Container Footer */}
                 {footerContent && (
