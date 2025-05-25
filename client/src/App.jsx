@@ -23,6 +23,7 @@ import {
     DashboardIcon,
     ToastProvider,
     LeavesPage,
+    EmailPage,
 } from "./index";
 
 // Route components mapping
@@ -41,7 +42,7 @@ const routeComponents = {
     "/employees": EmployeePage,
     "/employees/checklist": CheckListPage,
     "/missing": () => <div className="p-4">Missing Content</div>,
-    "/email": () => <div className="p-4">Email Content</div>,
+    "/email": EmailPage,
 };
 
 // Helper function to extract all valid paths from menu items
