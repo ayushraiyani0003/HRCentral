@@ -7,6 +7,7 @@ const {
     debugMailbox,
     getMailboxes,
     gmailReceiveService,
+    getEmailsByDateRange,
 } = require("./gmailReceive.service");
 
 async function debugMailboxInfo() {
@@ -272,6 +273,35 @@ async function quickTest(limit = 5) {
     }
 }
 
+// use getEmailsByDateRange
+// async getEmailsByDateRange(since, before = null, limit = 120) {
+//     return gmailReceiveService.getEmailsByDateRange(since, before, limit);
+// },
+
+async function dateRangeEmails(since, before = null, limit = 10) {
+    console.log(`🚀 QUICK TEST - Fetching ${limit} emails`);
+
+    try {
+        const emails = await getEmailsByDateRange(since, before, limit);
+        console.log(`Found ${emails.length} emails:`);
+
+        emails.forEach((email, index) => {
+            // console.log(`${index + 1}. ${email.subject || "No Subject"}`);
+            // console.log(`   Date: ${email.date}`);
+            // console.log(
+            //     `   From: ${
+            //         email.from?.text || email.from?.[0]?.address || "Unknown"
+            //     }`
+            // );
+            // console.log(`   UID: ${email.attributes?.uid}`);
+            // console.log("---");
+            console.log(email);
+        });
+    } catch (error) {
+        console.error("Quick test failed:", error);
+    }
+}
+
 // Export functions
 module.exports = {
     debugMailboxInfo,
@@ -288,7 +318,8 @@ if (require.main === module) {
     // You can uncomment one of these based on what you want to test:
 
     // Quick test (recommended first)
-    quickTest(1);
+    // quickTest((limit = 1));
+    dateRangeEmails(new Date(2025, 4, 25), new Date(2025, 5, 25), 1);
 
     // Full comprehensive debug (if quick test shows issues)
     // runComprehensiveDebug();

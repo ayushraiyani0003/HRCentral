@@ -126,13 +126,12 @@ class GmailReceiveService {
     }
 
     /**
-     * Fetch emails with detailed debugging
+     * Fetch latest emails - FIXED VERSION
      * @param {string} mailbox - Mailbox to read from
      * @param {number} limit - Number of emails to fetch
-     * @param {boolean} fetchAll - Whether to fetch from all messages or just recent
-     * @returns {Promise<Array>} Array of parsed email objects
+     * @returns {Promise<Array>} Array of parsed email objects sorted by date (newest first)
      */
-    async fetchLastEmails(mailbox = "INBOX", limit = 10, fetchAll = false) {
+    async fetchLastEmails(mailbox = "INBOX", limit = 10) {
         try {
             await this.connect();
 
@@ -143,7 +142,9 @@ class GmailReceiveService {
                         return;
                     }
 
-                    console.log(`=== FETCHING FROM ${mailbox} ===`);
+                    console.log(
+                        `=== FETCHING LATEST ${limit} EMAILS FROM ${mailbox} ===`
+                    );
                     console.log(`Total messages: ${box.messages.total}`);
                     console.log(`New messages: ${box.messages.new}`);
                     console.log(`Unseen messages: ${box.messages.unseen}`);
@@ -155,28 +156,18 @@ class GmailReceiveService {
                         return;
                     }
 
-                    let range;
-                    if (fetchAll) {
-                        // Fetch from all messages
-                        const start = Math.max(
-                            1,
-                            box.messages.total - limit + 1
-                        );
-                        const end = box.messages.total;
-                        range = `${start}:${end}`;
-                    } else {
-                        // Try different approaches
-                        // Option 1: Last N messages by sequence number
-                        const start = Math.max(
-                            1,
-                            box.messages.total - limit + 1
-                        );
-                        const end = box.messages.total;
-                        range = `${start}:${end}`;
-                    }
+                    // Calculate the correct range for the LATEST emails
+                    const totalMessages = box.messages.total;
+                    const start = Math.max(1, totalMessages - limit + 1);
+                    const end = totalMessages;
+                    const range = `${start}:${end}`;
 
-                    console.log(`Fetching range: ${range}`);
-                    console.log(`Requesting ${limit} emails`);
+                    console.log(
+                        `Fetching sequence range: ${range} (last ${limit} messages)`
+                    );
+                    console.log(
+                        `This should get messages ${start} to ${end} out of ${totalMessages} total`
+                    );
 
                     const fetch = this.imap.fetch(range, {
                         bodies: "",
@@ -186,12 +177,16 @@ class GmailReceiveService {
 
                     const emails = [];
                     let processedCount = 0;
-                    let totalMessages = 0;
+                    let totalFetched = 0;
 
                     fetch.on("message", (msg, seqno) => {
-                        console.log(`Processing message ${seqno}`);
-                        totalMessages++;
-                        let emailData = { seqno: seqno };
+                        console.log(`Processing message sequence #${seqno}`);
+                        totalFetched++;
+
+                        let emailData = {
+                            seqno: seqno,
+                            messageNumber: totalFetched, // For debugging
+                        };
                         let bodyProcessed = false;
                         let attributesProcessed = false;
 
@@ -199,21 +194,42 @@ class GmailReceiveService {
                             if (bodyProcessed && attributesProcessed) {
                                 emails.push(emailData);
                                 processedCount++;
+
                                 console.log(
-                                    `Completed processing message ${seqno} (${processedCount}/${totalMessages})`
+                                    `✅ Completed message ${seqno} (${processedCount}/${totalFetched})`
+                                );
+                                console.log(
+                                    `   Subject: ${
+                                        emailData.subject || "No Subject"
+                                    }`
+                                );
+                                console.log(`   Date: ${emailData.date}`);
+                                console.log(
+                                    `   UID: ${emailData.attributes?.uid}`
                                 );
 
-                                if (processedCount === totalMessages) {
-                                    // Sort emails by date (newest first)
+                                if (processedCount === totalFetched) {
+                                    // Sort by date - NEWEST FIRST
                                     emails.sort((a, b) => {
                                         const dateA = new Date(a.date || 0);
                                         const dateB = new Date(b.date || 0);
-                                        return dateB - dateA;
+                                        return dateB - dateA; // Newest first
                                     });
 
                                     console.log(
-                                        `Successfully processed ${emails.length} emails`
+                                        `\n🎉 Successfully processed ${emails.length} emails`
                                     );
+                                    console.log(
+                                        "📧 Email order (newest first):"
+                                    );
+                                    emails.forEach((email, index) => {
+                                        console.log(
+                                            `   ${index + 1}. ${
+                                                email.subject
+                                            } (${email.date})`
+                                        );
+                                    });
+
                                     this.disconnect();
                                     resolve(emails);
                                 }
@@ -253,17 +269,9 @@ class GmailReceiveService {
                                         references: parsed.references,
                                         inReplyTo: parsed.inReplyTo,
                                     };
-
-                                    console.log(
-                                        `Parsed email ${seqno}: ${
-                                            parsed.subject
-                                        } from ${
-                                            parsed.from?.text || "Unknown"
-                                        }`
-                                    );
                                 } catch (parseErr) {
                                     console.error(
-                                        `Error parsing email ${seqno}:`,
+                                        `❌ Error parsing email ${seqno}:`,
                                         parseErr
                                     );
                                     emailData.error = parseErr.message;
@@ -282,25 +290,24 @@ class GmailReceiveService {
                                 size: attrs.size,
                             };
 
-                            console.log(
-                                `Got attributes for message ${seqno}: UID ${attrs.uid}`
-                            );
                             attributesProcessed = true;
                             checkComplete();
                         });
                     });
 
                     fetch.once("error", (err) => {
-                        console.error("Fetch error:", err);
+                        console.error("❌ Fetch error:", err);
                         reject(err);
                     });
 
                     fetch.once("end", () => {
                         console.log(
-                            `Fetch completed, processing ${totalMessages} messages...`
+                            `📬 Fetch completed, found ${totalFetched} messages to process...`
                         );
-                        if (totalMessages === 0) {
-                            console.log("No messages were fetched");
+                        if (totalFetched === 0) {
+                            console.log(
+                                "⚠️ No messages were fetched from the specified range"
+                            );
                             this.disconnect();
                             resolve([]);
                         }
@@ -308,14 +315,202 @@ class GmailReceiveService {
                 });
             });
         } catch (error) {
-            console.error("Error fetching emails:", error);
+            console.error("❌ Error fetching emails:", error);
             this.disconnect();
             throw error;
         }
     }
 
     /**
-     * Fetch emails by UID instead of sequence number
+     * Get emails using search for better recent email fetching
+     */
+    async getRecentEmails(limit = 10, daysBack = 30) {
+        try {
+            await this.connect();
+
+            return new Promise((resolve, reject) => {
+                this.imap.openBox("INBOX", true, (err, box) => {
+                    if (err) {
+                        reject(err);
+                        return;
+                    }
+
+                    // Search for emails from the last X days
+                    const sinceDate = new Date();
+                    sinceDate.setDate(sinceDate.getDate() - daysBack);
+                    const sinceDateStr = sinceDate.toISOString().split("T")[0]; // YYYY-MM-DD format
+
+                    console.log(
+                        `🔍 Searching for emails since ${sinceDateStr}`
+                    );
+
+                    this.imap.search(
+                        ["SINCE", sinceDateStr],
+                        (err, results) => {
+                            if (err) {
+                                console.error("Search error:", err);
+                                // If search fails, fall back to fetching last emails
+                                console.log(
+                                    "Falling back to sequence-based fetch..."
+                                );
+                                this.disconnect();
+                                this.fetchLastEmails("INBOX", limit)
+                                    .then(resolve)
+                                    .catch(reject);
+                                return;
+                            }
+
+                            if (!results || results.length === 0) {
+                                console.log(
+                                    `No emails found since ${sinceDateStr}, trying all emails...`
+                                );
+                                // If no recent emails, get the last few emails regardless of date
+                                this.disconnect();
+                                this.fetchLastEmails("INBOX", limit)
+                                    .then(resolve)
+                                    .catch(reject);
+                                return;
+                            }
+
+                            console.log(
+                                `Found ${results.length} emails since ${sinceDateStr}`
+                            );
+
+                            // Get the most recent emails from the search results
+                            const recentSeqNums = results.slice(-limit);
+                            console.log(
+                                `Fetching ${
+                                    recentSeqNums.length
+                                } most recent emails: ${recentSeqNums.join(
+                                    ", "
+                                )}`
+                            );
+
+                            const fetch = this.imap.fetch(recentSeqNums, {
+                                bodies: "",
+                                markSeen: false,
+                                struct: true,
+                            });
+
+                            const emails = [];
+                            let processedCount = 0;
+                            let totalMessages = recentSeqNums.length;
+
+                            fetch.on("message", (msg, seqno) => {
+                                let emailData = { seqno: seqno };
+                                let bodyProcessed = false;
+                                let attributesProcessed = false;
+
+                                const checkComplete = () => {
+                                    if (bodyProcessed && attributesProcessed) {
+                                        emails.push(emailData);
+                                        processedCount++;
+
+                                        if (processedCount === totalMessages) {
+                                            // Sort by date - NEWEST FIRST
+                                            emails.sort(
+                                                (a, b) =>
+                                                    new Date(b.date) -
+                                                    new Date(a.date)
+                                            );
+
+                                            console.log(
+                                                `✅ Successfully processed ${emails.length} recent emails`
+                                            );
+                                            this.disconnect();
+                                            resolve(emails);
+                                        }
+                                    }
+                                };
+
+                                msg.on("body", (stream, info) => {
+                                    let buffer = "";
+                                    stream.on("data", (chunk) => {
+                                        buffer += chunk.toString("utf8");
+                                    });
+
+                                    stream.once("end", async () => {
+                                        try {
+                                            const parsed = await simpleParser(
+                                                buffer
+                                            );
+                                            emailData = {
+                                                ...emailData,
+                                                messageId: parsed.messageId,
+                                                from:
+                                                    parsed.from?.value ||
+                                                    parsed.from,
+                                                to:
+                                                    parsed.to?.value ||
+                                                    parsed.to,
+                                                cc:
+                                                    parsed.cc?.value ||
+                                                    parsed.cc,
+                                                bcc:
+                                                    parsed.bcc?.value ||
+                                                    parsed.bcc,
+                                                subject: parsed.subject,
+                                                date: parsed.date,
+                                                text: parsed.text,
+                                                html: parsed.html,
+                                                attachments:
+                                                    parsed.attachments?.map(
+                                                        (att) => ({
+                                                            filename:
+                                                                att.filename,
+                                                            contentType:
+                                                                att.contentType,
+                                                            size: att.size,
+                                                        })
+                                                    ) || [],
+                                            };
+                                        } catch (parseErr) {
+                                            console.error(
+                                                "Error parsing email:",
+                                                parseErr
+                                            );
+                                            emailData.error = parseErr.message;
+                                        }
+                                        bodyProcessed = true;
+                                        checkComplete();
+                                    });
+                                });
+
+                                msg.once("attributes", (attrs) => {
+                                    emailData.attributes = {
+                                        uid: attrs.uid,
+                                        flags: attrs.flags,
+                                        date: attrs.date,
+                                        size: attrs.size,
+                                    };
+                                    attributesProcessed = true;
+                                    checkComplete();
+                                });
+                            });
+
+                            fetch.once("error", (err) => {
+                                console.error("Fetch error:", err);
+                                reject(err);
+                            });
+
+                            fetch.once("end", () => {
+                                console.log(
+                                    `Fetch completed for ${totalMessages} recent messages`
+                                );
+                            });
+                        }
+                    );
+                });
+            });
+        } catch (error) {
+            console.error("Error getting recent emails:", error);
+            this.disconnect();
+            throw error;
+        }
+    }
+
+    /**
+     * Fetch emails by UID - IMPROVED VERSION
      */
     async fetchEmailsByUID(mailbox = "INBOX", limit = 10) {
         try {
@@ -330,9 +525,9 @@ class GmailReceiveService {
 
                     console.log(`=== FETCHING BY UID FROM ${mailbox} ===`);
                     console.log(`UID next: ${box.uidnext}`);
-                    console.log(`UID validity: ${box.uidvalidity}`);
+                    console.log(`Total messages: ${box.messages.total}`);
 
-                    // Search for all messages first to get UIDs
+                    // Search for all UIDs
                     this.imap.search(["ALL"], (err, results) => {
                         if (err) {
                             reject(err);
@@ -346,17 +541,19 @@ class GmailReceiveService {
                             return;
                         }
 
-                        console.log(`Found ${results.length} messages`);
-
-                        // Get the last 'limit' sequence numbers
-                        const seqNumbers = results.slice(-limit);
                         console.log(
-                            `Fetching sequence numbers: ${seqNumbers.join(
+                            `Found ${results.length} message sequence numbers`
+                        );
+
+                        // Get the last 'limit' sequence numbers (these are the most recent)
+                        const recentSeqNumbers = results.slice(-limit);
+                        console.log(
+                            `Fetching most recent sequence numbers: ${recentSeqNumbers.join(
                                 ", "
                             )}`
                         );
 
-                        const fetch = this.imap.fetch(seqNumbers, {
+                        const fetch = this.imap.fetch(recentSeqNumbers, {
                             bodies: "",
                             markSeen: false,
                             struct: true,
@@ -364,10 +561,9 @@ class GmailReceiveService {
 
                         const emails = [];
                         let processedCount = 0;
-                        let totalMessages = 0;
+                        let totalMessages = recentSeqNumbers.length;
 
                         fetch.on("message", (msg, seqno) => {
-                            totalMessages++;
                             let emailData = { seqno: seqno };
                             let bodyProcessed = false;
                             let attributesProcessed = false;
@@ -378,13 +574,15 @@ class GmailReceiveService {
                                     processedCount++;
 
                                     if (processedCount === totalMessages) {
+                                        // Sort by date - NEWEST FIRST
                                         emails.sort(
                                             (a, b) =>
                                                 new Date(b.date) -
                                                 new Date(a.date)
                                         );
+
                                         console.log(
-                                            `Successfully processed ${emails.length} emails`
+                                            `✅ Successfully processed ${emails.length} emails by UID`
                                         );
                                         this.disconnect();
                                         resolve(emails);
@@ -411,6 +609,9 @@ class GmailReceiveService {
                                                 parsed.from,
                                             to: parsed.to?.value || parsed.to,
                                             subject: parsed.subject,
+                                            cc: parsed.cc?.value || parsed.cc,
+                                            bcc:
+                                                parsed.bcc?.value || parsed.bcc,
                                             date: parsed.date,
                                             text: parsed.text,
                                             html: parsed.html,
@@ -472,22 +673,153 @@ class GmailReceiveService {
 
     // Keep other methods as they were...
     async searchEmails(criteria = ["ALL"], limit = 120) {
-        // Previous implementation remains the same
-        return this.fetchEmailsByUID("INBOX", limit);
+        return this.getRecentEmails(limit, 30);
     }
 
     async getUnreadEmails(limit = 120) {
-        return this.searchEmails(["UNSEEN"], limit);
+        try {
+            await this.connect();
+
+            return new Promise((resolve, reject) => {
+                this.imap.openBox("INBOX", true, (err, box) => {
+                    if (err) {
+                        reject(err);
+                        return;
+                    }
+
+                    this.imap.search(["UNSEEN"], (err, results) => {
+                        if (err) {
+                            reject(err);
+                            return;
+                        }
+
+                        if (!results || results.length === 0) {
+                            console.log("No unread emails found");
+                            this.disconnect();
+                            resolve([]);
+                            return;
+                        }
+
+                        const recentUnread = results.slice(-limit);
+                        const fetch = this.imap.fetch(recentUnread, {
+                            bodies: "",
+                            markSeen: false,
+                            struct: true,
+                        });
+
+                        const emails = [];
+                        let processedCount = 0;
+
+                        fetch.on("message", (msg, seqno) => {
+                            let emailData = { seqno: seqno };
+                            let bodyProcessed = false;
+                            let attributesProcessed = false;
+
+                            const checkComplete = () => {
+                                if (bodyProcessed && attributesProcessed) {
+                                    emails.push(emailData);
+                                    processedCount++;
+
+                                    if (
+                                        processedCount === recentUnread.length
+                                    ) {
+                                        emails.sort(
+                                            (a, b) =>
+                                                new Date(b.date) -
+                                                new Date(a.date)
+                                        );
+                                        this.disconnect();
+                                        resolve(emails);
+                                    }
+                                }
+                            };
+
+                            msg.on("body", (stream, info) => {
+                                let buffer = "";
+                                stream.on("data", (chunk) => {
+                                    buffer += chunk.toString("utf8");
+                                });
+
+                                stream.once("end", async () => {
+                                    try {
+                                        const parsed = await simpleParser(
+                                            buffer
+                                        );
+                                        emailData = {
+                                            ...emailData,
+                                            messageId: parsed.messageId,
+                                            from:
+                                                parsed.from?.value ||
+                                                parsed.from,
+                                            to: parsed.to?.value || parsed.to,
+                                            cc: parsed.cc?.value || parsed.cc,
+                                            bcc:
+                                                parsed.bcc?.value || parsed.bcc,
+                                            subject: parsed.subject,
+                                            date: parsed.date,
+                                            text: parsed.text,
+                                            html: parsed.html,
+                                        };
+                                    } catch (parseErr) {
+                                        emailData.error = parseErr.message;
+                                    }
+                                    bodyProcessed = true;
+                                    checkComplete();
+                                });
+                            });
+
+                            msg.once("attributes", (attrs) => {
+                                emailData.attributes = {
+                                    uid: attrs.uid,
+                                    flags: attrs.flags,
+                                    date: attrs.date,
+                                    size: attrs.size,
+                                };
+                                attributesProcessed = true;
+                                checkComplete();
+                            });
+                        });
+
+                        fetch.once("error", (err) => {
+                            reject(err);
+                        });
+
+                        fetch.once("end", () => {
+                            console.log(
+                                `Processed ${recentUnread.length} unread messages`
+                            );
+                        });
+                    });
+                });
+            });
+        } catch (error) {
+            console.error("Error getting unread emails:", error);
+            this.disconnect();
+            throw error;
+        }
     }
 
     async getEmailsFromSender(fromEmail, limit = 120) {
-        return this.searchEmails([["FROM", fromEmail]], limit);
+        return this.searchEmailsWithCriteria([["FROM", fromEmail]], limit);
     }
 
     async getEmailsBySubject(subject, limit = 120) {
-        return this.searchEmails([["SUBJECT", subject]], limit);
+        return this.searchEmailsWithCriteria([["SUBJECT", subject]], limit);
     }
 
+    /**
+     * Retrieves emails within a specific date range using IMAP-style criteria.
+     *
+     * @async
+     * @function
+     * @param {Date} since - The start date (inclusive) to search for emails.
+     * @param {Date|null} [before=null] - The end date (exclusive) to search for emails. If null, no upper bound is applied.
+     * @param {number} [limit=120] - The maximum number of emails to retrieve.
+     * @returns {Promise<Array>} A promise that resolves to an array of emails matching the date range and criteria.
+     *
+     * @example
+     * const emails = await getEmailsByDateRange(new Date('2025-05-01'), new Date('2025-05-10'), 50);
+     */
     async getEmailsByDateRange(since, before = null, limit = 120) {
         const sinceStr = since.toISOString().split("T")[0];
         let criteria;
@@ -502,15 +834,138 @@ class GmailReceiveService {
             criteria = [["SINCE", sinceStr]];
         }
 
-        return this.searchEmails(criteria, limit);
+        return this.searchEmailsWithCriteria(criteria, limit);
     }
 
     async getEmailsByText(text, limit = 120) {
-        return this.searchEmails([["TEXT", text]], limit);
+        return this.searchEmailsWithCriteria([["TEXT", text]], limit);
     }
 
     async getEmailsToRecipient(toEmail, limit = 120) {
-        return this.searchEmails([["TO", toEmail]], limit);
+        return this.searchEmailsWithCriteria([["TO", toEmail]], limit);
+    }
+
+    async searchEmailsWithCriteria(criteria, limit = 120) {
+        try {
+            await this.connect();
+
+            return new Promise((resolve, reject) => {
+                this.imap.openBox("INBOX", true, (err, box) => {
+                    if (err) {
+                        reject(err);
+                        return;
+                    }
+
+                    this.imap.search(criteria, (err, results) => {
+                        if (err) {
+                            reject(err);
+                            return;
+                        }
+
+                        if (!results || results.length === 0) {
+                            this.disconnect();
+                            resolve([]);
+                            return;
+                        }
+
+                        const recentResults = results.slice(-limit);
+                        const fetch = this.imap.fetch(recentResults, {
+                            bodies: "",
+                            markSeen: false,
+                            struct: true,
+                        });
+
+                        const emails = [];
+                        let processedCount = 0;
+
+                        fetch.on("message", (msg, seqno) => {
+                            let emailData = { seqno: seqno };
+                            let bodyProcessed = false;
+                            let attributesProcessed = false;
+
+                            const checkComplete = () => {
+                                if (bodyProcessed && attributesProcessed) {
+                                    emails.push(emailData);
+                                    processedCount++;
+
+                                    if (
+                                        processedCount === recentResults.length
+                                    ) {
+                                        emails.sort(
+                                            (a, b) =>
+                                                new Date(b.date) -
+                                                new Date(a.date)
+                                        );
+                                        this.disconnect();
+                                        resolve(emails);
+                                    }
+                                }
+                            };
+
+                            msg.on("body", (stream, info) => {
+                                let buffer = "";
+                                stream.on("data", (chunk) => {
+                                    buffer += chunk.toString("utf8");
+                                });
+
+                                stream.once("end", async () => {
+                                    try {
+                                        const parsed = await simpleParser(
+                                            buffer
+                                        );
+                                        emailData = {
+                                            ...emailData,
+                                            messageId: parsed.messageId,
+                                            from:
+                                                parsed.from?.value ||
+                                                parsed.from,
+                                            to: parsed.to?.value || parsed.to,
+                                            cc: parsed.cc?.value ||
+                                                parsed.cc || [{}],
+                                            bcc: parsed.bcc?.value ||
+                                                parsed.bcc || [{}],
+                                            subject: parsed.subject,
+                                            date: parsed.date,
+                                            text: parsed.text,
+                                            html: parsed.html,
+                                        };
+                                    } catch (parseErr) {
+                                        emailData.error = parseErr.message;
+                                    }
+                                    bodyProcessed = true;
+                                    checkComplete();
+                                });
+                            });
+
+                            msg.once("attributes", (attrs) => {
+                                emailData.attributes = {
+                                    uid: attrs.uid,
+                                    flags: attrs.flags,
+                                    date: attrs.date,
+                                    size: attrs.size,
+                                };
+                                attributesProcessed = true;
+                                checkComplete();
+                            });
+                        });
+
+                        fetch.once("error", (err) => {
+                            reject(err);
+                        });
+
+                        fetch.once("end", () => {
+                            console.log(
+                                `Processed ${recentResults.length} search results`
+                            );
+                        });
+                    });
+                });
+            });
+        } catch (error) {
+            console.error("Error searching emails:", error);
+            this.disconnect();
+            throw error;
+        }
     }
 }
 
@@ -520,12 +975,22 @@ module.exports = {
     GmailReceiveService,
     gmailReceiveService,
 
+    // Use the new getRecentEmails method as default
     async getLastEmails(limit = 120) {
+        return gmailReceiveService.getRecentEmails(limit, 30);
+    },
+
+    // Keep the old method available but fixed
+    async getLastEmailsBySequence(limit = 120) {
         return gmailReceiveService.fetchLastEmails("INBOX", limit);
     },
 
     async getLastEmailsByUID(limit = 120) {
         return gmailReceiveService.fetchEmailsByUID("INBOX", limit);
+    },
+
+    async getRecentEmails(limit = 120, daysBack = 7) {
+        return gmailReceiveService.getRecentEmails(limit, daysBack);
     },
 
     async debugMailbox() {
@@ -550,5 +1015,9 @@ module.exports = {
 
     async getEmailsBySubject(subject, limit = 120) {
         return gmailReceiveService.getEmailsBySubject(subject, limit);
+    },
+
+    async getEmailsByDateRange(since, before = null, limit = 120) {
+        return gmailReceiveService.getEmailsByDateRange(since, before, limit);
     },
 };
