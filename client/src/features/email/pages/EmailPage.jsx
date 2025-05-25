@@ -1,5 +1,9 @@
 import React, { useState } from "react";
-import { EmailSidebar, EmailMainSection } from "../components";
+import {
+    EmailSidebar,
+    EmailMainSection,
+    EmailComposeModel,
+} from "../components";
 import {
     CustomContainer,
     CustomTextInput,
@@ -71,69 +75,18 @@ function EmailPage() {
             </CustomContainer>
             {/* Compose Email Modal open if  */}
             {showComposeModal && (
-                <CustomModal
-                    isOpen={showComposeModal}
-                    onClose={() => setShowComposeModal(false)}
-                    title="✍️ Compose New Email"
-                    size="large"
-                    footer={
-                        <div className="flex gap-3 justify-end">
-                            <button
-                                onClick={() => setShowComposeModal(false)}
-                                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleComposeClear}
-                                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                            >
-                                Clear
-                            </button>
-                            <button
-                                onClick={handleComposeSubmit}
-                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                            >
-                                Send Email
-                            </button>
-                        </div>
-                    }
-                >
-                    <div className="space-y-4">
-                        <CustomTextInput
-                            label="To"
-                            placeholder="Enter recipient email address"
-                            value={emailTo}
-                            onChange={setEmailTo}
-                            required={true}
-                            type="email"
-                        />
-
-                        <CustomTextInput
-                            label="Subject"
-                            placeholder="Enter email subject"
-                            value={emailSubject}
-                            onChange={setEmailSubject}
-                            required={true}
-                        />
-
-                        <RichTextEditor
-                            label="Message"
-                            placeholder="Type your email message here..."
-                            value={emailContent}
-                            onChange={setEmailContent}
-                            required={true}
-                            toolbarOptions={[
-                                "bold",
-                                "italic",
-                                "underline",
-                                "list",
-                            ]}
-                            minHeight="200px"
-                            maxHeight="400px"
-                        />
-                    </div>
-                </CustomModal>
+                <EmailComposeModel
+                    showComposeModal={showComposeModal}
+                    setShowComposeModal={setShowComposeModal}
+                    emailTo={emailTo}
+                    setEmailTo={setEmailTo}
+                    emailSubject={emailSubject}
+                    setEmailSubject={setEmailSubject}
+                    emailContent={emailContent}
+                    setEmailContent={setEmailContent}
+                    handleComposeClear={handleComposeClear}
+                    handleComposeSubmit={handleComposeSubmit}
+                />
             )}
         </div>
     );
