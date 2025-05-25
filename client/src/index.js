@@ -1,4 +1,3 @@
-
 import { LoginPage, PassWordResetPage, SlipSendPage } from "./features";
 import { ToastProvider } from "./components";
 import MainLayout from "./layouts/MainLayout";
@@ -9,7 +8,23 @@ import SlipGeneratePage from "./features/SlipGenerate/pages/SlipGeneratePage";
 import FlexibleDashboardPage from "./features/dashboard/pages/DashboardPage";
 import EmployeePage from "./features/employee/pages/EmployeePage";
 import CheckListPage from "./features/employee/pages/CheckListPage";
-import LeavesPage from './features/leaves/pages/LeavesPage'
+import LeavesPage from "./features/leaves/pages/LeavesPage";
+import EmailPage from "./features/email/pages/EmailPage";
 
-
-export {LoginPage, PassWordResetPage, SlipSendPage, MainLayout, FlexibleDashboardPage, EmployeePage, CheckListPage, RolesPermissions, ErrorPage, SlipGeneratePage, HomeIcon, DashboardIcon, ToastProvider, LeavesPage};
+export {
+    LoginPage,
+    PassWordResetPage,
+    SlipSendPage,
+    MainLayout,
+    FlexibleDashboardPage,
+    EmployeePage,
+    CheckListPage,
+    RolesPermissions,
+    ErrorPage,
+    SlipGeneratePage,
+    HomeIcon,
+    DashboardIcon,
+    ToastProvider,
+    LeavesPage,
+    EmailPage,
+};
