@@ -41,6 +41,7 @@ const routeComponents = {
     "/employees": EmployeePage,
     "/employees/checklist": CheckListPage,
     "/missing": () => <div className="p-4">Missing Content</div>,
+    "/email": () => <div className="p-4">Email Content</div>,
 };
 
 // Helper function to extract all valid paths from menu items
@@ -223,6 +224,12 @@ function App() {
                                 path: "/employees/checklist",
                             },
                         ],
+                    },
+                    {
+                        id: "9",
+                        title: "Email",
+                        icon: DashboardIcon,
+                        path: "/email",
                     },
                     {
                         id: "11",
