@@ -28,7 +28,6 @@ function EmailPage() {
     const bottomMenuItems = [
         { id: "settings", label: "Settings", icon: "⚙️" },
         { id: "help", label: "Help", icon: "❓" },
-        { id: "logout", label: "Logout", icon: "🚪" },
     ];
 
     const handleMenuSelect = (menuId) => {
