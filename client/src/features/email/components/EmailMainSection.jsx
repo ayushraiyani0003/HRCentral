@@ -12,6 +12,7 @@ function EmailMainSection({
     activeMenu,
     setShowComposeModal = () => {},
     searchQuery,
+    setSelectedDraftEmail,
 }) {
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
@@ -127,6 +128,10 @@ function EmailMainSection({
                 senderEmail: "me@mycompany.com",
                 senderName: "Me",
                 subject: "Re: Project Timeline Discussion",
+                recipientEmail: "client@external.com",
+                recipientName: "Client Name",
+                cc: "team@company.com,ayush@gmail.com",
+                bcc: "support@techservice.com, hello@mycompany.com",
                 content:
                     "Thank you for the detailed project timeline. I have reviewed the milestones and have a few suggestions that might help optimize our delivery schedule. Would you be available for a quick call tomorrow to discuss?",
                 contentPreview:
@@ -212,6 +217,13 @@ function EmailMainSection({
     // Handle email selection
     const handleEmailPress = (email) => {
         // if  activeMenu === "draft" || then open the emails in the draft wirth files info.
+        if (activeMenu === "draft") {
+            setShowComposeModal(true);
+            setSelectedDraftEmail(email);
+            console.log(email);
+
+            return;
+        }
         setSelectedEmail(email);
         setShowEmailDetails(true);
 

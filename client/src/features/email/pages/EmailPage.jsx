@@ -17,6 +17,7 @@ function EmailPage() {
     const [emailSubject, setEmailSubject] = useState("");
     const [emailTo, setEmailTo] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
+    const [selectedDraftEmail, setSelectedDraftEmail] = useState(null);
 
     const menuItems = [
         { id: "inbox", label: "Inbox", icon: "📥", count: 12 },
@@ -65,17 +66,20 @@ function EmailPage() {
                     bottomMenuItems={bottomMenuItems}
                     setShowComposeModal={setShowComposeModal}
                     searchQuery={searchQuery}
-                    setsearchQuery={setSearchQuery}
+                    setSearchQuery={setSearchQuery}
                 />
                 <EmailMainSection
                     activeMenu={activeMenu}
                     searchQuery={searchQuery}
                     setShowComposeModal={setShowComposeModal}
+                    setSelectedDraftEmail={setSelectedDraftEmail}
                 />
             </CustomContainer>
             {/* Compose Email Modal open if  */}
             {showComposeModal && (
                 <EmailComposeModel
+                    editData={selectedDraftEmail}
+                    setEditData={setSelectedDraftEmail}
                     showComposeModal={showComposeModal}
                     setShowComposeModal={setShowComposeModal}
                     emailTo={emailTo}

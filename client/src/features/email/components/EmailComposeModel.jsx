@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     CustomTextInput,
     RichTextEditor,
@@ -8,6 +8,8 @@ import { InfoIcon } from "../../../utils/SvgIcon";
 import MultiEmailInput from "./MultiEmailInput"; // Import the new component
 
 function EmailComposeModel({
+    editData,
+    setEditData,
     showComposeModal,
     setShowComposeModal,
     emailTo,
@@ -25,6 +27,52 @@ function EmailComposeModel({
     const [showCc, setShowCc] = useState(false);
     const [showBcc, setShowBcc] = useState(false);
     const [attachments, setAttachments] = useState([]);
+    const [requestReadReceipt, setRequestReadReceipt] = useState(false);
+
+    // Load edit data when editData changes
+    useEffect(() => {
+        if (editData && showComposeModal) {
+            // Populate main fields
+            setEmailSubject(editData.subject || "");
+            setEmailContent(editData.content || "");
+
+            // Handle attachments if they exist
+            if (editData.attachments && editData.attachments.length > 0) {
+                setAttachments(editData.attachments);
+            }
+
+            // If the editData has recipients (you might need to add these fields to your draft data structure)
+            if (editData.recipientEmail) {
+                setEmailTo(editData.recipientEmail);
+            }
+            if (editData.cc) {
+                setEmailCc(editData.cc);
+                setShowCc(true); // Show CC field if there's CC data
+            }
+            if (editData.bcc) {
+                setEmailBcc(editData.bcc);
+                setShowBcc(true); // Show BCC field if there's BCC data
+            }
+
+            // Handle read receipt if stored in editData
+            if (editData.requestReadReceipt) {
+                setRequestReadReceipt(editData.requestReadReceipt);
+            }
+        }
+    }, [
+        editData,
+        showComposeModal,
+        setEmailTo,
+        setEmailSubject,
+        setEmailContent,
+    ]);
+
+    // Clear edit data when modal closes or is cleared
+    useEffect(() => {
+        if (!showComposeModal && editData) {
+            setEditData(null); // Clear edit data when modal closes
+        }
+    }, [showComposeModal, editData, setEditData]);
 
     // Handle file attachment
     const handleFileUpload = (event) => {
@@ -61,10 +109,11 @@ function EmailComposeModel({
         setShowBcc(false);
         setAttachments([]);
         setRequestReadReceipt(false);
+        setEditData(null); // Clear edit data
         handleComposeClear();
     };
 
-    // Enhanced submit function
+    // TODO: Handle the submit hear
     const handleEnhancedSubmit = () => {
         // Prepare email data with comma-separated email strings
         const emailData = {
@@ -75,6 +124,8 @@ function EmailComposeModel({
             content: emailContent,
             attachments: attachments,
             requestReadReceipt: requestReadReceipt,
+            // Include edit data ID if editing
+            ...(editData && { id: editData.id, isDraft: editData.isDraft }),
         };
 
         console.log("Email data being sent to server:", emailData);
@@ -83,17 +134,22 @@ function EmailComposeModel({
         handleComposeSubmit(emailData);
     };
 
+    // TODO:handle the Draft hear
+
+    // Determine if we're in edit mode
+    const isEditMode = editData && editData.id;
+
     return (
         <CustomModal
             isOpen={showComposeModal}
             onClose={() => setShowComposeModal(false)}
-            title="✍️ Compose New Email"
+            title={isEditMode ? "✏️ Edit Draft Email" : "✍️ Compose New Email"}
             size="large"
             footer={
                 <div className="flex gap-3 justify-end">
                     <button
                         onClick={() => {
-                            handleComposeClear();
+                            handleEnhancedClear();
                             setShowComposeModal(false);
                         }}
                         className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
@@ -111,6 +167,14 @@ function EmailComposeModel({
                         className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
                         disabled={!emailTo.trim() || !emailSubject.trim()}
                     >
+                        <span>💾</span>
+                        Draft Email
+                    </button>
+                    <button
+                        onClick={handleEnhancedSubmit}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                        disabled={!emailTo.trim() || !emailSubject.trim()}
+                    >
                         <span>📧</span>
                         Send Email
                     </button>
@@ -118,6 +182,21 @@ function EmailComposeModel({
             }
         >
             <div className="space-y-4">
+                {/* Edit Mode Indicator */}
+                {isEditMode && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                        <div className="flex items-center gap-2">
+                            <span className="text-yellow-600">✏️</span>
+                            <span className="text-sm font-medium text-yellow-800">
+                                Editing Draft: {editData.subject || "Untitled"}
+                            </span>
+                            <span className="text-xs text-yellow-600 bg-yellow-100 px-2 py-1 rounded-full">
+                                Draft ID: {editData.id}
+                            </span>
+                        </div>
+                    </div>
+                )}
+
                 {/* To Field - Using MultiEmailInput */}
                 <MultiEmailInput
                     label="To"
@@ -126,6 +205,7 @@ function EmailComposeModel({
                     onChange={setEmailTo}
                     required={true}
                 />
+
                 {/* CC/BCC Toggle Buttons */}
                 <div className="flex gap-2 items-center">
                     <button
@@ -155,6 +235,7 @@ function EmailComposeModel({
                         <InfoIcon className="text-xs text-gray-500 hover:text-gray-700" />
                     </button>
                 </div>
+
                 {/* CC Field - Using MultiEmailInput */}
                 {showCc && (
                     <div className="relative">
@@ -166,6 +247,7 @@ function EmailComposeModel({
                         />
                     </div>
                 )}
+
                 {/* BCC Field - Using MultiEmailInput */}
                 {showBcc && (
                     <div className="relative">
@@ -177,6 +259,7 @@ function EmailComposeModel({
                         />
                     </div>
                 )}
+
                 {/* Subject Field */}
                 <CustomTextInput
                     label="Subject"
@@ -185,6 +268,7 @@ function EmailComposeModel({
                     onChange={setEmailSubject}
                     required={true}
                 />
+
                 {/* File Attachment */}
                 <div className="space-y-2">
                     <div className="flex items-center gap-2">
@@ -239,6 +323,7 @@ function EmailComposeModel({
                         </div>
                     )}
                 </div>
+
                 {/* Message Content */}
                 <RichTextEditor
                     label="Message"
@@ -258,6 +343,8 @@ function EmailComposeModel({
                     minHeight="200px"
                     maxHeight="400px"
                 />
+
+                {/* Email Summary */}
                 {(emailTo.length > 0 ||
                     emailCc.length > 0 ||
                     emailBcc.length > 0 ||
