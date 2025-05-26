@@ -319,7 +319,11 @@ if (require.main === module) {
 
     // Quick test (recommended first)
     // quickTest((limit = 1));
-    dateRangeEmails(new Date(2025, 4, 25), new Date(2025, 5, 25), 1);
+    dateRangeEmails(
+        new Date(2025, 4, 25, 11, 16, 31),
+        new Date(2025, 5, 25, 11, 16, 32),
+        2
+    );
 
     // Full comprehensive debug (if quick test shows issues)
     // runComprehensiveDebug();

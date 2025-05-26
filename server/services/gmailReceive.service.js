@@ -821,6 +821,10 @@ class GmailReceiveService {
      * const emails = await getEmailsByDateRange(new Date('2025-05-01'), new Date('2025-05-10'), 50);
      */
     async getEmailsByDateRange(since, before = null, limit = 120) {
+        console.log("Getting emails by date range...");
+        console.log(since);
+        console.log(before);
+
         const sinceStr = since.toISOString().split("T")[0];
         let criteria;
 
@@ -834,7 +838,22 @@ class GmailReceiveService {
             criteria = [["SINCE", sinceStr]];
         }
 
-        return this.searchEmailsWithCriteria(criteria, limit);
+        // Await the raw result from IMAP
+        const rawEmails = await this.searchEmailsWithCriteria(criteria, limit);
+
+        // Now filter by full date-time range (not just date)
+        const filteredEmails = rawEmails.filter((email) => {
+            console.log("since", since);
+            console.log(email.date);
+            console.log("before", before);
+
+            const emailDate = new Date(email.date);
+            return emailDate >= since && (before ? emailDate < before : true);
+        });
+
+        console.log(filteredEmails.length);
+
+        return filteredEmails;
     }
 
     async getEmailsByText(text, limit = 120) {
