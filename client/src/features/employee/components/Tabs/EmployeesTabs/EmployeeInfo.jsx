@@ -119,38 +119,50 @@ function EmployeeInfo({ selectedEmployee }) {
                             }`}
                         >
                             <ul>
-                                {/* Profile menu item */}
+                                {/* basic info menu item */}
                                 <li>
                                     <a
                                         href="/profile"
                                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition-colors"
                                     >
                                         <span className="flex items-center gap-2">
-                                            Profile
+                                            Employee Overview
                                         </span>
                                     </a>
                                 </li>
 
-                                {/* Settings menu item */}
+                                {/* basic with resume menu item */}
                                 <li>
                                     <a
                                         href="/settings"
                                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition-colors"
                                     >
                                         <span className="flex items-center gap-2">
-                                            Settings
+                                            Employee Profile
                                         </span>
                                     </a>
                                 </li>
 
-                                {/* Sign out menu item with top border */}
-                                <li className="border-t border-gray-100 mt-1 pt-1">
+                                {/* Skills menu item */}
+                                <li>
                                     <a
-                                        href="/logout"
-                                        className="block px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors"
+                                        href="/settings"
+                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition-colors"
                                     >
                                         <span className="flex items-center gap-2">
-                                            Sign out
+                                            Skill-Based Profile
+                                        </span>
+                                    </a>
+                                </li>
+
+                                {/* Skills menu item */}
+                                <li>
+                                    <a
+                                        href="/settings"
+                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition-colors"
+                                    >
+                                        <span className="flex items-center gap-2">
+                                            Complete Candidate Profile
                                         </span>
                                     </a>
                                 </li>

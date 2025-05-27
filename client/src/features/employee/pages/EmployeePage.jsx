@@ -19,7 +19,7 @@ import {
 import ExitedEmployeeTabs from "../components/Tabs/ExitedEmployeeTabs/ExitedEmployeeTabs";
 
 function EmployeePage() {
-    const [selectedTab, setSelectedTab] = useState(1);
+    const [selectedTab, setSelectedTab] = useState(0);
     const [addEmployeeModelOpen, setAddEmployeeModelOpen] = useState(false);
     const [uploadEmployeeModelOpen, setUploadEmployeeModelOpen] =
         useState(false);
