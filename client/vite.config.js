@@ -4,7 +4,6 @@ import tailwindcss from "@tailwindcss/vite";
 
 // https://vite.dev/config/
 export default defineConfig({
-
     plugins: [react(), tailwindcss()],
     assetsInclude: [
         "**/*.xlsx",
@@ -21,7 +20,9 @@ export default defineConfig({
     ],
     server: {
         proxy: {
-            '/api':  'http://localhost:5009',
+            "/api": "http://localhost:5009",
         },
+        host: true,
+        port: 3001, // change to any desired port
     },
 });
