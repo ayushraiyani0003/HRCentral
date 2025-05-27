@@ -1,6 +1,6 @@
 import React from "react";
 import { CustomTable, CustomButton } from "../../../../../components";
-import { DeleteIcon, EditIcon, PasswordHideIcon } from "../../../../../utils/SvgIcon";
+import { DeleteIcon, EditIcon, ViewIcon } from "../../../../../utils/SvgIcon";
 
 function ExitedEmployeeTabs() {
     // Define the columns structure for exited employees
@@ -121,7 +121,7 @@ function ExitedEmployeeTabs() {
                             className="text-blue-600 hover:text-blue-800"
                             title="View Details"
                         >
-                            <PasswordHideIcon />
+                            <ViewIcon />
                         </button>
 
                         {/* Edit Button */}
@@ -243,7 +243,11 @@ function ExitedEmployeeTabs() {
     const handleDelete = (id) => {
         console.log("Delete exit record with ID:", id);
         // Implement delete logic with confirmation
-        if (window.confirm("Are you sure you want to delete this exit record? This action cannot be undone.")) {
+        if (
+            window.confirm(
+                "Are you sure you want to delete this exit record? This action cannot be undone."
+            )
+        ) {
             // Delete logic here
         }
     };
@@ -286,7 +290,11 @@ function ExitedEmployeeTabs() {
                 searchable={true}
                 extraHeaderContent={extraHeaderContent}
                 filterable={true}
-                filterableColumns={["department", "exitReason", "relievingStatus"]}
+                filterableColumns={[
+                    "department",
+                    "exitReason",
+                    "relievingStatus",
+                ]}
                 sortable={true}
                 pagination={true}
                 className="exited-employee-table"

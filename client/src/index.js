@@ -11,6 +11,7 @@ import CheckListPage from "./features/employee/pages/CheckListPage";
 import LeavesPage from "./features/leaves/pages/LeavesPage";
 import EmailPage from "./features/email/pages/EmailPage";
 import CompanyStructurePage from "./features/companyStructure/pages/CompanyStructurePage";
+import HiringRequestsPage from "./features/HiringRequests/pages/HiringRequestsPage";
 
 export {
     LoginPage,
@@ -29,4 +30,5 @@ export {
     LeavesPage,
     EmailPage,
     CompanyStructurePage,
+    HiringRequestsPage,
 };

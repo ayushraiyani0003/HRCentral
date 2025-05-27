@@ -1,6 +1,6 @@
 import React from "react";
 import { CustomTable, CustomButton } from "../../../../../components";
-import { DeleteIcon, EditIcon, PasswordHideIcon } from "../../../../../utils/SvgIcon";
+import { DeleteIcon, EditIcon, ViewIcon } from "../../../../../utils/SvgIcon";
 
 function WorkHistoryTabs() {
     // Define the columns structure
@@ -115,7 +115,7 @@ function WorkHistoryTabs() {
                             className="text-blue-600 hover:text-blue-800"
                             title="View Details"
                         >
-                            <PasswordHideIcon />
+                            <ViewIcon />
                         </button>
 
                         {/* Delete Button */}

@@ -25,15 +25,16 @@ import {
     LeavesPage,
     EmailPage,
     CompanyStructurePage,
+    HiringRequestsPage,
 } from "./index";
 
 // Route components mapping
 const routeComponents = {
     "/": FlexibleDashboardPage,
-    "/admin/company-structure": CompanyStructurePage,
-    "/analytics/realtime": () => <div className="p-4">Real-time Analytics</div>,
-    "/projects": () => <div className="p-4">Projects Content</div>,
-    "/calendar": () => <div className="p-4">Calendar Content</div>,
+    "/company-structure": CompanyStructurePage,
+    "/hiring-requests": HiringRequestsPage,
+    "/applicant-tracking": () => <div className="p-4">Applicant Tracking</div>,
+    "/recruitment-setup": () => <div className="p-4">Recruitment Setup</div>,
     "/messages": () => <div className="p-4">Messages Content</div>,
     "/leaves": LeavesPage,
     "/settings": () => <div className="p-4">Settings Content</div>,
@@ -142,21 +143,34 @@ function App() {
                                 id: "2_1",
                                 title: "Company Structure",
                                 icon: DashboardIcon,
-                                path: "/admin/company-structure",
-                            },
-                            {
-                                id: "2_2",
-                                title: "Real-time",
-                                icon: DashboardIcon,
-                                path: "/analytics/realtime",
+                                path: "/company-structure",
                             },
                         ],
                     },
                     {
                         id: "3",
-                        title: "Projects",
+                        title: "Recruitment",
                         icon: DashboardIcon,
-                        path: "/projects",
+                        subMenu: [
+                            {
+                                id: "3_1",
+                                title: "Manpower Requisition",
+                                icon: DashboardIcon,
+                                path: "/hiring-requests",
+                            },
+                            {
+                                id: "3_2",
+                                title: "Applicant Tracking",
+                                icon: DashboardIcon,
+                                path: "/applicant-tracking",
+                            },
+                            {
+                                id: "3_4",
+                                title: "Recruitment Setup",
+                                icon: DashboardIcon,
+                                path: "/recruitment-setup",
+                            },
+                        ],
                     },
                     {
                         id: "4",
