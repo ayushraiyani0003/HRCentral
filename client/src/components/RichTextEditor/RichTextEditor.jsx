@@ -50,6 +50,8 @@ const RichTextEditor = forwardRef(
             toolbarOptions = ["bold", "italic", "underline", "list"],
             minHeight = "120px",
             maxHeight = "300px",
+            disabled = false,
+            readOnly = false,
             ...rest
         },
         ref
@@ -278,11 +280,13 @@ const RichTextEditor = forwardRef(
                     </label>
                 )}
 
-                <div className="rich-text-editor-toolbar">
-                    <div className="format-buttons">
-                        {renderFormatButtons()}
+                {toolbarOptions.length > 0 && (
+                    <div className="rich-text-editor-toolbar">
+                        <div className="format-buttons">
+                            {renderFormatButtons()}
+                        </div>
                     </div>
-                </div>
+                )}
 
                 <div
                     className={`rich-text-editor-wrapper ${
@@ -292,7 +296,7 @@ const RichTextEditor = forwardRef(
                     <div
                         ref={editorRef}
                         className="rich-text-editor-field"
-                        contentEditable="true"
+                        contentEditable={!(disabled || readOnly)}
                         onFocus={handleFocus}
                         onBlur={handleBlur}
                         onInput={handleInput}
@@ -300,10 +304,10 @@ const RichTextEditor = forwardRef(
                         data-placeholder={placeholder}
                         style={{ minHeight, maxHeight }}
                         {...rest}
-                    ></div>
+                    />
 
                     <div className="rich-text-editor-icons">
-                        {showClearButton && (
+                        {showClearButton && !(disabled || readOnly) && (
                             <button
                                 type="button"
                                 className="clear-editor-button"

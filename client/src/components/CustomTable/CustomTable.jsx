@@ -270,6 +270,7 @@ const CustomTable = ({
     rowHeight = "61px", // Default height for each row (including borders)
     tdClassName = "p-2", // Default height for each cell (including borders
     thCustomStyles = "",
+    tableControlClassName = "",
 }) => {
     // State for table functionality
     const [currentPage, setCurrentPage] = useState(1);
@@ -648,65 +649,65 @@ const CustomTable = ({
             style={{ width: tableWidth }}
         >
             {/* Table controls */}
-            <div className="table-controls">
+            <div className={`table-controls ${tableControlClassName}`}>
                 <div className="flex flex-row gap-3 items-center">
-                {searchable && (
-                    <div className="search-container">
-                        <input
-                            type="text"
-                            className="custom-input-field search-input"
-                            placeholder="Search..."
-                            value={searchTerm}
-                            onChange={handleSearch}
-                        />
-                        <div className="custom-table-search-input-icons">
-                            {searchTerm && (
-                                <button
-                                    type="button"
-                                    className="clear-input-button"
-                                    onClick={() => setSearchTerm("")}
-                                    aria-label="Clear search"
-                                >
+                    {searchable && (
+                        <div className="search-container">
+                            <input
+                                type="text"
+                                className="custom-input-field search-input"
+                                placeholder="Search..."
+                                value={searchTerm}
+                                onChange={handleSearch}
+                            />
+                            <div className="custom-table-search-input-icons">
+                                {searchTerm && (
+                                    <button
+                                        type="button"
+                                        className="clear-input-button"
+                                        onClick={() => setSearchTerm("")}
+                                        aria-label="Clear search"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 20 20"
+                                            fill="currentColor"
+                                            className="clear-icon"
+                                            width="20"
+                                            height="20"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                    </button>
+                                )}
+                                <div className="input-icon">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 20 20"
-                                        fill="currentColor"
-                                        className="clear-icon"
-                                        width="20"
-                                        height="20"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        strokeWidth={1.5}
+                                        stroke="currentColor"
+                                        className="search-icon"
                                     >
                                         <path
-                                            fillRule="evenodd"
-                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                                            clipRule="evenodd"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
                                         />
                                     </svg>
-                                </button>
-                            )}
-                            <div className="input-icon">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth={1.5}
-                                    stroke="currentColor"
-                                    className="search-icon"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-                                    />
-                                </svg>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
-                {extraHeaderContent && (
-                    <div className="extra-header-content">
-                        {extraHeaderContent}
-                    </div>
-                )}
+                    )}
+                    {extraHeaderContent && (
+                        <div className="extra-header-content">
+                            {extraHeaderContent}
+                        </div>
+                    )}
                 </div>
 
                 {filterable && (
@@ -877,7 +878,10 @@ const CustomTable = ({
                             <tr>
                                 <td
                                     colSpan={columns.length}
-                                    className={`loading-cell ${tdClassName ? tdClassName : ""}`}                                >
+                                    className={`loading-cell ${
+                                        tdClassName ? tdClassName : ""
+                                    }`}
+                                >
                                     <div className="loading-spinner"></div>
                                     <span>Loading...</span>
                                 </td>
@@ -894,7 +898,11 @@ const CustomTable = ({
                                     {columns.map((column, colIndex) => (
                                         <td
                                             key={`cell-${rowIndex}-${colIndex}`}
-                                            className={`${column.className || ""} ${tdClassName ? tdClassName : ""}`}
+                                            className={`${
+                                                column.className || ""
+                                            } ${
+                                                tdClassName ? tdClassName : ""
+                                            }`}
                                         >
                                             {renderCell(item, column)}
                                         </td>
@@ -905,7 +913,9 @@ const CustomTable = ({
                             <tr>
                                 <td
                                     colSpan={columns.length}
-                                    className={`empty-cell ${tdClassName ? tdClassName : ""}`}
+                                    className={`empty-cell ${
+                                        tdClassName ? tdClassName : ""
+                                    }`}
                                 >
                                     {emptyMessage}
                                 </td>

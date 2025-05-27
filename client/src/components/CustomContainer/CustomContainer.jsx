@@ -30,6 +30,7 @@ const CustomContainer = forwardRef(
             titleCssClass = "",
             overflowContent = false,
             containerContentClassName = "",
+            headerActionsClassName = "",
             isFixedFooter,
             ...rest
         },
@@ -117,7 +118,9 @@ const CustomContainer = forwardRef(
                             </div>
                         )}
                         {headerActions && (
-                            <div className="container-header-actions">
+                            <div
+                                className={`container-header-actions ${headerActionsClassName}`}
+                            >
                                 {headerActions}
                             </div>
                         )}
