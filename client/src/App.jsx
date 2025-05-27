@@ -24,12 +24,14 @@ import {
     ToastProvider,
     LeavesPage,
     EmailPage,
+    CompanyStructurePage,
 } from "./index";
+import missing from "./features/missing/missing";
 
 // Route components mapping
 const routeComponents = {
     "/": FlexibleDashboardPage,
-    "/analytics/reports": () => <div className="p-4">Analytics Reports</div>,
+    "/admin/company-structure": CompanyStructurePage,
     "/analytics/realtime": () => <div className="p-4">Real-time Analytics</div>,
     "/projects": () => <div className="p-4">Projects Content</div>,
     "/calendar": () => <div className="p-4">Calendar Content</div>,
@@ -41,7 +43,7 @@ const routeComponents = {
     "/roles": RolesPermissions,
     "/employees": EmployeePage,
     "/employees/checklist": CheckListPage,
-    "/missing": () => <div className="p-4">Missing Content</div>,
+    "/missing": missing,
     "/email": EmailPage,
 };
 
@@ -134,14 +136,14 @@ function App() {
                     { id: "1", title: "Dashboard", icon: HomeIcon, path: "/" },
                     {
                         id: "2",
-                        title: "Analytics",
+                        title: "Admin",
                         icon: DashboardIcon,
                         subMenu: [
                             {
                                 id: "2_1",
-                                title: "Reports",
+                                title: "Company Structure",
                                 icon: DashboardIcon,
-                                path: "/analytics/reports",
+                                path: "/admin/company-structure",
                             },
                             {
                                 id: "2_2",
@@ -236,7 +238,7 @@ function App() {
                         id: "11",
                         title: "Logout",
                         icon: DashboardIcon,
-                        path: "/logout",
+                        path: "/missing",
                     },
                     // { id: "12", title: "missing", icon: DashboardIcon, path: "/missing" },
                 ];
