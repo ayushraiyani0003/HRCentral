@@ -35,7 +35,7 @@ function CompanyStructurePage() {
     // Basic tabs example
     const tabs = [
         {
-            label: "Employees",
+            label: "Company Structure",
             content: (
                 <CompanyStructureTab
                     setOpenDeleteModel={setOpenDeleteModel}
@@ -46,7 +46,7 @@ function CompanyStructurePage() {
             ),
         },
         {
-            label: "Work History",
+            label: "Company Graph",
             content: <CompanyGraphTab />,
         },
     ];
