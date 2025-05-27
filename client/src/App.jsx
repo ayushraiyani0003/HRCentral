@@ -26,7 +26,6 @@ import {
     EmailPage,
     CompanyStructurePage,
 } from "./index";
-import missing from "./features/missing/missing";
 
 // Route components mapping
 const routeComponents = {
@@ -43,7 +42,7 @@ const routeComponents = {
     "/roles": RolesPermissions,
     "/employees": EmployeePage,
     "/employees/checklist": CheckListPage,
-    "/missing": missing,
+    "/missing": () => <div className="p-4">Settings Content</div>,
     "/email": EmailPage,
 };
 

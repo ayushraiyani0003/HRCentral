@@ -14,8 +14,7 @@ function CompanyStructureDetailsModel({
     companyStructure,
     existingStructures = [], // Array of existing structures for parent dropdown
     departmentHeads = [], // Array of department heads
-    onSave,
-    onUpdate,
+    handleCloseStructureModel,
 }) {
     const [formData, setFormData] = useState({
         name: "",
@@ -134,6 +133,19 @@ function CompanyStructureDetailsModel({
         return Object.keys(newErrors).length === 0;
     };
 
+    const onSave = (data) => {
+        // Handle save logic here
+        // TODO: Implement save logic
+        console.log("Saving new structure:", data);
+        handleCloseStructureModel();
+    };
+    const onUpdate = (data) => {
+        // Handle update logic here
+        // TODO: Implement update logic
+        console.log("Updating structure:", data);
+        handleCloseStructureModel();
+    };
+
     // Handle form submission
     const handleSubmit = async () => {
         if (!validateForm()) {
@@ -172,7 +184,7 @@ function CompanyStructureDetailsModel({
 
     // Footer buttons
     const modalFooter = (
-        <div className="flex justify-end space-x-3 px-6 py-4 bg-gray-50 border-t border-gray-200">
+        <div className="flex justify-end space-x-3 px-6 py-4 border-none ">
             <CustomButton
                 variant="secondary"
                 onClick={handleCancel}
@@ -234,14 +246,15 @@ function CompanyStructureDetailsModel({
                         label="Structure Name"
                         placeholder="Enter structure name"
                         value={formData.name}
-                        onChange={(e) => {
-                            handleInputChange("name", e.target.value);
-                            if (e.target.value.trim()) {
+                        onChange={(name) => {
+                            handleInputChange("name", name);
+                            if (name.trim()) {
                                 setErrors({
                                     ...errors,
                                     name: "",
                                 });
                             }
+                            // console.log(e);
                         }}
                         required={modelType !== "view"}
                         error={errors.name}
