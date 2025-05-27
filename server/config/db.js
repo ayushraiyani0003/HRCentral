@@ -1,10 +1,10 @@
+// =================== config/db.js ===================
 const { Sequelize } = require("sequelize");
 const path = require("path");
 const fs = require("fs");
 require("dotenv").config();
 
 // Set up logger - we can't import directly to avoid circular dependencies
-// So we'll create a very simple logger until the main one is available
 let logger;
 try {
     logger = require("../utils/logger");
@@ -53,27 +53,8 @@ const customLogger = (query) => {
     }
 };
 
-// Create a connection to the employee database
-const employeeDb = new Sequelize(
-    process.env.EMPLOYEE_DB_NAME,
-    process.env.EMPLOYEE_DB_USER,
-    process.env.EMPLOYEE_DB_PASSWORD,
-    {
-        host: process.env.EMPLOYEE_DB_HOST,
-        dialect: process.env.EMPLOYEE_DB_DIALECT || "mysql",
-        port: process.env.EMPLOYEE_DB_PORT || 3306,
-        logging: customLogger,
-        pool: {
-            max: 5,
-            min: 0,
-            acquire: 30000,
-            idle: 10000,
-        },
-    }
-);
-
 // Create a connection to the HR payroll database
-const hrDb = new Sequelize(
+const sequelize = new Sequelize(
     process.env.HR_DB_NAME,
     process.env.HR_DB_USER,
     process.env.HR_DB_PASSWORD,
@@ -94,25 +75,21 @@ const hrDb = new Sequelize(
 // Test the database connections
 const testDbConnection = async () => {
     try {
-        await employeeDb.authenticate();
-        logger.info(
-            "Employee database connection has been established successfully."
-        );
-
-        await hrDb.authenticate();
+        await sequelize.authenticate();
         logger.info(
             "HR database connection has been established successfully."
         );
+        return true;
     } catch (error) {
-        logger.error("Unable to connect to the databases", {
+        logger.error("Unable to connect to the database", {
             error: error.message,
             stack: error.stack,
         });
+        return false;
     }
 };
 
 module.exports = {
-    employeeDb,
-    hrDb,
+    sequelize,
     testDbConnection,
 };
