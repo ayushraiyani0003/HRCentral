@@ -149,6 +149,7 @@
 .custom-dropdown-menu {
     position: absolute;
     width: 100%;
+    z-index: 1000;
     top: calc(100% + 0.5rem);
     left: 0;
     background-color: white;
@@ -156,11 +157,22 @@
     border-radius: 0.5rem;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
         0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    z-index: 50;
     max-height: 300px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+}
+
+/* Position dropdown below the input (default) */
+.dropdown-menu-bottom {
+    top: 100%;
+    margin-top: 4px;
+}
+
+/* Position dropdown above the input */
+.dropdown-menu-top {
+    bottom: 100%;
+    margin-bottom: 4px;
 }
 
 .dropdown-search-container {

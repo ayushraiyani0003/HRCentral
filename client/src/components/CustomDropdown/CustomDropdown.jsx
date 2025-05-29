@@ -111,6 +111,7 @@ const CustomDropdown = ({
     tokenSeparators = [","],
     className = "",
     maxTagCount = 3,
+    dropdownPosition, // top, bottom (prop from parent)
     isSearchable = true,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -118,8 +119,10 @@ const CustomDropdown = ({
     const [selectedOptions, setSelectedOptions] = useState(
         Array.isArray(value) ? value : [value].filter(Boolean)
     );
+    const [calculatedPosition, setCalculatedPosition] = useState("bottom");
     const dropdownRef = useRef(null);
     const inputRef = useRef(null);
+    const menuRef = useRef(null);
 
     // Update internal state when prop value changes
     useEffect(() => {
@@ -130,9 +133,55 @@ const CustomDropdown = ({
         }
     }, [value, mode]);
 
+    // Filter options based on search term - moved up to fix the issue
+    const filteredOptions = options.filter((option) =>
+        option.label.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    // Calculate dropdown position based on available space (used as fallback)
+    const calculateDropdownPosition = () => {
+        if (!dropdownRef.current) return "bottom";
+
+        const rect = dropdownRef.current.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const spaceBelow = viewportHeight - rect.bottom;
+        const spaceAbove = rect.top;
+
+        // Estimate dropdown menu height (you can adjust this value based on your needs)
+        const estimatedMenuHeight = Math.min(
+            filteredOptions.length * 40 + 60,
+            300
+        ); // 40px per option + search input + padding
+
+        // If there's not enough space below but enough space above, position it above
+        if (
+            spaceBelow < estimatedMenuHeight &&
+            spaceAbove > estimatedMenuHeight
+        ) {
+            return "top";
+        }
+
+        return "bottom";
+    };
+
+    // Get the final position (prop takes priority over calculation)
+    const getFinalPosition = () => {
+        if (dropdownPosition) {
+            return dropdownPosition; // Use prop if provided
+        }
+        return calculatedPosition; // Use calculated position as fallback
+    };
+
     // Handle dropdown toggle
     const toggleDropdown = () => {
+        if (!isOpen && !dropdownPosition) {
+            // Only calculate position if prop is not provided and dropdown is opening
+            const position = calculateDropdownPosition();
+            setCalculatedPosition(position);
+        }
+
         setIsOpen(!isOpen);
+
         if (!isOpen) {
             setTimeout(() => {
                 if (inputRef.current) {
@@ -159,6 +208,24 @@ const CustomDropdown = ({
         };
     }, []);
 
+    // Recalculate position on window resize or scroll (only if prop is not provided)
+    useEffect(() => {
+        const handlePositionUpdate = () => {
+            if (isOpen && !dropdownPosition) {
+                const position = calculateDropdownPosition();
+                setCalculatedPosition(position);
+            }
+        };
+
+        window.addEventListener("resize", handlePositionUpdate);
+        window.addEventListener("scroll", handlePositionUpdate, true);
+
+        return () => {
+            window.removeEventListener("resize", handlePositionUpdate);
+            window.removeEventListener("scroll", handlePositionUpdate, true);
+        };
+    }, [isOpen, dropdownPosition]);
+
     // Handle input change for search
     const handleInputChange = (e) => {
         setSearchTerm(e.target.value);
@@ -176,11 +243,6 @@ const CustomDropdown = ({
             }
         }
     };
-
-    // Filter options based on search term
-    const filteredOptions = options.filter((option) =>
-        option.label.toLowerCase().includes(searchTerm.toLowerCase())
-    );
 
     // Handle option selection
     const handleOptionSelect = (option) => {
@@ -269,25 +331,75 @@ const CustomDropdown = ({
         });
     };
 
+    const finalPosition = getFinalPosition();
+
     return (
         <div
             className={`custom-dropdown-container ${className}`}
             ref={dropdownRef}
+            style={{
+                fontFamily:
+                    '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+                marginBottom: "1.5rem",
+                width: "500px",
+                position: "relative",
+            }}
         >
             {label && (
-                <label className="custom-dropdown-label">
+                <label
+                    style={{
+                        display: "block",
+                        fontSize: "0.875rem",
+                        fontWeight: "500",
+                        color: "#374151",
+                        marginBottom: "0.5rem",
+                    }}
+                >
                     {label}
-                    {required && <span className="required-mark">*</span>}
+                    {required && (
+                        <span
+                            style={{ color: "#ef4444", marginLeft: "0.25rem" }}
+                        >
+                            *
+                        </span>
+                    )}
                 </label>
             )}
 
             <div
-                className={`custom-dropdown-wrapper ${
-                    isOpen ? "focused" : ""
-                } ${error ? "has-error" : ""}`}
+                style={{
+                    position: "relative",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    width: "100%",
+                    minHeight: "2.75rem",
+                    padding: "0.75rem 1rem",
+                    backgroundColor: "#fff",
+                    border: `1px solid ${
+                        error ? "#ef4444" : isOpen ? "#6366f1" : "#e5e7eb"
+                    }`,
+                    borderRadius: "0.5rem",
+                    transition: "all 0.2s ease",
+                    boxShadow: error
+                        ? "0 0 0 3px rgba(239, 68, 68, 0.2)"
+                        : isOpen
+                        ? "0 0 0 3px rgba(99, 102, 241, 0.2)"
+                        : "0 1px 2px rgba(0, 0, 0, 0.05)",
+                    cursor: "pointer",
+                }}
                 onClick={toggleDropdown}
             >
-                <div className="custom-dropdown-selection">
+                <div
+                    style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        alignItems: "center",
+                        flex: 1,
+                        gap: "0.5rem",
+                        minWidth: 0,
+                    }}
+                >
                     {/* Display tags for multiple/tags mode */}
                     {(mode === "multiple" || mode === "tags") &&
                         getSelectedOptionObjects()
@@ -295,12 +407,35 @@ const CustomDropdown = ({
                             .map((option) => (
                                 <span
                                     key={option.value}
-                                    className="dropdown-tag"
+                                    style={{
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        backgroundColor: "#f3f4f6",
+                                        borderRadius: "0.25rem",
+                                        padding: "0.25rem 0.5rem",
+                                        fontSize: "0.75rem",
+                                        color: "#4b5563",
+                                        maxWidth: "100%",
+                                        overflow: "hidden",
+                                        whiteSpace: "nowrap",
+                                        textOverflow: "ellipsis",
+                                    }}
                                 >
                                     {option.label}
                                     <button
                                         type="button"
-                                        className="dropdown-tag-remove"
+                                        style={{
+                                            marginLeft: "0.25rem",
+                                            border: "none",
+                                            background: "transparent",
+                                            color: "#9ca3af",
+                                            cursor: "pointer",
+                                            padding: "0.125rem",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            borderRadius: "50%",
+                                        }}
                                         onClick={(e) =>
                                             handleRemoveTag(option.value, e)
                                         }
@@ -324,22 +459,61 @@ const CustomDropdown = ({
                     {/* Display if more tags than maxTagCount */}
                     {selectedOptions.length > maxTagCount &&
                         mode !== "single" && (
-                            <span className="dropdown-tag dropdown-more-tag">
+                            <span
+                                style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    backgroundColor: "#e5e7eb",
+                                    borderRadius: "0.25rem",
+                                    padding: "0.25rem 0.5rem",
+                                    fontSize: "0.75rem",
+                                    color: "#6b7280",
+                                }}
+                            >
                                 +{selectedOptions.length - maxTagCount} more
                             </span>
                         )}
 
                     {/* Display text for single selection or no selection */}
-                    <span className="dropdown-display-text">
+                    <span
+                        style={{
+                            fontSize: "0.875rem",
+                            color:
+                                selectedOptions.length === 0
+                                    ? "#9ca3af"
+                                    : "#111827",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            flex: 1,
+                            minWidth: 0,
+                        }}
+                    >
                         {getDisplayText() || placeholder}
                     </span>
                 </div>
 
-                <div className="custom-dropdown-icons">
+                <div
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        marginLeft: "0.5rem",
+                    }}
+                >
                     {selectedOptions.length > 0 && (
                         <button
                             type="button"
-                            className="clear-dropdown-button"
+                            style={{
+                                background: "transparent",
+                                border: "none",
+                                padding: 0,
+                                cursor: "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                zIndex: 1,
+                            }}
                             onClick={handleClear}
                             aria-label="Clear selection"
                         >
@@ -347,9 +521,11 @@ const CustomDropdown = ({
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 20 20"
                                 fill="currentColor"
-                                className="clear-icon"
-                                width="20"
-                                height="20"
+                                style={{
+                                    width: "1.25rem",
+                                    height: "1.25rem",
+                                    color: "#9ca3af",
+                                }}
                             >
                                 <path
                                     fillRule="evenodd"
@@ -362,13 +538,17 @@ const CustomDropdown = ({
 
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className={`dropdown-icon ${
-                            isOpen ? "dropdown-icon-open" : ""
-                        }`}
+                        style={{
+                            width: "1.25rem",
+                            height: "1.25rem",
+                            color: "#6366f1",
+                            transition: "transform 0.2s ease",
+                            transform: isOpen
+                                ? "rotate(180deg)"
+                                : "rotate(0deg)",
+                        }}
                         viewBox="0 0 20 20"
                         fill="currentColor"
-                        width="20"
-                        height="20"
                     >
                         <path
                             fillRule="evenodd"
@@ -379,15 +559,53 @@ const CustomDropdown = ({
                 </div>
             </div>
 
-            {/* Dropdown menu */}
+            {/* Dropdown menu with prop-based or dynamic positioning */}
             {isOpen && (
-                <div className="custom-dropdown-menu">
+                <div
+                    ref={menuRef}
+                    style={{
+                        position: "absolute",
+                        width: "100%",
+                        zIndex: 1000,
+                        left: 0,
+                        backgroundColor: "white",
+                        border: "1px solid #f3f4f6",
+                        borderRadius: "0.5rem",
+                        boxShadow:
+                            "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+                        maxHeight: "300px",
+                        display: "flex",
+                        flexDirection: "column",
+                        overflow: "hidden",
+                        ...(finalPosition === "top"
+                            ? {
+                                  bottom: "100%",
+                                  marginBottom: "4px",
+                              }
+                            : {
+                                  top: "100%",
+                                  marginTop: "4px",
+                              }),
+                    }}
+                >
                     {isSearchable && (
-                        <div className="dropdown-search-container">
+                        <div
+                            style={{
+                                padding: "0.75rem",
+                                borderBottom: "1px solid #f3f4f6",
+                            }}
+                        >
                             <input
                                 ref={inputRef}
                                 type="text"
-                                className="dropdown-search-input"
+                                style={{
+                                    width: "100%",
+                                    padding: "0.5rem 0.75rem",
+                                    fontSize: "0.875rem",
+                                    border: "1px solid #e5e7eb",
+                                    borderRadius: "0.375rem",
+                                    outline: "none",
+                                }}
                                 placeholder="Search..."
                                 value={searchTerm}
                                 onChange={handleInputChange}
@@ -395,21 +613,45 @@ const CustomDropdown = ({
                             />
                         </div>
                     )}
-                    <div className="dropdown-options-list">
+                    <div
+                        style={{
+                            overflowY: "auto",
+                            maxHeight: "220px",
+                            padding: "0.5rem 0",
+                        }}
+                    >
                         {filteredOptions.length > 0 ? (
                             filteredOptions.map((option) => (
                                 <div
                                     key={option.value}
-                                    className={`dropdown-option ${
-                                        selectedOptions.includes(option.value)
-                                            ? "selected"
-                                            : ""
-                                    }`}
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        padding: "0.5rem 1rem",
+                                        cursor: "pointer",
+                                        fontSize: "0.875rem",
+                                        color: selectedOptions.includes(
+                                            option.value
+                                        )
+                                            ? "#4f46e5"
+                                            : "#4b5563",
+                                        backgroundColor:
+                                            selectedOptions.includes(
+                                                option.value
+                                            )
+                                                ? "#f3f4f7"
+                                                : "transparent",
+                                        transition: "background-color 0.2s",
+                                    }}
                                     onClick={() => handleOptionSelect(option)}
                                 >
                                     {selectedOptions.includes(option.value) && (
                                         <svg
-                                            className="check-icon"
+                                            style={{
+                                                marginRight: "0.5rem",
+                                                color: "#4f46e5",
+                                                flexShrink: 0,
+                                            }}
                                             viewBox="0 0 20 20"
                                             fill="currentColor"
                                             width="16"
@@ -422,13 +664,27 @@ const CustomDropdown = ({
                                             />
                                         </svg>
                                     )}
-                                    <span className="option-label">
+                                    <span
+                                        style={{
+                                            whiteSpace: "nowrap",
+                                            overflow: "hidden",
+                                            textOverflow: "ellipsis",
+                                            flex: 1,
+                                        }}
+                                    >
                                         {option.label}
                                     </span>
                                 </div>
                             ))
                         ) : (
-                            <div className="dropdown-no-options">
+                            <div
+                                style={{
+                                    padding: "1rem",
+                                    textAlign: "center",
+                                    color: "#9ca3af",
+                                    fontSize: "0.875rem",
+                                }}
+                            >
                                 {mode === "tags"
                                     ? "Type to add a new tag"
                                     : "No options found"}
@@ -438,7 +694,17 @@ const CustomDropdown = ({
                 </div>
             )}
 
-            {error && <div className="dropdown-error-message">{error}</div>}
+            {error && (
+                <div
+                    style={{
+                        marginTop: "0.5rem",
+                        color: "#ef4444",
+                        fontSize: "0.75rem",
+                    }}
+                >
+                    {error}
+                </div>
+            )}
         </div>
     );
 };
