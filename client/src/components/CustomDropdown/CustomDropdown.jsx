@@ -113,6 +113,8 @@ const CustomDropdown = ({
     maxTagCount = 3,
     dropdownPosition, // top, bottom (prop from parent)
     isSearchable = true,
+    disabled = false,
+    readOnly = false,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
@@ -174,6 +176,9 @@ const CustomDropdown = ({
 
     // Handle dropdown toggle
     const toggleDropdown = () => {
+        // Prevent opening if disabled or readonly
+        if (disabled || readOnly) return;
+
         if (!isOpen && !dropdownPosition) {
             // Only calculate position if prop is not provided and dropdown is opening
             const position = calculateDropdownPosition();
@@ -228,6 +233,9 @@ const CustomDropdown = ({
 
     // Handle input change for search
     const handleInputChange = (e) => {
+        // Prevent input changes if disabled or readonly
+        if (disabled || readOnly) return;
+
         setSearchTerm(e.target.value);
 
         // Handle tags mode with token separators
@@ -246,6 +254,9 @@ const CustomDropdown = ({
 
     // Handle option selection
     const handleOptionSelect = (option) => {
+        // Prevent selection if disabled or readonly
+        if (disabled || readOnly) return;
+
         let newSelectedOptions;
 
         if (mode === "single") {
@@ -280,6 +291,10 @@ const CustomDropdown = ({
     // Handle tag removal
     const handleRemoveTag = (value, e) => {
         e.stopPropagation();
+
+        // Prevent removal if disabled or readonly
+        if (disabled || readOnly) return;
+
         const newSelectedOptions = selectedOptions.filter(
             (item) => item !== value
         );
@@ -294,6 +309,10 @@ const CustomDropdown = ({
     // Clear all selections
     const handleClear = (e) => {
         e.stopPropagation();
+
+        // Prevent clearing if disabled or readonly
+        if (disabled || readOnly) return;
+
         setSelectedOptions([]);
         onChange(mode === "single" ? null : []);
     };
@@ -333,6 +352,53 @@ const CustomDropdown = ({
 
     const finalPosition = getFinalPosition();
 
+    // Determine visual state for styling
+    const getVisualState = () => {
+        if (disabled) return "disabled";
+        if (readOnly) return "readonly";
+        if (error) return "error";
+        if (isOpen) return "open";
+        return "default";
+    };
+
+    const visualState = getVisualState();
+
+    // Get border color based on state
+    const getBorderColor = () => {
+        switch (visualState) {
+            case "disabled":
+                return "#d1d5db";
+            case "readonly":
+                return "#e5e7eb";
+            case "error":
+                return "#ef4444";
+            case "open":
+                return "#6366f1";
+            default:
+                return "#e5e7eb";
+        }
+    };
+
+    // Get background color based on state
+    const getBackgroundColor = () => {
+        if (disabled) return "#f9fafb";
+        if (readOnly) return "#f9fafb";
+        return "#fff";
+    };
+
+    // Get text color based on state
+    const getTextColor = () => {
+        if (disabled || readOnly) return "#9ca3af";
+        return "#111827";
+    };
+
+    // Get cursor style based on state
+    const getCursor = () => {
+        if (disabled) return "not-allowed";
+        if (readOnly) return "default";
+        return "pointer";
+    };
+
     return (
         <div
             className={`custom-dropdown-container ${className}`}
@@ -343,6 +409,7 @@ const CustomDropdown = ({
                 marginBottom: "1.5rem",
                 width: "500px",
                 position: "relative",
+                opacity: disabled ? 0.6 : 1,
             }}
         >
             {label && (
@@ -351,7 +418,7 @@ const CustomDropdown = ({
                         display: "block",
                         fontSize: "0.875rem",
                         fontWeight: "500",
-                        color: "#374151",
+                        color: disabled ? "#9ca3af" : "#374151",
                         marginBottom: "0.5rem",
                     }}
                 >
@@ -361,6 +428,18 @@ const CustomDropdown = ({
                             style={{ color: "#ef4444", marginLeft: "0.25rem" }}
                         >
                             *
+                        </span>
+                    )}
+                    {readOnly && (
+                        <span
+                            style={{
+                                color: "#6b7280",
+                                marginLeft: "0.5rem",
+                                fontSize: "0.75rem",
+                                fontWeight: "400",
+                            }}
+                        >
+                            (Read only)
                         </span>
                     )}
                 </label>
@@ -375,18 +454,16 @@ const CustomDropdown = ({
                     width: "100%",
                     minHeight: "2.75rem",
                     padding: "0.75rem 1rem",
-                    backgroundColor: "#fff",
-                    border: `1px solid ${
-                        error ? "#ef4444" : isOpen ? "#6366f1" : "#e5e7eb"
-                    }`,
+                    backgroundColor: getBackgroundColor(),
+                    border: `1px solid ${getBorderColor()}`,
                     borderRadius: "0.5rem",
                     transition: "all 0.2s ease",
                     boxShadow: error
                         ? "0 0 0 3px rgba(239, 68, 68, 0.2)"
-                        : isOpen
+                        : isOpen && !disabled && !readOnly
                         ? "0 0 0 3px rgba(99, 102, 241, 0.2)"
                         : "0 1px 2px rgba(0, 0, 0, 0.05)",
-                    cursor: "pointer",
+                    cursor: getCursor(),
                 }}
                 onClick={toggleDropdown}
             >
@@ -410,11 +487,17 @@ const CustomDropdown = ({
                                     style={{
                                         display: "inline-flex",
                                         alignItems: "center",
-                                        backgroundColor: "#f3f4f6",
+                                        backgroundColor:
+                                            disabled || readOnly
+                                                ? "#e5e7eb"
+                                                : "#f3f4f6",
                                         borderRadius: "0.25rem",
                                         padding: "0.25rem 0.5rem",
                                         fontSize: "0.75rem",
-                                        color: "#4b5563",
+                                        color:
+                                            disabled || readOnly
+                                                ? "#9ca3af"
+                                                : "#4b5563",
                                         maxWidth: "100%",
                                         overflow: "hidden",
                                         whiteSpace: "nowrap",
@@ -422,37 +505,39 @@ const CustomDropdown = ({
                                     }}
                                 >
                                     {option.label}
-                                    <button
-                                        type="button"
-                                        style={{
-                                            marginLeft: "0.25rem",
-                                            border: "none",
-                                            background: "transparent",
-                                            color: "#9ca3af",
-                                            cursor: "pointer",
-                                            padding: "0.125rem",
-                                            display: "flex",
-                                            alignItems: "center",
-                                            justifyContent: "center",
-                                            borderRadius: "50%",
-                                        }}
-                                        onClick={(e) =>
-                                            handleRemoveTag(option.value, e)
-                                        }
-                                        aria-label={`Remove ${option.label}`}
-                                    >
-                                        <svg
-                                            viewBox="0 0 24 24"
-                                            height="14"
-                                            width="14"
-                                            aria-hidden="true"
+                                    {!readOnly && !disabled && (
+                                        <button
+                                            type="button"
+                                            style={{
+                                                marginLeft: "0.25rem",
+                                                border: "none",
+                                                background: "transparent",
+                                                color: "#9ca3af",
+                                                cursor: "pointer",
+                                                padding: "0.125rem",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                borderRadius: "50%",
+                                            }}
+                                            onClick={(e) =>
+                                                handleRemoveTag(option.value, e)
+                                            }
+                                            aria-label={`Remove ${option.label}`}
                                         >
-                                            <path
-                                                d="M12 10.586l4.95-4.95 1.414 1.414-4.95 4.95 4.95 4.95-1.414 1.414-4.95-4.95-4.95 4.95-1.414-1.414 4.95-4.95-4.95-4.95 1.414-1.414 4.95 4.95z"
-                                                fill="currentColor"
-                                            />
-                                        </svg>
-                                    </button>
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                height="14"
+                                                width="14"
+                                                aria-hidden="true"
+                                            >
+                                                <path
+                                                    d="M12 10.586l4.95-4.95 1.414 1.414-4.95 4.95 4.95 4.95-1.414 1.414-4.95-4.95-4.95 4.95-1.414-1.414 4.95-4.95-4.95-4.95 1.414-1.414 4.95 4.95z"
+                                                    fill="currentColor"
+                                                />
+                                            </svg>
+                                        </button>
+                                    )}
                                 </span>
                             ))}
 
@@ -463,11 +548,17 @@ const CustomDropdown = ({
                                 style={{
                                     display: "inline-flex",
                                     alignItems: "center",
-                                    backgroundColor: "#e5e7eb",
+                                    backgroundColor:
+                                        disabled || readOnly
+                                            ? "#e5e7eb"
+                                            : "#e5e7eb",
                                     borderRadius: "0.25rem",
                                     padding: "0.25rem 0.5rem",
                                     fontSize: "0.75rem",
-                                    color: "#6b7280",
+                                    color:
+                                        disabled || readOnly
+                                            ? "#9ca3af"
+                                            : "#6b7280",
                                 }}
                             >
                                 +{selectedOptions.length - maxTagCount} more
@@ -480,8 +571,10 @@ const CustomDropdown = ({
                             fontSize: "0.875rem",
                             color:
                                 selectedOptions.length === 0
-                                    ? "#9ca3af"
-                                    : "#111827",
+                                    ? disabled || readOnly
+                                        ? "#d1d5db"
+                                        : "#9ca3af"
+                                    : getTextColor(),
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                             whiteSpace: "nowrap",
@@ -501,7 +594,7 @@ const CustomDropdown = ({
                         marginLeft: "0.5rem",
                     }}
                 >
-                    {selectedOptions.length > 0 && (
+                    {selectedOptions.length > 0 && !readOnly && !disabled && (
                         <button
                             type="button"
                             style={{
@@ -541,11 +634,12 @@ const CustomDropdown = ({
                         style={{
                             width: "1.25rem",
                             height: "1.25rem",
-                            color: "#6366f1",
+                            color: disabled || readOnly ? "#d1d5db" : "#6366f1",
                             transition: "transform 0.2s ease",
-                            transform: isOpen
-                                ? "rotate(180deg)"
-                                : "rotate(0deg)",
+                            transform:
+                                isOpen && !disabled && !readOnly
+                                    ? "rotate(180deg)"
+                                    : "rotate(0deg)",
                         }}
                         viewBox="0 0 20 20"
                         fill="currentColor"
@@ -560,7 +654,7 @@ const CustomDropdown = ({
             </div>
 
             {/* Dropdown menu with prop-based or dynamic positioning */}
-            {isOpen && (
+            {isOpen && !disabled && !readOnly && (
                 <div
                     ref={menuRef}
                     style={{
@@ -610,6 +704,7 @@ const CustomDropdown = ({
                                 value={searchTerm}
                                 onChange={handleInputChange}
                                 onClick={(e) => e.stopPropagation()}
+                                disabled={disabled || readOnly}
                             />
                         </div>
                     )}
