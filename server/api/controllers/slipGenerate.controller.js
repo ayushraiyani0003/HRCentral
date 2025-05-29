@@ -87,11 +87,15 @@ const uploadAndGenerateSlips = async (req, res) => {
         upload(req, res, async function (err) {
             if (err) {
                 console.error("Upload error:", err);
-                return res.status(400).json({ success: false, error: err.message });
+                return res
+                    .status(400)
+                    .json({ success: false, error: err.message });
             }
 
             if (!req.file) {
-                return res.status(400).json({ success: false, error: "No file uploaded." });
+                return res
+                    .status(400)
+                    .json({ success: false, error: "No file uploaded." });
             }
 
             const filePath = req.file.path;
@@ -101,12 +105,16 @@ const uploadAndGenerateSlips = async (req, res) => {
                 success: true,
                 filePath,
                 sessionId,
-                message: "File uploaded successfully. You can now stream the processing progress.",
+                message:
+                    "File uploaded successfully. You can now stream the processing progress.",
             });
         });
     } catch (error) {
         console.error("Upload error:", error);
-        res.status(500).json({ success: false, error: "Server error during upload." });
+        res.status(500).json({
+            success: false,
+            error: "Server error during upload.",
+        });
     }
 };
 
@@ -119,7 +127,7 @@ const streamSlipProgress = async (req, res) => {
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
     res.setHeader("X-Accel-Buffering", "no");
-    
+
     // Ensure immediate flushing
     res.flushHeaders();
 
@@ -132,9 +140,11 @@ const streamSlipProgress = async (req, res) => {
     // Helper function to send SSE events
     const sendEvent = (eventType, data) => {
         if (!isConnectionClosed) {
-            const eventString = `event: ${eventType}\ndata: ${JSON.stringify(data)}\n\n`;
+            const eventString = `event: ${eventType}\ndata: ${JSON.stringify(
+                data
+            )}\n\n`;
             res.write(eventString);
-            
+
             // Force flush the stream to ensure immediate delivery
             try {
                 if (res.flush) res.flush();
@@ -168,7 +178,9 @@ const streamSlipProgress = async (req, res) => {
         // Extract headers
         const headers = [];
         worksheet.getRow(1).eachCell((cell, colNumber) => {
-            headers[colNumber - 1] = cell.value ? cell.value.toString().trim() : "";
+            headers[colNumber - 1] = cell.value
+                ? cell.value.toString().trim()
+                : "";
         });
 
         // Parse data rows
@@ -193,7 +205,7 @@ const streamSlipProgress = async (req, res) => {
         const total = rawData.length;
         let generated = 0;
         let failed = 0;
-        
+
         // Initialize tracking array for all employees
         const tracking = rawData.map((row) => ({
             employeeName: row["Name"] || "contact HR office",
@@ -204,11 +216,11 @@ const streamSlipProgress = async (req, res) => {
         }));
 
         // Send initial progress event - simplified to match expected format
-        sendEvent("progress", { 
-            total, 
-            generated, 
-            failed, 
-            pending: total 
+        sendEvent("progress", {
+            total,
+            generated,
+            failed,
+            pending: total,
         });
 
         const outputFolders = new Set();
@@ -223,12 +235,13 @@ const streamSlipProgress = async (req, res) => {
             const row = rawData[i];
             const data = mapExcelRowToPayslipData(row);
             const trackItem = tracking[i];
-            
+
             try {
                 // Generate payslip PDF
                 const folderPath = await editPayslip(data);
 
-                if (!folderPath) throw new Error("No output folder path returned");
+                if (!folderPath)
+                    throw new Error("No output folder path returned");
 
                 outputFolders.add(path.dirname(folderPath));
                 trackItem.status = "success";
@@ -243,7 +256,7 @@ const streamSlipProgress = async (req, res) => {
             // Simplify the output to match expected format
             const pending = total - generated - failed;
             const percentage = Math.round(((i + 1) / total) * 100);
-            
+
             // Only send progress updates periodically or after processing each item
             const updateFrequency = Math.max(1, Math.floor(total / 100));
             if (i % updateFrequency === 0 || i === total - 1) {
@@ -254,7 +267,7 @@ const streamSlipProgress = async (req, res) => {
                     pending,
                     processed: i + 1,
                     percentage,
-                    tracking
+                    tracking,
                 });
             }
         }
@@ -269,7 +282,7 @@ const streamSlipProgress = async (req, res) => {
             // Set up event handlers for archiver
             output.on("close", () => {
                 const zipSize = archive.pointer();
-                
+
                 // Simplified done event to match expected format
                 sendEvent("done", {
                     zipPath: zipPath.replace(/\\/g, "/"),
@@ -277,16 +290,18 @@ const streamSlipProgress = async (req, res) => {
                     zipSize,
                     total,
                     generated,
-                    failed
+                    failed,
                 });
-                
+
                 if (!isConnectionClosed) {
                     res.end();
                 }
             });
 
             archive.on("error", (err) => {
-                sendEvent("error", { error: `ZIP creation error: ${err.message}` });
+                sendEvent("error", {
+                    error: `ZIP creation error: ${err.message}`,
+                });
                 if (!isConnectionClosed) {
                     res.end();
                 }
@@ -298,7 +313,7 @@ const streamSlipProgress = async (req, res) => {
             for (const folder of outputFolders) {
                 if (fs.existsSync(folder)) {
                     const files = fs.readdirSync(folder);
-                    
+
                     for (const file of files) {
                         const filePath = path.join(folder, file);
                         if (fs.statSync(filePath).isFile()) {
@@ -319,11 +334,12 @@ const streamSlipProgress = async (req, res) => {
         } else {
             // No successful payslips were generated
             sendEvent("error", {
-                error: generated === 0
-                    ? "No payslips were successfully generated"
-                    : "Processing completed but ZIP was not created",
+                error:
+                    generated === 0
+                        ? "No payslips were successfully generated"
+                        : "Processing completed but ZIP was not created",
             });
-            
+
             if (!isConnectionClosed) {
                 res.end();
             }
@@ -331,7 +347,9 @@ const streamSlipProgress = async (req, res) => {
     } catch (error) {
         console.error("Stream error:", error);
         if (!isConnectionClosed) {
-            sendEvent("error", { error: error.message || "Server error during processing" });
+            sendEvent("error", {
+                error: error.message || "Server error during processing",
+            });
             res.end();
         }
     }
@@ -349,22 +367,31 @@ const downloadZip = async (req, res) => {
 
         // Basic validation
         if (!filePath) {
-            return res.status(400).json({ success: false, error: "Missing file path" });
+            return res
+                .status(400)
+                .json({ success: false, error: "Missing file path" });
         }
 
-        const tempDir = path.resolve(process.env.TEMP_DIR || "../../uploads/temp");
+        const tempDir = path.resolve(
+            process.env.TEMP_DIR || "../../uploads/temp"
+        );
 
         // Resolve the absolute path relative to the tempDir
         const resolvedPath = path.resolve(tempDir, filePath);
 
         // Security check: Make sure the resolved path is still under tempDir
         if (!resolvedPath.startsWith(tempDir + path.sep)) {
-            return res.status(403).json({ success: false, error: "Access denied to the requested file" });
+            return res.status(403).json({
+                success: false,
+                error: "Access denied to the requested file",
+            });
         }
 
         // Check if the file exists
         if (!fs.existsSync(resolvedPath)) {
-            return res.status(404).json({ success: false, error: "ZIP file not found" });
+            return res
+                .status(404)
+                .json({ success: false, error: "ZIP file not found" });
         }
 
         // Send the file
@@ -372,13 +399,19 @@ const downloadZip = async (req, res) => {
             if (err) {
                 console.error("Error sending ZIP file:", err);
                 if (!res.headersSent) {
-                    res.status(500).json({ success: false, error: "Failed to send the ZIP file" });
+                    res.status(500).json({
+                        success: false,
+                        error: "Failed to send the ZIP file",
+                    });
                 }
             }
         });
     } catch (error) {
         console.error("Unexpected error in downloadZip:", error);
-        res.status(500).json({ success: false, error: "Server error while processing download" });
+        res.status(500).json({
+            success: false,
+            error: "Server error while processing download",
+        });
     }
 };
 
@@ -418,6 +451,7 @@ function mapExcelRowToPayslipData(row) {
         phoneNo: row["Mobile_No"] || "contact HR office",
         punchCode: row["User_ID"] || "contact HR office",
         employeeName: row["Name"] || "contact HR office",
+        UANno: row["UAN_No"] || "contact HR office",
         month: row["month"] || "contact HR office",
         workingHrCmd: safeRound(row["Expected_Hours"]),
         payableHr: safeRound(row["Net_Work_Hours"]),
@@ -467,7 +501,7 @@ function safeRound(value) {
 module.exports = {
     uploadAndGenerateSlips,
     streamSlipProgress,
-    downloadZip
+    downloadZip,
 };
 
 // the result of the stream of prossess is like this.
