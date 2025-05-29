@@ -173,6 +173,11 @@
     color: #6366f1 !important;
 }
 
+.current-day.react-datepicker__day--selected {
+    background-color: #6366f1 !important;
+    color: white !important;
+}
+
 /* Navigation styles */
 .react-datepicker__navigation {
     top: 0.75rem !important;
