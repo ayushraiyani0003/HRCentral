@@ -70,6 +70,7 @@ const CustomInput = forwardRef(
     )
 );
 
+// in this initialStartDate date need in Date objects
 export default function ModernDateRangePicker({
     label,
     onChange,
@@ -82,7 +83,7 @@ export default function ModernDateRangePicker({
     showMonthYearDropdowns = true,
     monthsShown = 1,
     selectionMode = "range", // 'range', 'single', or 'multiple'
-    isSingle = false, // New prop to force single date selection
+    isSingle = false, // true for single date selection / false for multi date
     className = "",
     inputClassName = "",
     calendarClassName = "",
