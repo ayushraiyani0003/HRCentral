@@ -9,21 +9,30 @@ const badgeClass = (type, value) => {
             Technical: "bg-blue-100 text-blue-800",
             Management: "bg-purple-100 text-purple-800",
             Creative: "bg-green-100 text-green-800",
+            "Fixed Term": "bg-orange-100 text-orange-800",
         },
         requirementType: {
             Urgent: "bg-red-100 text-red-800",
             "New Position": "bg-green-100 text-green-800",
             Replacement: "bg-yellow-100 text-yellow-800",
+            Additional: "bg-blue-100 text-blue-800",
+            Budgeted: "bg-green-100 text-green-800",
+            "Non-budgeted": "bg-red-100 text-red-800",
         },
         source: {
             "Internal Referral": "bg-green-100 text-green-800",
             "Job Portal": "bg-blue-100 text-blue-800",
+            "Online Portal": "bg-blue-100 text-blue-800",
             LinkedIn: "bg-purple-100 text-purple-800",
             "Campus Hiring": "bg-orange-100 text-orange-800",
+            Consultant: "bg-purple-100 text-purple-800",
+            Database: "bg-gray-100 text-gray-800",
+            Advertisement: "bg-yellow-100 text-yellow-800",
         },
         status: {
             Completed: "bg-green-100 text-green-800",
             Pending: "bg-yellow-100 text-yellow-800",
+            Processing: "bg-blue-100 text-blue-800",
         },
     };
     return `px-2 py-1 rounded-full text-xs font-medium ${
@@ -37,8 +46,8 @@ const renderBadge = (type) => (value) =>
 const actionButtons = (row, handlers) => (
     <div className="flex space-x-3">
         {[
-            ["Edit", EditIcon, handlers.handleEdit],
             ["View", ViewIcon, handlers.handleViewDetails],
+            ["Edit", EditIcon, handlers.handleEdit],
             ["Delete", DeleteIcon, () => handlers.handleDelete(row.id)],
         ].map(([title, Icon, onClick], i) => (
             <button
@@ -67,26 +76,26 @@ const columnTemplates = (handlers) => ({
             width: "180px",
         },
         {
-            key: "RequestedDate",
-            header: "Requested Date",
+            key: "date",
+            header: "Date",
             sortable: true,
             width: "120px",
             render: (v) => new Date(v).toLocaleDateString(),
         },
         {
-            key: "RequestedByDepartment",
+            key: "department",
             header: "Department",
             sortable: true,
             width: "150px",
         },
         {
-            key: "Designation",
+            key: "designation",
             header: "Designation",
             sortable: true,
             width: "180px",
         },
         {
-            key: "RequirementForCategory",
+            key: "category",
             header: "Category",
             sortable: true,
             width: "120px",
@@ -218,7 +227,12 @@ const configByRole = {
     },
 };
 
-function CompletedVacanciesTab() {
+function CompletedVacanciesTab({
+    setOpenDeleteModel = () => {},
+    setRequisitionData = () => {},
+    setRequisitionModel = () => {},
+    setModelType = () => {}, // 'view', 'add', 'edit'
+}) {
     const {
         data,
         userRole = "level_1",
@@ -226,7 +240,13 @@ function CompletedVacanciesTab() {
         handleEdit,
         handleDelete,
         handleRowClick,
-    } = useHiringRequests();
+        handleAddNew,
+    } = useHiringRequests(
+        setOpenDeleteModel,
+        setRequisitionData,
+        setRequisitionModel,
+        setModelType
+    );
 
     const roleConfig = configByRole[userRole] || configByRole.level_1;
     const columns = columnTemplates({
@@ -253,11 +273,7 @@ function CompletedVacanciesTab() {
                 extraHeaderContent={
                     <div className="flex justify-end">
                         <CustomButton
-                            onClick={() =>
-                                console.log(
-                                    `${roleConfig.buttonLabel} clicked for role: ${userRole}`
-                                )
-                            }
+                            onClick={handleAddNew}
                             variant="primary"
                             size="small"
                             className="px-3 py-2 text-sm rounded-md font-medium shadow-sm hover:shadow-md"

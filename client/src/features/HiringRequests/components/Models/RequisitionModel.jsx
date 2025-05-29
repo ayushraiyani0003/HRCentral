@@ -1,433 +1,576 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import {
     CustomTextInput,
     CustomButton,
     RichTextEditor,
     CustomDropdown,
     CustomModal,
-} from "../../../../../components";
+    ModernDateRangePicker,
+} from "../../../../components";
+import useRequisitionModel from "../../hooks/useRequisitionModel";
+import useHiringRequests from "../../hooks/useHiringRequests";
 
 function RequisitionModel({
-    openStructureModel,
-    setOpenStructureModel,
+    requisitionModel,
+    setRequisitionModel,
     modelType,
-    companyStructure,
-    existingStructures = [], // Array of existing structures for parent dropdown
-    departmentHeads = [], // Array of department heads
-    handleCloseStructureModel,
+    requisition,
+    departments = [], // Array of departments for RequirementForDepartment dropdown
+    designations = [], // Array of all designations in the company
+    employees = [], // Array of employees for requestedBy and agreedBy dropdowns
+    handleCloseRequisitionModel,
 }) {
-    const [formData, setFormData] = useState({
-        name: "",
-        details: "",
-        address: "",
-        type: "",
-        country: "India",
-        parentStructure: "",
-        heads: "",
+    const {
+        userRole,
+        requirementCategories,
+        requirementTypes,
+        requisitionStatusOptions,
+        approvedStatusOptions,
+    } = useHiringRequests();
+
+    const {
+        formData,
+        errors,
+        isLoading,
+        departmentOptions,
+        designationOptions,
+        employeeOptions,
+        handleInputChange,
+        handleSubmit,
+        handleCancel,
+        setErrors,
+    } = useRequisitionModel({
+        userRole,
+        modelType,
+        requisition,
+        departments,
+        designations,
+        employees,
+        handleCloseRequisitionModel,
+        setRequisitionModel,
     });
 
-    const [errors, setErrors] = useState({});
-    const [isLoading, setIsLoading] = useState(false);
+    console.log("formData", formData);
 
-    // Structure type options
-    const structureTypes = [
-        { label: "Company", value: "company" },
-        { label: "Head Office", value: "head_office" },
-        { label: "Regional Office", value: "regional_office" },
-        { label: "Department", value: "department" },
-        { label: "Unit", value: "unit" },
-        { label: "Sub Unit", value: "sub_unit" },
-    ];
+    // Helper function to convert string date to Date object
+    const parseDate = (dateValue) => {
+        if (!dateValue) return null;
+        if (dateValue instanceof Date) return dateValue;
 
-    // Country options (you can expand this list)
-    const countries = [
-        { label: "India", value: "India" },
-        { label: "United States", value: "United States" },
-        { label: "United Kingdom", value: "United Kingdom" },
-        { label: "Canada", value: "Canada" },
-        { label: "Australia", value: "Australia" },
-        { label: "Germany", value: "Germany" },
-        { label: "France", value: "France" },
-        { label: "Japan", value: "Japan" },
-        { label: "Singapore", value: "Singapore" },
-        { label: "UAE", value: "UAE" },
-    ];
-
-    // Convert existing structures to dropdown options
-    const parentStructureOptions = existingStructures.map((structure) => ({
-        label: structure.name,
-        value: structure.id || structure.name,
-    }));
-
-    // Convert department heads to dropdown options
-    const headsOptions = departmentHeads.map((head) => ({
-        label: head.name,
-        value: head.id || head.name,
-    }));
-
-    // Initialize form data when editing or viewing
-    useEffect(() => {
-        if (
-            (modelType === "edit" || modelType === "view") &&
-            companyStructure
-        ) {
-            setFormData({
-                name: companyStructure.name || "",
-                details: companyStructure.details || "",
-                address: companyStructure.address || "",
-                type: companyStructure.type || "",
-                country: companyStructure.country || "India",
-                parentStructure: companyStructure.parentStructure || "",
-                heads: companyStructure.heads || "",
-            });
-        } else if (modelType === "add") {
-            setFormData({
-                name: "",
-                details: "",
-                address: "",
-                type: "",
-                country: "India",
-                parentStructure: "",
-                heads: "",
-            });
-        }
-    }, [modelType, companyStructure]);
-
-    // Handle input changes
-    const handleInputChange = (field, value) => {
-        setFormData((prev) => ({
-            ...prev,
-            [field]: value,
-        }));
-
-        // Clear error when user starts typing
-        if (errors[field]) {
-            setErrors((prev) => ({
-                ...prev,
-                [field]: "",
-            }));
-        }
-    };
-
-    // Validation function
-    const validateForm = () => {
-        const newErrors = {};
-
-        if (!formData.name.trim()) {
-            newErrors.name = "Name is required";
-        }
-
-        if (!formData.details.trim()) {
-            newErrors.details = "Details are required";
-        }
-
-        if (!formData.type) {
-            newErrors.type = "Type is required";
-        }
-
-        if (!formData.country) {
-            newErrors.country = "Country is required";
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-    const onSave = (data) => {
-        // Handle save logic here
-        // TODO: Implement save logic
-        console.log("Saving new structure:", data);
-        handleCloseStructureModel();
-    };
-    const onUpdate = (data) => {
-        // Handle update logic here
-        // TODO: Implement update logic
-        console.log("Updating structure:", data);
-        handleCloseStructureModel();
-    };
-
-    // Handle form submission
-    const handleSubmit = async () => {
-        if (!validateForm()) {
-            return;
-        }
-
-        setIsLoading(true);
-        try {
-            if (modelType === "edit") {
-                await onUpdate?.(formData);
-            } else {
-                await onSave?.(formData);
+        // Handle string dates in various formats
+        if (typeof dateValue === "string") {
+            // Try parsing the date string
+            const parsedDate = new Date(dateValue);
+            // Check if the date is valid
+            if (!isNaN(parsedDate.getTime())) {
+                return parsedDate;
             }
-            setOpenStructureModel(false);
-        } catch (error) {
-            console.error("Error saving structure:", error);
-        } finally {
-            setIsLoading(false);
+
+            // If direct parsing fails, try to handle common formats like "3/1/2024"
+            const parts = dateValue.split("/");
+            if (parts.length === 3) {
+                // Assuming MM/DD/YYYY or M/D/YYYY format
+                const month = parseInt(parts[0]) - 1; // Month is 0-indexed
+                const day = parseInt(parts[1]);
+                const year = parseInt(parts[2]);
+                return new Date(year, month, day);
+            }
         }
+
+        return null;
     };
 
-    // Handle cancel
-    const handleCancel = () => {
-        setFormData({
-            name: "",
-            details: "",
-            address: "",
-            type: "",
-            country: "India",
-            parentStructure: "",
-            heads: "",
-        });
-        setErrors({});
-        setOpenStructureModel(false);
-    };
+    // Get the parsed date for the date picker
+    const expectedJoiningDateValue = parseDate(formData.expectedJoiningDate);
 
-    // Footer buttons
-    const modalFooter = (
-        <div className="flex justify-end space-x-3 px-6 py-4 border-none ">
-            <CustomButton
-                variant="secondary"
-                onClick={handleCancel}
-                disabled={isLoading}
-                className="px-6 py-2"
-            >
-                Cancel
-            </CustomButton>
-            <CustomButton
-                variant="primary"
-                onClick={handleSubmit}
-                loading={isLoading}
-                className="px-6 py-2"
-            >
-                {modelType === "edit" ? "Update" : "Save"}
-            </CustomButton>
-        </div>
-    );
+    // Footer buttons - only render if not view mode
+    const modalFooter =
+        modelType !== "view" ? (
+            <div className="flex justify-end space-x-3 px-6 py-4 border-none">
+                <CustomButton
+                    variant="secondary"
+                    onClick={handleCancel}
+                    disabled={isLoading}
+                    className="px-6 py-2"
+                >
+                    Cancel
+                </CustomButton>
+                <CustomButton
+                    variant="primary"
+                    onClick={handleSubmit}
+                    loading={isLoading}
+                    className="px-6 py-2"
+                >
+                    {modelType === "edit" ? "Update" : "Save"}
+                </CustomButton>
+            </div>
+        ) : (
+            <></>
+        );
+
+    // Handle modal close to prevent glitch
+    const handleModalClose = () => {
+        setTimeout(() => {
+            setRequisitionModel(false);
+        }, 50);
+    };
 
     return (
         <CustomModal
-            isOpen={openStructureModel}
-            onClose={() => setOpenStructureModel(false)}
+            isOpen={requisitionModel}
+            onClose={handleModalClose}
             title={`${
                 modelType === "view"
                     ? "View"
                     : modelType === "edit"
                     ? "Edit"
                     : "Add"
-            } Company Structure`}
+            } Requisition`}
             size="large"
             showCloseButton={true}
             closeOnOverlayClick={false}
             closeOnEscape={true}
             bodyClassName="!px-0 !py-0"
-            footer={modelType !== "view" ? modalFooter : null}
+            footer={modalFooter}
         >
             <div className="px-6 py-6 space-y-6 max-h-[70vh] overflow-y-auto">
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-100">
                     <h4 className="text-lg font-medium text-gray-800 mb-2">
                         {modelType === "view"
-                            ? "Structure Information"
+                            ? "Requisition Information"
                             : modelType === "edit"
-                            ? "Update Structure Information"
-                            : "Create New Structure"}
+                            ? "Update Requisition Information"
+                            : "Create New Requisition"}
                     </h4>
                     <p className="text-sm text-gray-600">
                         {modelType === "view"
-                            ? "View the complete structure details below."
+                            ? "View the complete requisition details below."
                             : `Fill in the required information to ${
                                   modelType === "edit" ? "update" : "create"
-                              } the company structure.`}
+                              } the requisition.`}
                     </p>
                 </div>
 
-                {/* Name Field */}
-                <div>
-                    <CustomTextInput
-                        label="Structure Name"
-                        placeholder="Enter structure name"
-                        value={formData.name}
-                        onChange={(name) => {
-                            handleInputChange("name", name);
-                            if (name.trim()) {
-                                setErrors({
-                                    ...errors,
-                                    name: "",
-                                });
-                            }
-                            // console.log(e);
-                        }}
-                        required={modelType !== "view"}
-                        error={errors.name}
-                        className="w-full"
-                        disabled={modelType === "view"}
-                        readOnly={modelType === "view"}
-                    />
+                {/* Department and Designation Row */}
+                <div className="flex flex-col md:flex-row gap-4 w-full">
+                    <div className="md:w-1/2 w-full flex flex-col">
+                        <div className="w-full">
+                            <CustomDropdown
+                                label="Department"
+                                options={departmentOptions}
+                                value={formData.requirementForDepartment}
+                                onChange={(value) => {
+                                    handleInputChange(
+                                        "requirementForDepartment",
+                                        value
+                                    );
+                                    if (value) {
+                                        setErrors({
+                                            ...errors,
+                                            requirementForDepartment: "",
+                                        });
+                                    }
+                                }}
+                                placeholder="Select department"
+                                required={modelType !== "view"}
+                                mode="single"
+                                className="shadow-none relative !mb-2 rounded-lg border-none !w-full"
+                                isSearchable={true}
+                                style={{ width: "100%" }}
+                                containerStyle={{ width: "100%" }}
+                                readOnly={modelType === "view"}
+                            />
+                            {errors.requirementForDepartment && (
+                                <p className="text-red-500 text-xs mt-1">
+                                    {errors.requirementForDepartment}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                    <div className="md:w-1/2 w-full flex flex-col">
+                        <div className="w-full">
+                            <CustomDropdown
+                                label="Designation"
+                                options={designationOptions}
+                                value={formData.requirementForDesignation}
+                                onChange={(value) => {
+                                    handleInputChange(
+                                        "requirementForDesignation",
+                                        value
+                                    );
+                                    if (value) {
+                                        setErrors({
+                                            ...errors,
+                                            requirementForDesignation: "",
+                                        });
+                                    }
+                                }}
+                                placeholder="Select designation"
+                                required={modelType !== "view"}
+                                mode="single"
+                                className="shadow-none relative !mb-2 rounded-lg border-none !w-full"
+                                isSearchable={true}
+                                style={{ width: "100%" }}
+                                containerStyle={{ width: "100%" }}
+                                readOnly={modelType === "view"}
+                            />
+                            {errors.requirementForDesignation && (
+                                <p className="text-red-500 text-xs mt-1">
+                                    {errors.requirementForDesignation}
+                                </p>
+                            )}
+                        </div>
+                    </div>
                 </div>
 
-                {/* Details Field */}
+                {/* Number of Positions and Experience Required Row */}
+                <div className="flex flex-col md:flex-row gap-4 w-full">
+                    <div className="md:w-1/2 w-full">
+                        <CustomTextInput
+                            label="Number of Positions"
+                            placeholder="Enter number of positions"
+                            value={formData.numberOfPositions}
+                            onChange={(value) => {
+                                handleInputChange("numberOfPositions", value);
+                                if (value && value > 0) {
+                                    setErrors({
+                                        ...errors,
+                                        numberOfPositions: "",
+                                    });
+                                }
+                            }}
+                            type="number"
+                            min="1"
+                            required={modelType !== "view"}
+                            error={errors.numberOfPositions}
+                            className="w-full !mb-0"
+                            readOnly={modelType === "view"}
+                        />
+                    </div>
+                    <div className="md:w-1/2 w-full">
+                        <CustomTextInput
+                            label="Experience Required (Years)"
+                            placeholder="Enter years of experience"
+                            value={formData.experienceRequired}
+                            onChange={(value) => {
+                                handleInputChange("experienceRequired", value);
+                                if (value && value >= 0) {
+                                    setErrors({
+                                        ...errors,
+                                        experienceRequired: "",
+                                    });
+                                }
+                            }}
+                            type="number"
+                            min="0"
+                            required={modelType !== "view"}
+                            error={errors.experienceRequired}
+                            className="w-full !mb-0"
+                            readOnly={modelType === "view"}
+                        />
+                    </div>
+                </div>
+
+                {/* Category and Type Row */}
+                <div className="flex flex-col md:flex-row gap-4 w-full">
+                    <div className="md:w-1/2 w-full flex flex-col">
+                        <div className="w-full">
+                            <CustomDropdown
+                                label="Requirement Category"
+                                options={requirementCategories}
+                                value={formData.requirementForCategory}
+                                onChange={(value) => {
+                                    handleInputChange(
+                                        "requirementForCategory",
+                                        value
+                                    );
+                                    if (value) {
+                                        setErrors({
+                                            ...errors,
+                                            requirementForCategory: "",
+                                        });
+                                    }
+                                }}
+                                placeholder="Select requirement category"
+                                required={modelType !== "view"}
+                                mode="single"
+                                className="shadow-none relative !mb-2 rounded-lg border-none !w-full"
+                                isSearchable={false}
+                                style={{ width: "100%" }}
+                                containerStyle={{ width: "100%" }}
+                                readOnly={modelType === "view"}
+                            />
+                            {errors.requirementForCategory && (
+                                <p className="text-red-500 text-xs mt-1">
+                                    {errors.requirementForCategory}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                    <div className="md:w-1/2 w-full flex flex-col">
+                        <div className="w-full">
+                            <CustomDropdown
+                                label="Requirement Type"
+                                options={requirementTypes}
+                                value={formData.requirementType}
+                                onChange={(value) => {
+                                    handleInputChange("requirementType", value);
+                                    if (value) {
+                                        setErrors({
+                                            ...errors,
+                                            requirementType: "",
+                                        });
+                                    }
+                                }}
+                                placeholder="Select requirement type"
+                                required={modelType !== "view"}
+                                mode="single"
+                                className="shadow-none relative !mb-2 rounded-lg border-none !w-full"
+                                isSearchable={false}
+                                style={{ width: "100%" }}
+                                containerStyle={{ width: "100%" }}
+                                readOnly={modelType === "view"}
+                            />
+                            {errors.requirementType && (
+                                <p className="text-red-500 text-xs mt-1">
+                                    {errors.requirementType}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex flex-col md:flex-row gap-4 w-full">
+                    {/* Expected Joining Date */}
+                    <div className="md:w-1/2 w-full flex flex-col">
+                        <div className="w-full">
+                            <ModernDateRangePicker
+                                label="Expected Joining Date"
+                                onChange={(date) => {
+                                    handleInputChange(
+                                        "expectedJoiningDate",
+                                        date
+                                    );
+                                    if (date) {
+                                        setErrors({
+                                            ...errors,
+                                            expectedJoiningDate: "",
+                                        });
+                                    }
+                                }}
+                                initialStartDate={expectedJoiningDateValue}
+                                isSingle={true}
+                                selectionMode="single"
+                                placeholder="Select expected joining date"
+                                isRequired={modelType !== "view"}
+                                isDisabled={modelType === "view"}
+                                className="!w-full"
+                                shouldCloseOnSelect={true}
+                            />
+                            {errors.expectedJoiningDate && (
+                                <p className="text-red-500 text-xs mt-1">
+                                    {errors.expectedJoiningDate}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                    <div className="md:w-1/2 w-full flex flex-col"></div>
+                </div>
+
+                {/* Job Description */}
                 <div>
                     <RichTextEditor
-                        label="Basic Details"
-                        value={formData.details}
+                        label="Job Description"
+                        value={formData.jobDescription}
                         onChange={(value) => {
-                            handleInputChange("details", value);
+                            handleInputChange("jobDescription", value);
                             if (value.trim()) {
                                 setErrors({
                                     ...errors,
-                                    details: "",
+                                    jobDescription: "",
                                 });
                             }
                         }}
-                        placeholder="Enter basic details about the structure..."
+                        placeholder="Enter detailed job description..."
                         required={modelType !== "view"}
-                        error={errors.details}
-                        minHeight="120px"
-                        maxHeight="200px"
+                        error={errors.jobDescription}
+                        minHeight="150px"
+                        maxHeight="250px"
                         toolbarOptions={modelType === "view" ? [] : []}
                         readOnly={modelType === "view"}
-                        disabled={modelType === "view"}
                     />
                 </div>
 
-                {/* Address Field */}
-                <div>
-                    <RichTextEditor
-                        label="Address"
-                        value={formData.address}
-                        onChange={(value) =>
-                            handleInputChange("address", value)
-                        }
-                        placeholder="Enter complete address..."
-                        required={false}
-                        minHeight="100px"
-                        maxHeight="150px"
-                        toolbarOptions={modelType === "view" ? [] : []}
-                        readOnly={modelType === "view"}
-                        disabled={modelType === "view"}
-                    />
-                </div>
-
-                {/* Structure Type and Country Row */}
+                {/* Requested By */}
                 <div className="flex flex-col md:flex-row gap-4 w-full">
                     <div className="md:w-1/2 w-full flex flex-col">
                         <div className="w-full">
                             <CustomDropdown
-                                label="Structure Type"
-                                options={structureTypes}
-                                value={formData.type}
+                                label="Requested By"
+                                options={employeeOptions}
+                                value={formData.requestedBy}
                                 onChange={(value) => {
-                                    handleInputChange("type", value);
+                                    handleInputChange("requestedBy", value);
                                     if (value) {
                                         setErrors({
                                             ...errors,
-                                            type: "",
+                                            requestedBy: "",
                                         });
                                     }
                                 }}
-                                placeholder="Select structure type"
+                                placeholder="Select requesting person"
                                 required={modelType !== "view"}
                                 mode="single"
                                 className="shadow-none relative !mb-2 rounded-lg border-none !w-full"
-                                isSearchable={false}
+                                isSearchable={true}
                                 style={{ width: "100%" }}
                                 containerStyle={{ width: "100%" }}
-                                disabled={modelType === "view"}
                                 readOnly={modelType === "view"}
+                                dropdownPosition="top"
                             />
-                            {errors.type && (
+                            {errors.requestedBy && (
                                 <p className="text-red-500 text-xs mt-1">
-                                    Structure type is required
+                                    {errors.requestedBy}
                                 </p>
                             )}
                         </div>
                     </div>
+                    {/* Agreed By Dropdown */}
                     <div className="md:w-1/2 w-full flex flex-col">
                         <div className="w-full">
                             <CustomDropdown
-                                label="Country"
-                                options={countries}
-                                value={formData.country}
+                                label="Agreed By"
+                                options={employeeOptions}
+                                value={formData.agreedBy}
                                 onChange={(value) => {
-                                    handleInputChange("country", value);
+                                    handleInputChange("agreedBy", value);
                                     if (value) {
                                         setErrors({
                                             ...errors,
-                                            country: "",
+                                            agreedBy: "",
                                         });
                                     }
                                 }}
-                                placeholder="Select country"
+                                placeholder="Select agreeing person"
                                 required={modelType !== "view"}
                                 mode="single"
                                 className="shadow-none relative !mb-2 rounded-lg border-none !w-full"
-                                isSearchable={false}
+                                isSearchable={true}
                                 style={{ width: "100%" }}
+                                dropdownPosition="top"
                                 containerStyle={{ width: "100%" }}
-                                disabled={modelType === "view"}
-                                readOnly={modelType === "view"}
+                                readOnly={
+                                    modelType === "view" ||
+                                    !formData.isAgreedByDifferent
+                                }
                             />
-                            {errors.country && (
+                            {errors.agreedBy && (
                                 <p className="text-red-500 text-xs mt-1">
-                                    Country is required
+                                    {errors.agreedBy}
                                 </p>
                             )}
                         </div>
                     </div>
                 </div>
 
-                {/* Parent Structure and Heads Row */}
-                <div className="flex flex-col md:flex-row gap-4 w-full">
-                    <div className="md:w-1/2 w-full flex flex-col">
-                        <div className="w-full">
-                            <CustomDropdown
-                                label="Parent Structure"
-                                options={parentStructureOptions}
-                                value={formData.parentStructure}
-                                onChange={(value) => {
+                {/* Agreed By Section */}
+                {modelType !== "view" && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                        <div className="flex items-center mb-4">
+                            <input
+                                type="checkbox"
+                                id="isAgreedByDifferent"
+                                checked={formData.isAgreedByDifferent}
+                                onChange={(e) =>
                                     handleInputChange(
-                                        "parentStructure",
-                                        value || ""
-                                    );
+                                        "isAgreedByDifferent",
+                                        e.target.checked
+                                    )
+                                }
+                                className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            />
+                            <label
+                                htmlFor="isAgreedByDifferent"
+                                className="text-sm font-medium text-gray-700"
+                            >
+                                Agreed by is different from requested by
+                            </label>
+                        </div>
+                    </div>
+                )}
+
+                {/* Status */}
+                <div className="flex flex-col md:flex-row gap-4 w-full">
+                    {/* Approval Status Dropdown */}
+                    <div className="md:w-1/2 w-full flex flex-col">
+                        <div className="w-full">
+                            <CustomDropdown
+                                label="Approval Status"
+                                options={approvedStatusOptions}
+                                value={formData.approvalStatus}
+                                onChange={(value) => {
+                                    handleInputChange("approvalStatus", value);
+                                    if (value) {
+                                        setErrors({
+                                            ...errors,
+                                            approvalStatus: "",
+                                        });
+                                    }
                                 }}
-                                placeholder="Select parent structure (optional)"
+                                placeholder="Select approval status"
                                 required={false}
                                 mode="single"
                                 className="shadow-none relative !mb-2 rounded-lg border-none !w-full"
-                                isSearchable={false}
+                                isSearchable={true}
                                 style={{ width: "100%" }}
                                 containerStyle={{ width: "100%" }}
-                                disabled={modelType === "view"}
-                                readOnly={modelType === "view"}
+                                readOnly={
+                                    userRole === "level_1" ||
+                                    userRole === "level_2" ||
+                                    modelType === "view"
+                                }
+                                dropdownPosition="top"
                             />
-                            {errors.parentStructure && (
+                            {errors.approvalStatus && (
                                 <p className="text-red-500 text-xs mt-1">
-                                    Parent structure is required
+                                    {errors.approvalStatus}
                                 </p>
                             )}
                         </div>
                     </div>
+
+                    {/* Requisition Status Dropdown */}
                     <div className="md:w-1/2 w-full flex flex-col">
                         <div className="w-full">
                             <CustomDropdown
-                                label="Department Head"
-                                options={headsOptions}
-                                value={formData.heads}
+                                label="Requisition Status"
+                                options={requisitionStatusOptions}
+                                value={formData.status}
                                 onChange={(value) => {
-                                    handleInputChange("heads", value || "");
+                                    handleInputChange("status", value);
+                                    if (value) {
+                                        setErrors({
+                                            ...errors,
+                                            status: "",
+                                        });
+                                    }
                                 }}
-                                placeholder="Select department head (optional)"
+                                placeholder="Select requisition status"
                                 required={false}
                                 mode="single"
                                 className="shadow-none relative !mb-2 rounded-lg border-none !w-full"
-                                isSearchable={false}
+                                isSearchable={true}
                                 style={{ width: "100%" }}
+                                dropdownPosition="top"
                                 containerStyle={{ width: "100%" }}
-                                disabled={modelType === "view"}
-                                readOnly={modelType === "view"}
+                                readOnly={
+                                    userRole === "level_1" ||
+                                    modelType === "view"
+                                }
                             />
-                            {errors.heads && (
+                            {errors.status && (
                                 <p className="text-red-500 text-xs mt-1">
-                                    Department head is required
+                                    {errors.status}
                                 </p>
                             )}
                         </div>

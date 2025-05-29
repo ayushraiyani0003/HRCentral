@@ -3,24 +3,24 @@ import {
     CustomTabs,
     CustomTextInput,
     CustomModal,
-} from "../../../../../components";
+} from "../../../../components";
 
 function DeleteConfirmationModal({
     openDeleteModel,
     setOpenDeleteModel,
-    Requisition,
+    requisition,
     onConfirmDelete,
 }) {
     const handleDelete = () => {
         if (onConfirmDelete) {
-            onConfirmDelete(Requisition);
+            onConfirmDelete(requisition);
         }
         setOpenDeleteModel(false);
     };
 
-    const isEmployee = Requisition?.type === "employee";
+    const isEmployee = requisition?.type === "employee";
     const entityType = isEmployee ? "Employee" : "Department";
-    const entityName = Requisition?.name || "Unknown";
+    const entityName = requisition?.name || "Unknown";
 
     return (
         <CustomModal
