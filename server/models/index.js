@@ -15,6 +15,9 @@ const JobLocationModel = require("./JobLocation.model");
 const HiringSourceModel = require("./HiringSource.model");
 const WorkShiftModel = require("./WorkShift.model");
 const SkillModel = require("./Skill.model");
+const ApplicantEducation = require("./ApplicantEducation.model");
+const ApplicantTracking = require("./ApplicantTracking.model");
+const ApplicantWorkHistory = require("./ApplicantWorkHistory.model");
 
 // const EmployeeModel = require("./Employee.model"); // Add when ready
 
@@ -33,6 +36,12 @@ models.JobLocation = JobLocationModel(sequelize, Sequelize.DataTypes);
 models.HiringSource = HiringSourceModel(sequelize, Sequelize.DataTypes);
 models.WorkShift = WorkShiftModel(sequelize, Sequelize.DataTypes);
 models.Skill = SkillModel(sequelize, Sequelize.DataTypes);
+models.ApplicantEducation = ApplicantEducation(sequelize, Sequelize.DataTypes);
+models.ApplicantTracking = ApplicantTracking(sequelize, Sequelize.DataTypes);
+models.ApplicantWorkHistory = ApplicantWorkHistory(
+    sequelize,
+    Sequelize.DataTypes
+);
 
 // models.Employee = EmployeeModel(sequelize, Sequelize.DataTypes); // Add when ready
 
