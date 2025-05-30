@@ -21,6 +21,7 @@ const useHiringRequests = (
 
     // Requirement category options
     const requirementCategories = [
+        { label: "Technical", value: "technical" },
         { label: "Permanent", value: "permanent" },
         {
             label: "Fixed Term (Contract/Casuals/Retainer)",
