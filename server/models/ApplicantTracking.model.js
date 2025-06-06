@@ -9,14 +9,14 @@ module.exports = (sequelize, DataTypes) => {
                 primaryKey: true,
                 allowNull: false,
             },
-            position_applied: {
-                type: DataTypes.STRING(200),
-                allowNull: false,
-            },
             application_date: {
                 type: DataTypes.DATEONLY,
                 allowNull: false,
                 defaultValue: DataTypes.NOW,
+            },
+            position_applied: {
+                type: DataTypes.STRING(200),
+                allowNull: false,
             },
             first_name: {
                 type: DataTypes.STRING(100),
@@ -42,6 +42,14 @@ module.exports = (sequelize, DataTypes) => {
                     len: [10, 15],
                 },
             },
+            mobile_no_2: {
+                type: DataTypes.STRING(15),
+                allowNull: true,
+                validate: {
+                    isNumeric: true,
+                    len: [10, 15],
+                },
+            },
             whatsapp_no: {
                 type: DataTypes.STRING(15),
                 allowNull: true,
@@ -55,10 +63,13 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: false,
             },
             department: {
-                type: DataTypes.STRING(100),
+                type: DataTypes.INTEGER,
                 allowNull: false,
+                // Todo: Add foreign key constraint
+                // reference is from company structure
+                // the column name in the reference table is "int_id"
             },
-            cast: {
+            caste: {
                 type: DataTypes.STRING(50),
                 allowNull: true,
             },
