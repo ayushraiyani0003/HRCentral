@@ -51,6 +51,10 @@
     max-width: 800px;
 }
 
+.custom-modal.larger {
+    max-width: 1000px;
+}
+
 .custom-modal.full {
     max-width: calc(100vw - 3rem);
     height: calc(100vh - 3rem);

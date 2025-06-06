@@ -12,6 +12,8 @@ import LeavesPage from "./features/leaves/pages/LeavesPage";
 import EmailPage from "./features/email/pages/EmailPage";
 import CompanyStructurePage from "./features/companyStructure/pages/CompanyStructurePage";
 import HiringRequestsPage from "./features/HiringRequests/pages/HiringRequestsPage";
+import RecruitmentSetupPage from "./features/RecruitmentSetup/pages/RecruitmentSetupPage";
+import ApplicantTrackingPage from "./features/ApplicantTracking/pages/ApplicantTrackingPage";
 
 export {
     LoginPage,
@@ -31,4 +33,6 @@ export {
     EmailPage,
     CompanyStructurePage,
     HiringRequestsPage,
+    RecruitmentSetupPage,
+    ApplicantTrackingPage,
 };

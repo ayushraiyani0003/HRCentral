@@ -289,7 +289,7 @@ const CustomModal = ({
     onClose,
     title,
     children,
-    size = "full", // small, medium, large, full
+    size = "medium", // small, medium, large, full, larger
     showCloseButton = true,
     closeOnOverlayClick = true,
     closeOnEscape = true,

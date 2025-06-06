@@ -11,13 +11,14 @@ import {
     EditIcon,
     ViewIcon,
 } from "../../../../utils/SvgIcon";
-import useEmployeeTypeTab from "../../hooks/useEmployeeTypeTab";
+import useAllCandidatesTab from "../../hooks/useAllCandidatesTab";
 
-function ExperienceLevelsTab({
+function AllCandidatesTab({
     setOpenDeleteModel,
-    setEmployeeType = () => {},
-    setOpenEmployeeTypeModel = () => {},
+    setCandidate = () => {},
+    setOpenCandidateModal = () => {}, // Fixed: Changed from setOpenCandidateModel to setOpenCandidateModal
     setModelType = () => {},
+    userLevel,
 }) {
     const {
         searchValue,
@@ -27,21 +28,78 @@ function ExperienceLevelsTab({
         handleEdit,
         handleDelete,
         handleSearch,
-    } = useEmployeeTypeTab({
+    } = useAllCandidatesTab({
         setOpenDeleteModel,
-        setEmployeeType,
-        setOpenEmployeeTypeModel,
+        setCandidate,
+        setOpenCandidateModal, // Fixed: Updated prop name
         setModelType,
     });
 
-    // Table columns configuration
+    console.log("userLevel", userLevel);
+
+    // Fixed: Corrected table columns configuration with proper headers and data display
     const columns = [
         {
-            key: "name",
-            header: "Experience Level",
+            key: "position",
+            header: "Position", // Fixed: Changed from "Experience Level"
             sortable: true,
             className: "font-medium text-gray-900",
-            width: "320px",
+            width: "220px",
+            cell: (row) => row.position, // Added data display
+        },
+        {
+            key: "applicationDate",
+            header: "Application Date", // Fixed: Changed from "Experience Level"
+            sortable: true,
+            className: "font-medium text-gray-900",
+            width: "180px",
+            cell: (row) => new Date(row.applicationDate).toLocaleDateString(), // Added formatted date display
+        },
+        {
+            key: "firstName",
+            header: "First Name", // Fixed: Changed from "Experience Level"
+            sortable: true,
+            className: "font-medium text-gray-900",
+            width: "220px",
+            cell: (row) => row.firstName, // Added data display
+        },
+        {
+            key: "lastName",
+            header: "Last Name", // Fixed: Changed from "Experience Level"
+            sortable: true,
+            className: "font-medium text-gray-900",
+            width: "220px",
+            cell: (row) => row.lastName, // Added data display
+        },
+        {
+            key: "mobileNumber",
+            header: "Mobile Number", // Fixed: Changed from "Experience Level"
+            sortable: true,
+            className: "font-medium text-gray-900",
+            width: "220px",
+            cell: (row) => row.mobileNumber, // Added data display
+        },
+        {
+            key: "hiringStage",
+            header: "Hiring Stage", // Fixed: Changed from "Experience Level"
+            sortable: true,
+            className: "font-medium text-gray-900",
+            width: "220px",
+            cell: (row) => (
+                <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        row.hiringStage === "Interview"
+                            ? "bg-blue-100 text-blue-800"
+                            : row.hiringStage === "Screening"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : row.hiringStage === "Hired"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-800"
+                    }`}
+                >
+                    {row.hiringStage}
+                </span>
+            ),
         },
         {
             key: "actions",
@@ -94,7 +152,7 @@ function ExperienceLevelsTab({
                             Add New
                         </CustomButton>
                         <CustomSearchBar
-                            placeholder="Search experience levels..."
+                            placeholder="Search candidates..." // Fixed: Updated placeholder
                             value={searchValue}
                             onChange={handleSearch}
                             onSearch={handleSearch}
@@ -118,7 +176,7 @@ function ExperienceLevelsTab({
                     tdClassName="!px-2 !py-2 text-sm"
                     thCustomStyles="px-3 py-2 text-xs font-semibold text-gray-700 uppercase tracking-wide"
                     className="border-0"
-                    emptyMessage="No experience levels found"
+                    emptyMessage="No candidates found" // Fixed: Updated message
                     tableControlClassName="!mb-0"
                     extraHeaderContent={null}
                 />
@@ -127,4 +185,4 @@ function ExperienceLevelsTab({
     );
 }
 
-export default ExperienceLevelsTab;
+export default AllCandidatesTab;

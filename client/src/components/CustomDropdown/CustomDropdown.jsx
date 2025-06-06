@@ -407,7 +407,6 @@ const CustomDropdown = ({
                 fontFamily:
                     '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
                 marginBottom: "1.5rem",
-                width: "500px",
                 position: "relative",
                 opacity: disabled ? 0.6 : 1,
             }}

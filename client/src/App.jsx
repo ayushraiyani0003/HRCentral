@@ -26,6 +26,8 @@ import {
     EmailPage,
     CompanyStructurePage,
     HiringRequestsPage,
+    RecruitmentSetupPage,
+    ApplicantTrackingPage,
 } from "./index";
 
 // Route components mapping
@@ -33,8 +35,8 @@ const routeComponents = {
     "/": FlexibleDashboardPage,
     "/company-structure": CompanyStructurePage,
     "/hiring-requests": HiringRequestsPage,
-    "/applicant-tracking": () => <div className="p-4">Applicant Tracking</div>,
-    "/recruitment-setup": () => <div className="p-4">Recruitment Setup</div>,
+    "/applicant-tracking": ApplicantTrackingPage,
+    "/recruitment-setup": RecruitmentSetupPage,
     "/messages": () => <div className="p-4">Messages Content</div>,
     "/leaves": LeavesPage,
     "/settings": () => <div className="p-4">Settings Content</div>,

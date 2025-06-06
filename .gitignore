@@ -140,3 +140,6 @@ uploads
 # web whatsapp 
 .wwebjs_auth
 .wwebjs_cache
+
+# redis database
+dump.rdb
