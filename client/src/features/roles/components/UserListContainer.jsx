@@ -165,16 +165,11 @@ function UserListContainer({ userLevel = "level_1" }) {
             accessor: "name",
             cell: (row) => {
                 const name = row.name;
-                const avatar = row.avatar;
                 const lastActive = row.lastActive;
                 return (
                     <div className="flex items-center space-x-3">
-                        <div className="h-10 w-10 rounded-full bg-gray-100 overflow-hidden flex-shrink-0">
-                            <img
-                                src={avatar || "https://i.pravatar.cc/40?img=3"}
-                                alt={name}
-                                className="h-full w-full object-cover"
-                            />
+                        <div className="h-10 w-10 rounded-full flex items-center justify-center bg-blue-100 overflow-hidden flex-shrink-0">
+                            {name.charAt(0).toUpperCase()}
                         </div>
                         <div className="flex flex-col">
                             <span className="font-medium text-gray-900">

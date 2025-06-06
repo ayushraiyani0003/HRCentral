@@ -14,14 +14,7 @@ function RoleCard({
     onEditRoleClick,
     onDeleteClick,
     roleName = "Default Role",
-    roleAssignedUserImages = [
-        "https://i.pravatar.cc/40?img=1",
-        "https://i.pravatar.cc/40?img=2",
-        "https://i.pravatar.cc/40?img=3",
-        "https://i.pravatar.cc/40?img=4",
-        "https://i.pravatar.cc/40?img=4",
-        "https://i.pravatar.cc/40?img=4",
-    ],
+
     userLevel = "level_2", // Add userLevel prop to control access
 }) {
     // Check if user has full access (level_2) or read-only access (level_1)
@@ -72,30 +65,7 @@ function RoleCard({
                         <span className="text-sm font-normal text-gray-600">
                             Total {totalUser} users
                         </span>
-                        <div className="flex -space-x-3 overflow-hidden">
-                            {roleAssignedUserImages
-                                .slice(
-                                    0,
-                                    roleAssignedUserImages.length === 5 ? 5 : 4
-                                )
-                                .map((imgUrl, idx) => (
-                                    <img
-                                        key={idx}
-                                        className={`avatar-img inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover shadow-sm ${
-                                            !isReadOnly
-                                                ? "hover:cursor-pointer"
-                                                : "cursor-default"
-                                        }`}
-                                        src={imgUrl}
-                                        alt={`User ${idx + 1}`}
-                                    />
-                                ))}
-                            {roleAssignedUserImages.length > 5 && (
-                                <span className="flex items-center justify-center h-8 w-8 rounded-full bg-gray-200 text-xs font-medium text-gray-700 ring-2 ring-white shadow-sm">
-                                    +{roleAssignedUserImages.length - 5}
-                                </span>
-                            )}
-                        </div>
+                        <div className="flex -space-x-3 overflow-hidden"></div>
                     </div>
 
                     {/* Bottom row (role name + edit/delete) */}

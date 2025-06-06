@@ -13,15 +13,12 @@ function RolesPermissions() {
     const [roleData, setRoleData] = useState([
         { page: "roles-users", level: "level_2" },
     ]); // in this level_1 or level_2
+
     const [roles, setRoles] = useState([
         {
             id: 1,
             roleName: "Admin",
-            roleAssignedUserImages: [
-                "https://i.pravatar.cc/40?img=1",
-                "https://i.pravatar.cc/40?img=2",
-                "https://i.pravatar.cc/40?img=3",
-            ],
+
             totalUser: 3,
             permissions: [
                 {
@@ -61,21 +58,13 @@ function RolesPermissions() {
         {
             id: 2,
             roleName: "Editor",
-            roleAssignedUserImages: [
-                "https://i.pravatar.cc/40?img=4",
-                "https://i.pravatar.cc/40?img=5",
-            ],
+
             totalUser: 2,
         },
         {
             id: 3,
             roleName: "Moderator",
-            roleAssignedUserImages: [
-                "https://i.pravatar.cc/40?img=6",
-                "https://i.pravatar.cc/40?img=7",
-                "https://i.pravatar.cc/40?img=8",
-                "https://i.pravatar.cc/40?img=9",
-            ],
+
             totalUser: 4,
         },
     ]); // Initial roles with complete data
@@ -127,15 +116,27 @@ function RolesPermissions() {
         // Prevent saving for level_1 users
         if (isReadOnly) return;
 
-        // Process the role data here
-        // console.log("Role saved:", roleData); // debug only
+        console.log(roleData);
 
-        // do other stuff here
+        const transformedData = roleData.permissions
+            .filter((permission) => !isNaN(permission.selectedLevel)) // Filter out invalid levels
+            .map((permission) => ({
+                page_name: permission.feature
+                    .toLowerCase()
+                    .replace(/\s+/g, "_"), // Replace spaces with underscores
+                level: `level_${permission.selectedLevel + 1}`,
+            }));
+
+        console.log("Transformed data:", transformedData);
 
         setIsModalOpen(false);
         setSelectedRole(null);
-        // Add the new role to your roles state
-        // setRoles([...roles, roleData]);
+
+        // Return the fully structured role object
+        return {
+            roleName: roleData.roleName,
+            permissions: transformedData,
+        };
     };
 
     return (
