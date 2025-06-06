@@ -292,42 +292,84 @@ const steps = [
         id: "offer",
         title: "Offer Details",
         description: "Offer details of the candidate",
-        fields: [
-            {
-                name: "noticePeriod",
-                label: "Notice Period",
-                type: "number",
-            },
-            {
-                name: "probationPeriod",
-                label: "Probation Period",
-                type: "number",
-            },
-            {
-                name: "expectedSalary",
-                label: "Expected Salary",
-                type: "number",
-            },
-            {
-                name: "offeredSalary",
-                label: "Offered Salary",
-                type: "number",
-            },
-            {
-                name: "joiningDate",
-                label: "Joining Date",
-                type: "date",
-            },
-            {
-                name: "requisitionId",
-                label: "Requisition ID",
-                type: "dropdown",
-                options: [
-                    { value: "1", label: "Requisition 1" },
-                    { value: "2", label: "Requisition 2" },
-                ],
-            },
-        ],
+
+        layout: {
+            type: "section",
+            sections: [
+                {
+                    // title: "Address Information",
+                    layout: {
+                        type: "grid",
+                        gridCols: "grid-cols-2",
+                    },
+                    fields: [
+                        {
+                            name: "noticePeriod",
+                            label: "Notice Period",
+                            type: "number",
+                        },
+                        {
+                            name: "probationPeriod",
+                            label: "Probation Period",
+                            type: "number",
+                        },
+                    ],
+                },
+                {
+                    layout: {
+                        type: "grid",
+                        gridCols: "grid-cols-2",
+                    },
+                    fields: [
+                        {
+                            name: "expectedSalary",
+                            label: "Expected Salary",
+                            type: "number",
+                        },
+                        {
+                            name: "offeredSalary",
+                            label: "Offered Salary",
+                            type: "number",
+                        },
+                    ],
+                },
+                {
+                    layout: {
+                        type: "grid",
+                        gridCols: "grid-cols-2",
+                    },
+                    fields: [
+                        {
+                            name: "joiningDate",
+                            label: "Applicant Joining Date",
+                            type: "date",
+                        },
+                        {
+                            name: "requisitionId",
+                            label: "Requisition ID",
+                            type: "dropdown",
+                            options: [
+                                { value: "1", label: "Requisition 1" },
+                                { value: "2", label: "Requisition 2" },
+                            ],
+                        },
+                    ],
+                },
+                {
+                    layout: {
+                        type: "grid",
+                        gridCols: "grid-cols-1",
+                    },
+                    fields: [
+                        {
+                            name: "finalRemarks",
+                            label: "Final Remarks",
+                            type: "textarea",
+                        },
+                    ],
+                },
+            ],
+        },
     },
 ];
 

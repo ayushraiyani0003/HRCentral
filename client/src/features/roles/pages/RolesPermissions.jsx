@@ -10,6 +10,9 @@ function RolesPermissions() {
     // for open and close the model.
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedRole, setSelectedRole] = useState(null);
+    const [roleData, setRoleData] = useState([
+        { page: "roles-users", level: "level_2" },
+    ]); // in this level_1 or level_2
     const [roles, setRoles] = useState([
         {
             id: 1,
@@ -20,41 +23,40 @@ function RolesPermissions() {
                 "https://i.pravatar.cc/40?img=3",
             ],
             totalUser: 3,
-            permissions:
-            [
+            permissions: [
                 {
                     feature: "Administrator Access",
                     read: true,
                     write: true,
                     isAdmin: true,
-                    description: "Grants full access to all system features"
+                    description: "Grants full access to all system features",
                 },
                 {
                     feature: "User Management",
                     read: true,
-                    write: true
+                    write: true,
                 },
                 {
                     feature: "Role Management",
                     read: true,
-                    write: true
+                    write: true,
                 },
                 {
                     feature: "Content Management",
                     read: true,
-                    write: true
+                    write: true,
                 },
                 {
                     feature: "Reports",
                     read: true,
-                    write: true
+                    write: true,
                 },
                 {
                     feature: "Settings",
                     read: true,
-                    write: true
-                }
-            ]
+                    write: true,
+                },
+            ],
         },
         {
             id: 2,
@@ -75,43 +77,60 @@ function RolesPermissions() {
                 "https://i.pravatar.cc/40?img=9",
             ],
             totalUser: 4,
-        }
+        },
     ]); // Initial roles with complete data
 
-    const handleAddRole = () => {
-        setIsModalOpen(true);
-        // Implement add role logic here
-    };
+    // Get current user's access level for "roles-users" page
+    const rolesUsersPermission = roleData.find(
+        (item) => item.page === "roles-users"
+    );
+    const userLevel = rolesUsersPermission?.level || "level_1";
+    const isReadOnly = userLevel === "level_1";
 
-    const handleDefaultPages= () => {
+    const handleAddRole = () => {
+        // Prevent modal opening for level_1 users
+        if (isReadOnly) return;
+
         setIsModalOpen(true);
         // Implement add role logic here
     };
 
     const handleDeleteRole = (id) => {
+        // Prevent deletion for level_1 users
+        if (isReadOnly) return;
+
         setRoles((prevRoles) => prevRoles.filter((role) => role.id !== id));
     };
 
     const handleEditRole = (id) => {
+        // Prevent editing for level_1 users
+        if (isReadOnly) return;
+
         const roleToEdit = roles.find((role) => role.id === id);
         if (roleToEdit) {
             setSelectedRole(roleToEdit);
             setIsModalOpen(true);
         }
-    };    
+    };
 
     // Function to handle closing the modal
     const handleCloseModal = () => {
+        // Prevent modal operations for level_1 users
+        if (isReadOnly) return;
+
         setIsModalOpen(false);
         setSelectedRole(null);
         // console.log("Modal closed"); // debug only
     };
-    
+
     const handleSaveRole = (roleData) => {
+        // Prevent saving for level_1 users
+        if (isReadOnly) return;
+
         // Process the role data here
         // console.log("Role saved:", roleData); // debug only
 
-        // do other stuf hear
+        // do other stuff here
 
         setIsModalOpen(false);
         setSelectedRole(null);
@@ -125,16 +144,11 @@ function RolesPermissions() {
                 className="!p-4"
                 title="Roles List"
                 titleCssClass="!text-2xl !font-semibold"
-                headerActions={
-                    <CustomButton
-                        onClick={handleDefaultPages}
-                        title="Pages selected here will be default for new role creation"
-                        className="inline-flex items-center gap-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 px-4 py-2 text-white shadow-md active:scale-95 transition-all duration-200"
-                    >
-                        set Default Pages
-                    </CustomButton>
+                description={
+                    isReadOnly
+                        ? "You have read-only access to view roles and permissions. Contact your administrator for editing privileges."
+                        : "A role provides access to predefined menus and features, so depending on the assigned role, an administrator can access what the user needs."
                 }
-                description="A role provides access to predefined menus and features, so depending on the assigned role, an administrator can access what the user needs."
             >
                 <div className="grids-width grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     {roles.map((role) => (
@@ -145,21 +159,29 @@ function RolesPermissions() {
                             totalUser={role.totalUser}
                             onEditRoleClick={() => handleEditRole(role.id)}
                             onDeleteClick={() => handleDeleteRole(role.id)}
+                            userLevel={userLevel} // Pass user level to RoleCard
                         />
                     ))}
-                    <RoleCard
-                        isNewRoleAdd={true}
-                        onNewRoleClick={handleAddRole}
-                    />
+                    {/* Only show "Add New Role" card for level_2 users */}
+                    {!isReadOnly && (
+                        <RoleCard
+                            isNewRoleAdd={true}
+                            onNewRoleClick={handleAddRole}
+                            userLevel={userLevel}
+                        />
+                    )}
                 </div>
             </CustomContainer>
-            <UserListContainer />
-            <AddEditRoleModel
-                isOpen={isModalOpen}
-                onClose={handleCloseModal}
-                onSave={handleSaveRole}
-                initialData={selectedRole}
-            />
+            <UserListContainer userLevel={userLevel} />
+            {/* Only render modal for level_2 users and when it should be open */}
+            {!isReadOnly && (
+                <AddEditRoleModel
+                    isOpen={isModalOpen}
+                    onClose={handleCloseModal}
+                    onSave={handleSaveRole}
+                    initialData={selectedRole}
+                />
+            )}
         </div>
     );
 }

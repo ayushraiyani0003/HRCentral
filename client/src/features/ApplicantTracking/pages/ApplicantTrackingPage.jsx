@@ -14,7 +14,7 @@ import {
 import AllCandidatesTab from "../components/Tabs/AllCandidatesTab";
 
 import DeleteConfirmationModel from "../components/models/DeleteConfirmationModel";
-import AddEditCandidatesModel from "../components/models/AddEditCandidatesModel"; // Fixed: Changed from AllCandidatesModel
+import AddEditCandidatesModel from "../components/models/AddEditCandidatesModel/AddEditCandidatesModel"; // Fixed: Changed from AllCandidatesModel
 
 import useApplicantTrackingPage from "../hooks/useApplicantTrackingPage";
 

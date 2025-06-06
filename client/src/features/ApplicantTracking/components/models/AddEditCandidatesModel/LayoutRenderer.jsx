@@ -1,5 +1,5 @@
 import React from "react";
-import { CustomButton } from "../../../../components";
+import { CustomButton } from "../../../../../components";
 
 const LayoutRenderer = ({ renderField, formData, handleInputChange }) => {
     const renderLayout = (layout, fields, isViewMode = false) => {

@@ -1,12 +1,15 @@
 import React from "react";
-import { CustomModal, CustomizableTimeline } from "../../../../components";
-import InterviewDetailsModelContent from "./InterviewDetailsModelContent";
-import EduExpStepModelContent from "./EduExpStepModelContent";
-import CustomRenderStepButtons from "./CustomRenderStepButtons";
+import {
+    CustomModal,
+    CustomizableTimeline,
+} from "../../../../../components/index.js";
+import InterviewDetailsModelContent from "./InterviewDetailsModelContent.jsx";
+import EduExpStepModelContent from "./EduExpStepModelContent.jsx";
+import CustomRenderStepButtons from "./CustomRenderStepButtons.jsx";
 import steps from "./steps.jsx";
 import LayoutRenderer from "./LayoutRenderer.jsx";
 import FieldRenderer from "./FieldRenderer.jsx";
-import useCandidateForm from "../../hooks/useCandidateForm.js"; // Import the custom hook
+import useCandidateForm from "../../../hooks/useCandidateForm.js"; // Import the custom hook
 function AddEditCandidatesModel({
     openCandidateModal,
     setOpenCandidateModal,

@@ -5,9 +5,12 @@ import {
     CustomTable,
 } from "../../../components";
 import "./UserListContainer.css";
-import {colorPalette} from "../../../utils/colorPalatte";
+import { colorPalette } from "../../../utils/colorPalatte";
 
-function UserListContainer() {
+function UserListContainer({ userLevel = "level_1" }) {
+    // Check if user has read-only access
+    const isReadOnly = userLevel === "level_1";
+
     // this variable is the use for the color generate for each different role
     const roleColorMap = {};
     let colorIndex = 0;
@@ -98,12 +101,18 @@ function UserListContainer() {
 
     // Handle editing user
     const handleEdit = (user) => {
+        // Prevent editing for level_1 users
+        if (isReadOnly) return;
+
         // console.log("Edit user:", user); // debug only
         // Implement edit functionality
     };
 
     // Handle deleting user
     const handleDelete = (userId) => {
+        // Prevent deletion for level_1 users
+        if (isReadOnly) return;
+
         // console.log("Delete user with ID:", userId); // debug only
         // Implement delete confirmation and functionality
         if (window.confirm(`Are you sure you want to delete user ${userId}?`)) {
@@ -113,6 +122,9 @@ function UserListContainer() {
 
     // Handle toggling user status
     const handleToggleStatus = (userId, currentStatus) => {
+        // Prevent status toggle for level_1 users
+        if (isReadOnly) return;
+
         // console.log(`Toggle status for user ${userId} from ${currentStatus}`); // debug only
         setUserData(
             userData.map((user) => {
@@ -126,6 +138,21 @@ function UserListContainer() {
                 return user;
             })
         );
+    };
+
+    // Handle add user
+    const handleAddUser = () => {
+        // Prevent adding user for level_1 users
+        if (isReadOnly) return;
+
+        // console.log("Add new user"); // debug only
+        // Implement add user functionality
+    };
+
+    // Handle export
+    const handleExport = () => {
+        // console.log("Export users"); // debug only
+        // Implement export functionality
     };
 
     // Define table columns with configuration
@@ -242,7 +269,7 @@ function UserListContainer() {
             cell: (row) => {
                 return (
                     <div className="flex space-x-2">
-                        {/* View Details Button */}
+                        {/* View Details Button - Always visible */}
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -273,37 +300,15 @@ function UserListContainer() {
                             </svg>
                         </button>
 
-                        {/* Delete Button */}
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleDelete(row.id);
-                            }}
-                            className="text-red-600 hover:text-red-800"
-                            title="Delete User"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                className="w-5 h-5"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                />
-                            </svg>
-                        </button>
-
-                        {/* Options Dropdown */}
-                        <div className="relative group">
+                        {/* Delete Button - Only for level_2 users */}
+                        {!isReadOnly && (
                             <button
-                                onClick={(e) => e.stopPropagation()} // Prevent row click
-                                className="text-gray-600 hover:text-gray-800"
-                                title="More Options"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDelete(row.id);
+                                }}
+                                className="text-red-600 hover:text-red-800"
+                                title="Delete User"
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -316,44 +321,70 @@ function UserListContainer() {
                                         strokeLinecap="round"
                                         strokeLinejoin="round"
                                         strokeWidth={2}
-                                        d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                                     />
                                 </svg>
                             </button>
-                            <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden group-hover:block z-150 ">
-                                <div
-                                    className="py-1"
-                                    role="menu"
-                                    aria-orientation="vertical"
+                        )}
+
+                        {/* Options Dropdown - Only for level_2 users */}
+                        {!isReadOnly && (
+                            <div className="relative group">
+                                <button
+                                    onClick={(e) => e.stopPropagation()} // Prevent row click
+                                    className="text-gray-600 hover:text-gray-800"
+                                    title="More Options"
                                 >
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleEdit(row); // Pass the entire row object
-                                        }}
-                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
-                                        role="menuitem"
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        className="w-5 h-5"
                                     >
-                                        Edit
-                                    </button>
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleToggleStatus(
-                                                row.id,
-                                                row.status
-                                            );
-                                        }}
-                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
-                                        role="menuitem"
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                                        />
+                                    </svg>
+                                </button>
+                                <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden group-hover:block z-150 ">
+                                    <div
+                                        className="py-1"
+                                        role="menu"
+                                        aria-orientation="vertical"
                                     >
-                                        {row.status === "Active"
-                                            ? "Deactivate"
-                                            : "Activate"}
-                                    </button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleEdit(row); // Pass the entire row object
+                                            }}
+                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                                            role="menuitem"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleToggleStatus(
+                                                    row.id,
+                                                    row.status
+                                                );
+                                            }}
+                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                                            role="menuitem"
+                                        >
+                                            {row.status === "Active"
+                                                ? "Deactivate"
+                                                : "Activate"}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 );
             },
@@ -363,11 +394,19 @@ function UserListContainer() {
     return (
         <CustomContainer
             title="User Management"
-            description="Manage all users, their roles, departments and access levels in your organization."
+            description={
+                isReadOnly
+                    ? "You have read-only access to view users. Contact your administrator for editing privileges."
+                    : "Manage all users, their roles, departments and access levels in your organization."
+            }
             titleCssClass="!text-2xl !font-semibold"
             headerActions={
                 <div className="flex space-x-3">
-                    <CustomButton className="inline-flex items-center gap-2 rounded-lg bg-gray-200 hover:bg-gray-300 px-4 py-2 text-gray-700 shadow-sm active:scale-95 transition-all duration-200">
+                    {/* Export button - Always visible */}
+                    <CustomButton
+                        className="inline-flex items-center gap-2 rounded-lg bg-gray-200 hover:bg-gray-300 px-4 py-2 text-gray-700 shadow-sm active:scale-95 transition-all duration-200"
+                        onClick={handleExport}
+                    >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             className="h-5 w-5"
@@ -384,23 +423,29 @@ function UserListContainer() {
                         </svg>
                         Export
                     </CustomButton>
-                    <CustomButton className="inline-flex items-center gap-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 px-4 py-2 text-white shadow-md active:scale-95 transition-all duration-200">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
+                    {/* Add User button - Only for level_2 users */}
+                    {!isReadOnly && (
+                        <CustomButton
+                            className="inline-flex items-center gap-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 px-4 py-2 text-white shadow-md active:scale-95 transition-all duration-200"
+                            onClick={handleAddUser}
                         >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                            />
-                        </svg>
-                        Add User
-                    </CustomButton>
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-5 w-5"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                />
+                            </svg>
+                            Add User
+                        </CustomButton>
+                    )}
                 </div>
             }
         >

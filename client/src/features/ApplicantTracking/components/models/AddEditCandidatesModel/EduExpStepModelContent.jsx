@@ -1,16 +1,16 @@
 import React, { useState } from "react";
 import { Table } from "antd";
-import { TextButton } from "../../../../components";
+import { TextButton } from "../../../../../components";
 import {
     AddIcon,
     DeleteIcon,
     EditIcon,
     ViewIcon,
-} from "../../../../utils/SvgIcon";
+} from "../../../../../utils/SvgIcon";
 
-import EduModel from "./EduModel";
-import WorkHistoryModel from "./WorkHistoryModel";
-import SkillModel from "./SkillModel";
+import EduModel from "../EduModel";
+import WorkHistoryModel from "../WorkHistoryModel";
+import SkillModel from "../SkillModel";
 
 function EduExpStepModelContent({ formData, handleInputChange, isViewMode }) {
     const [isEduFormOpen, setIsEduFormOpen] = useState(false);

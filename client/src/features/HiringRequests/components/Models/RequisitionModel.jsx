@@ -576,6 +576,29 @@ function RequisitionModel({
                         </div>
                     </div>
                 </div>
+                {/* // TODO: hear display the table of the applicants Hired agaist this requisition form */}
+                <table class="min-w-full border rounded-sm border-gray-300 table-auto">
+                    <thead class="border rounded-sm">
+                        <tr class="bg-gray-100">
+                            <th class="border border-gray-300 px-4 py-2 text-left">
+                                Applicant Name
+                            </th>
+                            <th class="border border-gray-300 px-4 py-2 text-left">
+                                Joining Date
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="border rounded-sm">
+                        <tr>
+                            <td class="border border-gray-300 px-4 py-2">
+                                John Doe
+                            </td>
+                            <td class="border border-gray-300 px-4 py-2">
+                                2023-06-01
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </CustomModal>
     );

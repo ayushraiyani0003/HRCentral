@@ -5,7 +5,7 @@ import {
     RichTextEditor,
     CustomTextInput,
     ModernDateRangePicker,
-} from "../../../../components";
+} from "../../../../../components";
 
 const FieldRenderer = ({ formData, createFieldSetter, handleInputChange }) => {
     const renderField = (field, isViewMode = false) => {

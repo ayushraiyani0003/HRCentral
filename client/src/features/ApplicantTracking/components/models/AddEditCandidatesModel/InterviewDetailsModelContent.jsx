@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Table } from "antd";
-import { TextButton } from "../../../../components";
-import { EditIcon, DeleteIcon } from "../../../../utils/SvgIcon";
+import { TextButton } from "../../../../../components";
+import { EditIcon, DeleteIcon } from "../../../../../utils/SvgIcon";
 
 function InterviewDetailsModelContent({ isViewMode }) {
     // Sample data for General Interview

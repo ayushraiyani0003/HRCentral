@@ -22,7 +22,11 @@ function RoleCard({
         "https://i.pravatar.cc/40?img=4",
         "https://i.pravatar.cc/40?img=4",
     ],
+    userLevel = "level_2", // Add userLevel prop to control access
 }) {
+    // Check if user has full access (level_2) or read-only access (level_1)
+    const isReadOnly = userLevel === "level_1";
+
     return (
         <CustomContainer
             style={{
@@ -33,31 +37,34 @@ function RoleCard({
             className="role-card !m-0 !p-4 !shadow-sm !hover:shadow-md transition-all duration-300"
         >
             {isNewRoleAdd ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-4 py-2">
-                    {/* First column: SVG illustration */}
-                    <div className="laptop-image flex justify-center md:justify-start">
-                        <img
-                            src={ladyLaptopImage}
-                            alt="Lady with laptop"
-                            className="lady-with-laptop"
-                        />
-                    </div>
+                // Only show "Add New Role" card if user has level_2 access
+                !isReadOnly ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-4 py-2">
+                        {/* First column: SVG illustration */}
+                        <div className="laptop-image flex justify-center md:justify-start">
+                            <img
+                                src={ladyLaptopImage}
+                                alt="Lady with laptop"
+                                className="lady-with-laptop"
+                            />
+                        </div>
 
-                    {/* Second column: Button and description */}
-                    <div className="flex flex-col items-center md:items-end gap-3 h-full">
-                        <CustomButton
-                            children={"Add New Role"}
-                            icon={<DeleteIcon />}
-                            className="bg-indigo-500 hover:bg-indigo-600 focus:outline-none !focus:ring-0 !focus:ring-offset-0 transition-colors duration-300 w-full md:w-auto"
-                            onClick={onNewRoleClick}
-                        />
-                        <span className="text-gray-600 text-center md:text-right text-sm">
-                            Add new role,
-                            <br />
-                            if it doesn't exist.
-                        </span>
+                        {/* Second column: Button and description */}
+                        <div className="flex flex-col items-center md:items-end gap-3 h-full">
+                            <CustomButton
+                                children={"Add New Role"}
+                                icon={<DeleteIcon />}
+                                className="bg-indigo-500 hover:bg-indigo-600 focus:outline-none !focus:ring-0 !focus:ring-offset-0 transition-colors duration-300 w-full md:w-auto"
+                                onClick={onNewRoleClick}
+                            />
+                            <span className="text-gray-600 text-center md:text-right text-sm">
+                                Add new role,
+                                <br />
+                                if it doesn't exist.
+                            </span>
+                        </div>
                     </div>
-                </div>
+                ) : null // Don't render the add new role card for level_1 users
             ) : (
                 <div className="flex flex-col justify-between h-full py-2">
                     {/* Top row (users + avatars) */}
@@ -74,7 +81,11 @@ function RoleCard({
                                 .map((imgUrl, idx) => (
                                     <img
                                         key={idx}
-                                        className="avatar-img inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover shadow-sm hover:cursor-pointer"
+                                        className={`avatar-img inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover shadow-sm ${
+                                            !isReadOnly
+                                                ? "hover:cursor-pointer"
+                                                : "cursor-default"
+                                        }`}
                                         src={imgUrl}
                                         alt={`User ${idx + 1}`}
                                     />
@@ -93,20 +104,26 @@ function RoleCard({
                             <h1 className="text-lg font-medium text-gray-800">
                                 {roleName}
                             </h1>
-                            <span
-                                onClick={onEditRoleClick}
-                                className="edit-link text-sm font-normal text-indigo-500 hover:text-indigo-600 cursor-pointer transition-colors duration-200"
-                            >
-                                Edit Role
-                            </span>
+                            {/* Only show Edit Role link for level_2 users */}
+                            {!isReadOnly && (
+                                <span
+                                    onClick={onEditRoleClick}
+                                    className="edit-link text-sm font-normal text-indigo-500 hover:text-indigo-600 cursor-pointer transition-colors duration-200"
+                                >
+                                    Edit Role
+                                </span>
+                            )}
                         </div>
-                        <button
-                            onClick={onDeleteClick}
-                            className="p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-red-500 transition-colors duration-200 focus:outline-none"
-                            aria-label="Delete role"
-                        >
-                            <DeleteIcon />
-                        </button>
+                        {/* Only show delete button for level_2 users */}
+                        {!isReadOnly && (
+                            <button
+                                onClick={onDeleteClick}
+                                className="p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-red-500 transition-colors duration-200 focus:outline-none"
+                                aria-label="Delete role"
+                            >
+                                <DeleteIcon />
+                            </button>
+                        )}
                     </div>
                 </div>
             )}

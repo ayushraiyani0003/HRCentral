@@ -129,6 +129,10 @@ function RecruitmentSetupPage() {
                 />
             ),
         },
+        {
+            label: "Hiring Stage",
+            content: <>Add hear for add Hiring stage</>,
+        },
     ];
 
     return (
