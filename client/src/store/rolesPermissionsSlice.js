@@ -28,7 +28,40 @@ export const fetchRoleById = createAsyncThunk(
         if (!response.success) {
             return rejectWithValue(response.error);
         }
-        return response.data;
+
+        // Extract only the role object from the response
+        // Based on your example: response.data.role
+        let roleData = null;
+
+        // Check common response patterns
+        if (response.data?.role) {
+            roleData = response.data.role;
+        } else if (response.data?.data?.role) {
+            roleData = response.data.data.role;
+        } else if (response.data?.data) {
+            roleData = response.data.data;
+        } else if (response.data) {
+            roleData = response.data;
+        }
+
+        // If we still don't have the role object, return the full response temporarily
+        if (!roleData || typeof roleData !== "object") {
+            console.warn(
+                "Could not extract role object from fetchRoleById, returning full response:",
+                response
+            );
+            return response.data || response;
+        }
+
+        // Return only the essential role fields
+        const cleanRole = {};
+        if (roleData.id) cleanRole.id = roleData.id;
+        if (roleData.name) cleanRole.name = roleData.name;
+        if (roleData.permissions) cleanRole.permissions = roleData.permissions;
+        if (roleData.createdAt) cleanRole.createdAt = roleData.createdAt;
+        if (roleData.updatedAt) cleanRole.updatedAt = roleData.updatedAt;
+
+        return cleanRole;
     }
 );
 
@@ -41,7 +74,7 @@ export const createRole = createAsyncThunk(
         }
 
         // Debug: Log the response structure to understand the format
-        // console.log("Create Role Response:", response);
+        console.log("Create Role Response:", response);
 
         // Try different possible response structures
         let newRole = null;
@@ -76,7 +109,7 @@ export const createRole = createAsyncThunk(
         if (newRole.createdAt) cleanRole.createdAt = newRole.createdAt;
         if (newRole.updatedAt) cleanRole.updatedAt = newRole.updatedAt;
 
-        // console.log("Cleaned Role Object:", cleanRole);
+        console.log("Cleaned Role Object:", cleanRole);
         return cleanRole;
     }
 );
@@ -90,7 +123,7 @@ export const updateRole = createAsyncThunk(
         }
 
         // Debug: Log the response structure to understand the format
-        // console.log("Update Role Response:", response);
+        console.log("Update Role Response:", response);
 
         // Try different possible response structures
         let updatedRole = null;
@@ -126,7 +159,7 @@ export const updateRole = createAsyncThunk(
         if (updatedRole.createdAt) cleanRole.createdAt = updatedRole.createdAt;
         if (updatedRole.updatedAt) cleanRole.updatedAt = updatedRole.updatedAt;
 
-        // console.log("Cleaned Role Object:", cleanRole);
+        console.log("Cleaned Role Object:", cleanRole);
         return cleanRole;
     }
 );

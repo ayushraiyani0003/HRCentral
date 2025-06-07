@@ -7,6 +7,8 @@ function AddEditRoleModel({ isOpen, onClose, onSave, initialData = null }) {
     const [roleNameError, setRoleNameError] = useState(false);
     const [permissionError, setPermissionError] = useState(false);
 
+    console.log(initialData);
+
     const defaultPermissions = [
         {
             feature: "Administrator Access",
@@ -97,15 +99,70 @@ function AddEditRoleModel({ isOpen, onClose, onSave, initialData = null }) {
 
     const [permissions, setPermissions] = useState(defaultPermissions);
 
+    // Helper function to parse and map database permissions to component format
+    const parsePermissionsFromDatabase = (dbPermissions) => {
+        try {
+            // Parse the JSON string if it's a string
+            const parsedPermissions =
+                typeof dbPermissions === "string"
+                    ? JSON.parse(dbPermissions)
+                    : dbPermissions;
+
+            if (!Array.isArray(parsedPermissions)) {
+                return defaultPermissions;
+            }
+
+            // Create a copy of default permissions
+            const mappedPermissions = defaultPermissions.map((defaultPerm) => ({
+                ...defaultPerm,
+                selectedLevel: -1, // Initialize as no selection
+            }));
+
+            // Map database permissions to the component format
+            parsedPermissions.forEach((dbPerm) => {
+                // Find matching feature in default permissions
+                const featureIndex = mappedPermissions.findIndex(
+                    (perm) =>
+                        perm.feature.toLowerCase().replace(/\s+/g, "_") ===
+                            dbPerm.page_name ||
+                        perm.feature === dbPerm.page_name ||
+                        perm.feature.toLowerCase() ===
+                            dbPerm.page_name.toLowerCase().replace(/_/g, " ")
+                );
+
+                if (featureIndex !== -1) {
+                    // Extract level number from level string (e.g., "level_6" -> 5 for 0-based index)
+                    const levelMatch = dbPerm.level.match(/level_(\d+)/);
+                    if (levelMatch) {
+                        const levelNumber = parseInt(levelMatch[1], 10);
+                        // Convert to 0-based index (level_1 = index 0, level_6 = index 5)
+                        mappedPermissions[featureIndex].selectedLevel =
+                            levelNumber - 1;
+                    }
+                }
+            });
+
+            return mappedPermissions;
+        } catch (error) {
+            console.error("Error parsing permissions from database:", error);
+            return defaultPermissions;
+        }
+    };
+
     useEffect(() => {
         if (isOpen) {
             if (initialData) {
-                setRoleName(initialData.roleName || "");
-                setPermissions(
-                    initialData.permissions?.length
-                        ? initialData.permissions
-                        : defaultPermissions
-                );
+                setRoleName(initialData.name || initialData.roleName || "");
+
+                // Parse and set permissions from database
+                if (initialData.permissions) {
+                    const parsedPermissions = parsePermissionsFromDatabase(
+                        initialData.permissions
+                    );
+                    setPermissions(parsedPermissions);
+                } else {
+                    setPermissions(defaultPermissions);
+                }
             } else {
                 setRoleName("");
                 setPermissions(defaultPermissions);
