@@ -19,6 +19,8 @@ const ApplicantEducation = require("./ApplicantEducation.model");
 const ApplicantTracking = require("./ApplicantTracking.model");
 const ApplicantWorkHistory = require("./ApplicantWorkHistory.model");
 const RolesList = require("./RolesList.model");
+const UserList = require("./UserList.model");
+const Employee = require("./EmployeeList.model");
 
 // const EmployeeModel = require("./Employee.model"); // Add when ready
 
@@ -28,7 +30,6 @@ models.ManPowerRequisition = ManPowerRequisitionModel(
     sequelize,
     Sequelize.DataTypes
 );
-
 models.EmployeeType = EmployeeTypeModel(sequelize, Sequelize.DataTypes);
 models.ExperienceLevel = ExperienceLevelModel(sequelize, Sequelize.DataTypes);
 models.Designation = DesignationModel(sequelize, Sequelize.DataTypes);
@@ -44,6 +45,8 @@ models.ApplicantWorkHistory = ApplicantWorkHistory(
     Sequelize.DataTypes
 );
 models.RolesList = RolesList(sequelize, Sequelize.DataTypes);
+models.UserList = UserList(sequelize, Sequelize.DataTypes);
+models.Employee = Employee(sequelize, Sequelize.DataTypes);
 
 // models.Employee = EmployeeModel(sequelize, Sequelize.DataTypes); // Add when ready
 
