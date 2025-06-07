@@ -83,13 +83,13 @@ const MainLayout = ({ children, menuItems, selected }) => {
 
             {/* Main Content Area */}
             <div
-                className={`flex-1 transition-all duration-300 ${
+                className={`flex-1 transition-all duration-300 h-screen ${
                     sidebarOpen ? "filter blur-xs opacity-50" : ""
                 }`}
                 ref={mainContentRef}
             >
                 {sidebarOpen && (
-                    <div className="fixed inset-0 bg-gray-900 opacity-50 z-999"></div>
+                    <div className="fixed inset-0 bg-gray-900 opacity-10 z-999"></div>
                 )}
                 {/* Main Content Header */}
                 {/* Main Content with proper spacing from header */}
