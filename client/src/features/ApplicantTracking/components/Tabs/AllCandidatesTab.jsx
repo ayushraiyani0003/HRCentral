@@ -35,7 +35,7 @@ function AllCandidatesTab({
         setModelType,
     });
 
-    console.log("userLevel", userLevel);
+    // console.log("userLevel", userLevel);
 
     // Fixed: Corrected table columns configuration with proper headers and data display
     const columns = [

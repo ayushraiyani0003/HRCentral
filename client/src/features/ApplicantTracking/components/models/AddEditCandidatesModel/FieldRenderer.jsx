@@ -51,7 +51,7 @@ const FieldRenderer = ({ formData, createFieldSetter, handleInputChange }) => {
                         options={field.options || []}
                         value={formData[field.name] || ""} // Fixed: use field.name instead of field.value
                         onChange={(selectedValues) => {
-                            console.log(selectedValues);
+                            // console.log(selectedValues);
                             // Fixed: extract single value for single mode
                             const singleValue = Array.isArray(selectedValues)
                                 ? selectedValues[0]
