@@ -21,6 +21,7 @@ const ApplicantWorkHistory = require("./ApplicantWorkHistory.model");
 const RolesList = require("./RolesList.model");
 const UserList = require("./UserList.model");
 const Employee = require("./EmployeeList.model");
+const Country = require("./Country.model");
 
 // const EmployeeModel = require("./Employee.model"); // Add when ready
 
@@ -47,6 +48,7 @@ models.ApplicantWorkHistory = ApplicantWorkHistory(
 models.RolesList = RolesList(sequelize, Sequelize.DataTypes);
 models.UserList = UserList(sequelize, Sequelize.DataTypes);
 models.Employee = Employee(sequelize, Sequelize.DataTypes);
+models.Country = Country(sequelize, Sequelize.DataTypes);
 
 // models.Employee = EmployeeModel(sequelize, Sequelize.DataTypes); // Add when ready
 

@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
                 primaryKey: true,
                 allowNull: false,
             },
-            int_id: {
+            structure_id: {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
                 unique: true,
@@ -39,10 +39,10 @@ module.exports = (sequelize, DataTypes) => {
                 ),
                 allowNull: false,
             },
-            country: {
-                type: DataTypes.STRING(100),
+            country_id: {
+                type: DataTypes.UUID,
                 allowNull: false,
-                defaultValue: "India",
+                // Remove references - will be handled in associations
             },
             parent_id: {
                 type: DataTypes.UUID,
@@ -65,13 +65,17 @@ module.exports = (sequelize, DataTypes) => {
                     fields: ["name", "type"],
                 },
                 {
-                    name: "int_id_unique_idx",
+                    name: "structure_id_unique_idx",
                     unique: true,
-                    fields: ["int_id"],
+                    fields: ["structure_id"],
                 },
                 {
                     name: "parent_id_idx",
                     fields: ["parent_id"],
+                },
+                {
+                    name: "country_id_idx",
+                    fields: ["country_id"],
                 },
             ],
         }
@@ -91,6 +95,16 @@ module.exports = (sequelize, DataTypes) => {
             as: "children",
             constraints: false, // Disable foreign key constraint for self-reference
         });
+
+        // Country association
+        // id is in character two later, like "IN", "US" etc.
+        if (models.Country) {
+            CompanyStructure.belongsTo(models.Country, {
+                foreignKey: "country_id",
+                as: "country",
+                constraints: false, // Disable until Country table is created
+            });
+        }
 
         // Only define Employee association if Employee model exists
         if (models.Employee) {

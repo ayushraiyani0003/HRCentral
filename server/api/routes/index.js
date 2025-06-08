@@ -7,6 +7,9 @@ const uploadRoutes = require("./upload.routes");
 const whatsappRoutes = require("./whatsapp.routes");
 const slipGenerateRoutes = require("./slipGenerate.routes");
 const rolesRoutes = require("./rolesList.routes");
+const companyStructureRoutes = require("./companyStructure.routes");
+const countryRoutes = require("./country.routes");
+
 // Uncomment when ready to use
 // const salaryRoutes = require('./salary.routes');
 // const employeeRoutes = require('./employee.routes');
@@ -16,6 +19,8 @@ router.use("/upload", uploadRoutes);
 router.use("/whatsapp", whatsappRoutes);
 router.use("/slip-generate", slipGenerateRoutes);
 router.use("/roles", rolesRoutes);
+router.use("/company-structure", companyStructureRoutes);
+router.use("/country", countryRoutes);
 // Uncomment when ready to use
 // router.use('/salary', salaryRoutes);
 // router.use('/employee', employeeRoutes);
@@ -30,6 +35,8 @@ router.get("/", (req, res) => {
             whatsapp: "/api/whatsapp",
             slipGenerate: "/api/slip-generate",
             roles: "/api/roles",
+            companyStructure: "/api/company-structure",
+            country: "/api/country",
             // Uncomment when ready to use
             // salary: '/api/salary',
             // employee: '/api/employee',
