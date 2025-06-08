@@ -172,10 +172,7 @@ const EmergencyContactSection = ({ emergencyContact }) => (
     >
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 text-sm">
             <InfoItem label="Name" value={emergencyContact.name} />
-            <InfoItem
-                label="Relationship"
-                value={emergencyContact.relationship}
-            />
+            <InfoItem label="Relation" value={emergencyContact.relationship} />
             <CopyableText label="Phone" value={emergencyContact.phone} />
         </div>
     </CustomContainer>
@@ -183,18 +180,21 @@ const EmergencyContactSection = ({ emergencyContact }) => (
 
 const ReferInformationSection = ({ referInformation }) => (
     <CustomContainer
-        title="Refer Information"   
+        title="Refer Information"
         headerActions={<EditButton />}
         className="mb-3"
     >
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 text-sm">
-            <CopyableText label="Punch code" value={referInformation.punchCode} />
+            <CopyableText
+                label="Punch code"
+                value={referInformation.punchCode}
+            />
             <InfoItem label="Name" value={referInformation.name} />
-            <InfoItem label="Relationship" value={referInformation.relationship} />
+            <InfoItem label="Relation" value={referInformation.relationship} />
             <CopyableText label="Phone" value={referInformation.phone} />
         </div>
     </CustomContainer>
-)
+);
 
 const SkillsSection = ({ skills }) => (
     <CustomContainer
@@ -256,95 +256,97 @@ const LanguagesSection = ({ languages }) => (
 );
 
 // Main component
-function EmployeeDetailsInfo({selectedEmployee}) {
+function EmployeeDetailsInfo({ selectedEmployee }) {
     const [activeTab, setActiveTab] = useState("basicInfo");
 
     // Mock employee data
-    const employee = selectedEmployee ? selectedEmployee :{
-        // Basic Info
-        designation: "Software Engineer",
-        department: "Engineering",
-        company: "TechNova Inc.",
-        reportingGroup: "Backend Team",
-        employmentStatus: "Full Time Permanent",
-        status: "active",
-        joinedDate: "2015-06-15",
-        resignedDate: null,
+    const employee = selectedEmployee
+        ? selectedEmployee
+        : {
+              // Basic Info
+              designation: "Software Engineer",
+              department: "Engineering",
+              company: "TechNova Inc.",
+              reportingGroup: "Backend Team",
+              employmentStatus: "Full Time Permanent",
+              status: "active",
+              joinedDate: "2015-06-15",
+              resignedDate: null,
 
-        // Personal Information
-        dateOfBirth: "1985-04-12",
-        gender: "Male",
-        nationality: "American",
-        maritalStatus: "Single",
+              // Personal Information
+              dateOfBirth: "1985-04-12",
+              gender: "Male",
+              nationality: "American",
+              maritalStatus: "Single",
 
-        // Identification
-        nationalId: "123-45-6789",
-        socialInsuranceNumber: "789-65-4321",
-        personalTaxId: "PT-00012345",
-        healthInsuranceNumber: "HI-4567890",
-        additionalIds: ["DL-CA-987654321"],
-        drivingLicense: "DL-CA-987654321",
+              // Identification
+              nationalId: "123-45-6789",
+              socialInsuranceNumber: "789-65-4321",
+              personalTaxId: "PT-00012345",
+              healthInsuranceNumber: "HI-4567890",
+              additionalIds: ["DL-CA-987654321"],
+              drivingLicense: "DL-CA-987654321",
 
-        // Contact Information
-        address: "123 Maple Street",
-        city: "New York",
-        state: "NY",
-        country: "United States",
-        postalCode: "10001",
-        homePhone: "212-555-1234",
-        workPhone: "212-555-5678",
-        privateEmail: "john.doe@example.com",
+              // Contact Information
+              address: "123 Maple Street",
+              city: "New York",
+              state: "NY",
+              country: "United States",
+              postalCode: "10001",
+              homePhone: "212-555-1234",
+              workPhone: "212-555-5678",
+              privateEmail: "john.doe@example.com",
 
-        // Communication Numbers
-        mobileNumber: "+1-202-555-0131",
-        whatsappNumber: "+1-202-555-0131",
+              // Communication Numbers
+              mobileNumber: "+1-202-555-0131",
+              whatsappNumber: "+1-202-555-0131",
 
-        // Work Details
-        netHours: 40,
-        weekOff: ["Saturday", "Sunday"],
-        location: "New York",
-        manager: "Jane Smith",
+              // Work Details
+              netHours: 40,
+              weekOff: ["Saturday", "Sunday"],
+              location: "New York",
+              manager: "Jane Smith",
 
-        // Optional Extensions
-        employeeType: "Permanent",
-        shiftTiming: "09:00 AM - 06:00 PM",
-        emergencyContact: {
-            name: "Mary Doe",
-            relationship: "Sister",
-            phone: "+1-202-555-7890",
-        },
+              // Optional Extensions
+              employeeType: "Permanent",
+              shiftTiming: "09:00 AM - 06:00 PM",
+              emergencyContact: {
+                  name: "Mary Doe",
+                  relationship: "Sister",
+                  phone: "+1-202-555-7890",
+              },
 
-        // Qualifications
-        skills: ["JavaScript", "React", "Node.js", "HTML", "CSS"],
-        education: [
-            {
-                degree: "Bachelor of Science in Computer Science",
-                institution: "MIT",
-                year: "2010",
-            },
-            {
-                degree: "Master of Science in Software Engineering",
-                institution: "Stanford",
-                year: "2012",
-            },
-        ],
-        certifications: [
-            "AWS Certified Developer",
-            "Google Cloud Professional",
-            "Scrum Master",
-        ],
-        languages: [
-            "English (Native)",
-            "Spanish (Intermediate)",
-            "French (Basic)",
-        ],
-        referInformation: {
-            punchCode: "EMP002",
-            name: "John Doe",
-            relationship: "Friend",
-            phone: "+1-296602-555-0123",
-        },
-    };
+              // Qualifications
+              skills: ["JavaScript", "React", "Node.js", "HTML", "CSS"],
+              education: [
+                  {
+                      degree: "Bachelor of Science in Computer Science",
+                      institution: "MIT",
+                      year: "2010",
+                  },
+                  {
+                      degree: "Master of Science in Software Engineering",
+                      institution: "Stanford",
+                      year: "2012",
+                  },
+              ],
+              certifications: [
+                  "AWS Certified Developer",
+                  "Google Cloud Professional",
+                  "Scrum Master",
+              ],
+              languages: [
+                  "English (Native)",
+                  "Spanish (Intermediate)",
+                  "French (Basic)",
+              ],
+              referInformation: {
+                  punchCode: "EMP002",
+                  name: "John Doe",
+                  relationship: "Friend",
+                  phone: "+1-296602-555-0123",
+              },
+          };
 
     return (
         <div className="bg-gray-50 p-3 md:p-6 rounded-md">
@@ -382,7 +384,9 @@ function EmployeeDetailsInfo({selectedEmployee}) {
                     <EmergencyContactSection
                         emergencyContact={employee.emergencyContact}
                     />
-                    <ReferInformationSection referInformation={employee.referInformation} />
+                    <ReferInformationSection
+                        referInformation={employee.referInformation}
+                    />
                 </div>
             )}
 
