@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React from "react";
 import {
     CustomTable,
     CustomButton,
@@ -12,6 +12,7 @@ import {
     EditIcon,
     ViewIcon,
 } from "../../../../utils/SvgIcon";
+import useCompanyStructureTab from "../../hooks/useCompanyStructureTab";
 
 function CompanyStructureTab({
     setOpenDeleteModel,
@@ -19,78 +20,21 @@ function CompanyStructureTab({
     setOpenStructureModel = () => {},
     setModelType = () => {},
 }) {
-    const [searchValue, setSearchValue] = useState("");
-
-    // Sample data for the table
-    const companyStructureData = useMemo(
-        () => [
-            {
-                id: 1,
-                name: "Headquarters",
-                address: "123 Main St, New York, NY 10001",
-                type: "Head Office",
-                country: "United States",
-                parentStructure: "Root",
-                Head: "John Doe",
-            },
-            {
-                id: 2,
-                name: "Marketing Department",
-                address: "123 Main St, Floor 5, New York, NY 10001",
-                type: "Department",
-                country: "United States",
-                parentStructure: "Headquarters",
-                Head: "John Doe",
-            },
-            {
-                id: 3,
-                name: "London Branch",
-                address: "456 Oxford St, London, UK W1C 1AP",
-                type: "Branch",
-                country: "United Kingdom",
-                parentStructure: "Headquarters",
-                Head: "John Doe",
-            },
-            {
-                id: 4,
-                name: "Sales Unit - East",
-                address: "789 Broadway, New York, NY 10003",
-                type: "Unit",
-                country: "United States",
-                parentStructure: "Headquarters",
-                Head: "John Doe",
-            },
-            {
-                id: 5,
-                name: "IT Department",
-                address: "123 Main St, Floor 3, New York, NY 10001",
-                type: "Department",
-                country: "United States",
-                parentStructure: "Headquarters",
-                Head: "John Doe",
-            },
-        ],
-        []
-    );
-
-    // Filter data based on search value
-    const filteredData = useMemo(() => {
-        if (!searchValue.trim()) {
-            return companyStructureData;
-        }
-
-        const searchTerm = searchValue.toLowerCase().trim();
-
-        return companyStructureData.filter((item) => {
-            return (
-                item.name.toLowerCase().includes(searchTerm) ||
-                item.address.toLowerCase().includes(searchTerm) ||
-                item.type.toLowerCase().includes(searchTerm) ||
-                item.country.toLowerCase().includes(searchTerm) ||
-                item.parentStructure.toLowerCase().includes(searchTerm)
-            );
-        });
-    }, [searchValue, companyStructureData]);
+    const {
+        searchValue,
+        filteredData,
+        handleAddNew,
+        handleView,
+        handleEdit,
+        handleDelete,
+        handleSearch,
+        handleMoreInfo,
+    } = useCompanyStructureTab({
+        setOpenDeleteModel,
+        setCompanyStructure,
+        setOpenStructureModel,
+        setModelType,
+    });
 
     // Table columns configuration
     const columns = [
@@ -112,7 +56,6 @@ function CompanyStructureTab({
             key: "type",
             header: "Type",
             sortable: true,
-
             width: "130px",
             cell: (row) => (
                 <span
@@ -184,49 +127,6 @@ function CompanyStructureTab({
         },
     ];
 
-    // Action handlers
-    const handleAddNew = () => {
-        // TODO: Add new company structure open the model for this.
-        // console.log("Add new company structure");
-
-        setOpenStructureModel(true);
-        setModelType("add");
-    };
-
-    const handleView = (row) => {
-        // TODO: View company structure open the model for this.
-        // console.log("View:", row);
-
-        setOpenStructureModel(true);
-        setModelType("view");
-        setCompanyStructure(row);
-    };
-
-    const handleEdit = (row) => {
-        // TODO: Edit company structure open the model for this. also share the current data
-        // console.log("Edit:", row);
-
-        setOpenStructureModel(true);
-        setModelType("edit");
-        setCompanyStructure(row);
-    };
-
-    const handleDelete = (row) => {
-        // console.log("Delete:", row);
-        setCompanyStructure(row);
-        // open the model and ask for the confirmation
-        setOpenDeleteModel(true);
-    };
-
-    const handleSearch = useCallback((value) => {
-        setSearchValue(value);
-    }, []);
-
-    const handleMoreInfo = () => {
-        // TODO: Implement a way for users to view more details via an external link.
-        // console.log("More info clicked");
-    };
-
     return (
         <div className="space-y-6 mt-2">
             {/* First Container - Header Information */}
@@ -278,16 +178,16 @@ function CompanyStructureTab({
             >
                 <CustomTable
                     columns={columns}
-                    data={filteredData} // Using filtered data instead of original data
-                    searchable={false} // We're using external search
+                    data={filteredData}
+                    searchable={false}
                     filterable={false}
                     filterableColumns={[]}
                     sortable={true}
                     pagination={true}
                     itemsPerPageOptions={[10, 25, 50]}
                     defaultItemsPerPage={10}
-                    rowHeight="40px" // Slim rows
-                    tdClassName="!px-2 !py-2 text-sm" // Compact padding
+                    rowHeight="40px"
+                    tdClassName="!px-2 !py-2 text-sm"
                     thCustomStyles="px-3 py-2 text-xs font-semibold text-gray-700 uppercase tracking-wide"
                     className="border-0"
                     emptyMessage="No company structures found"

@@ -73,22 +73,6 @@ function CompanyStructurePage() {
                 openStructureModel={openStructureModel}
                 setOpenStructureModel={setOpenStructureModel}
                 modelType={modelType}
-                existingStructures={[
-                    { name: "Company", id: "company" },
-                    { name: "Head Office", id: "head_office" },
-                    { name: "Regional Office", v: "regional_office" },
-                    { name: "Department", id: "department" },
-                    { name: "Unit", id: "unit" },
-                    { name: "Sub Unit", id: "sub_unit" },
-                ]} // Array of existing structures for parent dropdown
-                departmentHeads={[
-                    { name: "Company", id: "company" },
-                    { name: "Head Office", id: "head_office" },
-                    { name: "Regional Office", id: "regional_office" },
-                    { name: "Department", id: "department" },
-                    { name: "Unit", id: "unit" },
-                    { name: "Sub Unit", id: "sub_unit" },
-                ]} // Array of department heads
                 handleCloseStructureModel={handleCloseStructureModel}
             />
         </div>

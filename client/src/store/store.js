@@ -4,6 +4,8 @@ import uploadReducer from "./uploadSlice";
 import whatsappReducer from "./whatsappSlice";
 import slipGenerateReducer from "./slipGenerateSlice";
 import rolesPermissionsReducer from "./rolesPermissionsSlice";
+import companyStructureReducer from "./CompanyStructureSlice";
+import countrySlice from "./countrySlice";
 
 const store = configureStore({
     reducer: {
@@ -11,6 +13,8 @@ const store = configureStore({
         whatsapp: whatsappReducer,
         slipGenerate: slipGenerateReducer,
         rolesPermissions: rolesPermissionsReducer,
+        companyStructure: companyStructureReducer,
+        country: countrySlice,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({

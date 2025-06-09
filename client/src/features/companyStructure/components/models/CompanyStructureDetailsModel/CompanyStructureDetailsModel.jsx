@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
     CustomTextInput,
     CustomButton,
@@ -7,180 +7,33 @@ import {
     CustomModal,
 } from "../../../../../components";
 
+import useCompanyStructureDetailsModel from "../../../hooks/useCompanyStructureDetailsModel";
+
 function CompanyStructureDetailsModel({
     openStructureModel,
     setOpenStructureModel,
     modelType,
     companyStructure,
-    existingStructures = [], // Array of existing structures for parent dropdown
-    departmentHeads = [], // Array of department heads
     handleCloseStructureModel,
 }) {
-    const [formData, setFormData] = useState({
-        name: "",
-        details: "",
-        address: "",
-        type: "",
-        country: "India",
-        parentStructure: "",
-        heads: "",
-    });
-
-    const [errors, setErrors] = useState({});
-    const [isLoading, setIsLoading] = useState(false);
-
-    // Structure type options
-    const structureTypes = [
-        { label: "Company", value: "company" },
-        { label: "Head Office", value: "head_office" },
-        { label: "Regional Office", value: "regional_office" },
-        { label: "Department", value: "department" },
-        { label: "Unit", value: "unit" },
-        { label: "Sub Unit", value: "sub_unit" },
-    ];
-
-    // Country options (you can expand this list)
-    const countries = [
-        { label: "India", value: "India" },
-        { label: "United States", value: "United States" },
-        { label: "United Kingdom", value: "United Kingdom" },
-        { label: "Canada", value: "Canada" },
-        { label: "Australia", value: "Australia" },
-        { label: "Germany", value: "Germany" },
-        { label: "France", value: "France" },
-        { label: "Japan", value: "Japan" },
-        { label: "Singapore", value: "Singapore" },
-        { label: "UAE", value: "UAE" },
-    ];
-
-    // Convert existing structures to dropdown options
-    const parentStructureOptions = existingStructures.map((structure) => ({
-        label: structure.name,
-        value: structure.id || structure.name,
-    }));
-
-    // Convert department heads to dropdown options
-    const headsOptions = departmentHeads.map((head) => ({
-        label: head.name,
-        value: head.id || head.name,
-    }));
-
-    // Initialize form data when editing or viewing
-    useEffect(() => {
-        if (
-            (modelType === "edit" || modelType === "view") &&
-            companyStructure
-        ) {
-            setFormData({
-                name: companyStructure.name || "",
-                details: companyStructure.details || "",
-                address: companyStructure.address || "",
-                type: companyStructure.type || "",
-                country: companyStructure.country || "India",
-                parentStructure: companyStructure.parentStructure || "",
-                heads: companyStructure.heads || "",
-            });
-        } else if (modelType === "add") {
-            setFormData({
-                name: "",
-                details: "",
-                address: "",
-                type: "",
-                country: "India",
-                parentStructure: "",
-                heads: "",
-            });
-        }
-    }, [modelType, companyStructure]);
-
-    // Handle input changes
-    const handleInputChange = (field, value) => {
-        setFormData((prev) => ({
-            ...prev,
-            [field]: value,
-        }));
-
-        // Clear error when user starts typing
-        if (errors[field]) {
-            setErrors((prev) => ({
-                ...prev,
-                [field]: "",
-            }));
-        }
-    };
-
-    // Validation function
-    const validateForm = () => {
-        const newErrors = {};
-
-        if (!formData.name.trim()) {
-            newErrors.name = "Name is required";
-        }
-
-        if (!formData.details.trim()) {
-            newErrors.details = "Details are required";
-        }
-
-        if (!formData.type) {
-            newErrors.type = "Type is required";
-        }
-
-        if (!formData.country) {
-            newErrors.country = "Country is required";
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-    const onSave = (data) => {
-        // Handle save logic here
-        // TODO: Implement save logic
-        console.log("Saving new structure:", data);
-        handleCloseStructureModel();
-    };
-    const onUpdate = (data) => {
-        // Handle update logic here
-        // TODO: Implement update logic
-        console.log("Updating structure:", data);
-        handleCloseStructureModel();
-    };
-
-    // Handle form submission
-    const handleSubmit = async () => {
-        if (!validateForm()) {
-            return;
-        }
-
-        setIsLoading(true);
-        try {
-            if (modelType === "edit") {
-                await onUpdate?.(formData);
-            } else {
-                await onSave?.(formData);
-            }
-            setOpenStructureModel(false);
-        } catch (error) {
-            console.error("Error saving structure:", error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    // Handle cancel
-    const handleCancel = () => {
-        setFormData({
-            name: "",
-            details: "",
-            address: "",
-            type: "",
-            country: "India",
-            parentStructure: "",
-            heads: "",
-        });
-        setErrors({});
-        setOpenStructureModel(false);
-    };
+    const {
+        formData,
+        errors,
+        isLoading,
+        handleInputChange,
+        handleCancel,
+        handleSubmit,
+        structureTypes,
+        countryOptions,
+        parentStructureOptions,
+        headsOptions,
+        setErrors,
+    } = useCompanyStructureDetailsModel(
+        setOpenStructureModel,
+        modelType,
+        companyStructure,
+        handleCloseStructureModel
+    );
 
     // Footer buttons
     const modalFooter = (
@@ -329,6 +182,7 @@ function CompanyStructureDetailsModel({
                                 mode="single"
                                 className="shadow-none relative !mb-2 rounded-lg border-none !w-full"
                                 isSearchable={false}
+                                dropdownPosition="top"
                                 style={{ width: "100%" }}
                                 containerStyle={{ width: "100%" }}
                                 disabled={modelType === "view"}
@@ -345,7 +199,7 @@ function CompanyStructureDetailsModel({
                         <div className="w-full">
                             <CustomDropdown
                                 label="Country"
-                                options={countries}
+                                options={countryOptions}
                                 value={formData.country}
                                 onChange={(value) => {
                                     handleInputChange("country", value);
@@ -361,6 +215,7 @@ function CompanyStructureDetailsModel({
                                 mode="single"
                                 className="shadow-none relative !mb-2 rounded-lg border-none !w-full"
                                 isSearchable={false}
+                                dropdownPosition="top"
                                 style={{ width: "100%" }}
                                 containerStyle={{ width: "100%" }}
                                 disabled={modelType === "view"}
@@ -394,6 +249,7 @@ function CompanyStructureDetailsModel({
                                 mode="single"
                                 className="shadow-none relative !mb-2 rounded-lg border-none !w-full"
                                 isSearchable={false}
+                                dropdownPosition="top"
                                 style={{ width: "100%" }}
                                 containerStyle={{ width: "100%" }}
                                 disabled={modelType === "view"}
@@ -420,6 +276,7 @@ function CompanyStructureDetailsModel({
                                 mode="single"
                                 className="shadow-none relative !mb-2 rounded-lg border-none !w-full"
                                 isSearchable={false}
+                                dropdownPosition="top"
                                 style={{ width: "100%" }}
                                 containerStyle={{ width: "100%" }}
                                 disabled={modelType === "view"}
