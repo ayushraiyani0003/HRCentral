@@ -48,8 +48,6 @@ export const fetchCompanyStructureById = createAsyncThunk(
 export const updateCompanyStructure = createAsyncThunk(
     "companyStructure/update",
     async ({ id, data }, { rejectWithValue }) => {
-        console.log("companay data service", data);
-
         try {
             const response = await companyService.update(id, data);
             return response;
@@ -62,6 +60,8 @@ export const updateCompanyStructure = createAsyncThunk(
 export const deleteCompanyStructure = createAsyncThunk(
     "companyStructure/delete",
     async (id, { rejectWithValue }) => {
+        console.log("id", id);
+
         try {
             const response = await companyService.delete(id);
             return { id, ...response };

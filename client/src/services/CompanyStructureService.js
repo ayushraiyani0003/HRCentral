@@ -174,6 +174,8 @@ class CompanyStructureService {
      */
     async delete(id) {
         try {
+            console.log(id);
+
             const response = await fetch(`${this.baseUrl}/${id}`, {
                 method: "DELETE",
                 headers: this.headers,

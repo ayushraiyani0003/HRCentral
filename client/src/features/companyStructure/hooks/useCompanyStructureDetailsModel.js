@@ -151,10 +151,10 @@ const useCompanyStructureDetailsModel = ({
     const initializeFormData = useCallback(() => {
         if (!companyStructure || isInitialized) return;
 
-        console.log("Initializing form data:", {
-            companyStructure,
-            countries: countries.length,
-        });
+        // console.log("Initializing form data:", { // DEBUG
+        //     companyStructure,
+        //     countries: countries.length,
+        // });
 
         // Find country by name/label and get its ID
         const selectedCountry = countries.find(
@@ -167,12 +167,12 @@ const useCompanyStructureDetailsModel = ({
             (structure) => structure.id === companyStructure.parent_id
         );
 
-        console.log(existingCompanyStructures);
+        // console.log(existingCompanyStructures); // DEBUG
 
-        // hear i get parent_id and uuid null
-        console.log("selectedParent", selectedParent);
-        console.log("selectedParent?.id", selectedParent?.parent_id);
-        console.log("selectedParent?.uuid", selectedParent?.uuid);
+        // // hear i get parent_id and uuid null
+        // console.log("selectedParent", selectedParent);
+        // console.log("selectedParent?.id", selectedParent?.parent_id);
+        // console.log("selectedParent?.uuid", selectedParent?.uuid);
 
         const newFormData = {
             name: companyStructure.name || "",
@@ -184,7 +184,7 @@ const useCompanyStructureDetailsModel = ({
             head_id: companyStructure.head || "",
         };
 
-        console.log("Setting form data:", newFormData);
+        // console.log("Setting form data:", newFormData); // DEBUG
 
         setFormData(newFormData);
         setFormErrors({});
@@ -193,7 +193,7 @@ const useCompanyStructureDetailsModel = ({
 
     // Reset form data for add mode
     const resetFormData = useCallback(() => {
-        console.log("Resetting form data");
+        // console.log("Resetting form data"); // DEBUG
         setFormData({
             name: "",
             details: "",
@@ -209,12 +209,13 @@ const useCompanyStructureDetailsModel = ({
 
     // Main initialization effect
     useEffect(() => {
-        console.log("Initialization effect:", {
-            modelType,
-            hasCompanyStructure: !!companyStructure,
-            isInitialized,
-            countriesLength: countries.length,
-        });
+        // DEBUG
+        // console.log("Initialization effect:", {
+        //     modelType,
+        //     hasCompanyStructure: !!companyStructure,
+        //     isInitialized,
+        //     countriesLength: countries.length,
+        // });
 
         if (modelType === "add") {
             resetFormData();
@@ -301,7 +302,8 @@ const useCompanyStructureDetailsModel = ({
                 head_id: formData.head_id || null,
             };
 
-            console.log("Submitting data:", submitData);
+            // DEBUG
+            // console.log("Submitting data:", submitData);
             // Submitting data:{
             //     "name": "dfg",
             //     "details": "sazedg&nbsp;",
@@ -312,11 +314,13 @@ const useCompanyStructureDetailsModel = ({
             //     "head_id": null
             // }
             // country_id is not change even i change the value in dropdown.
-            console.log("Model type:", modelType); // Model type: edit
-            console.log("Company structure ID:", companyStructure?.id); // Company structure ID: 19c5e35d-4294-4047-8bc3-5f1aaa413431
+            // DEBUG
+            // console.log("Model type:", modelType); // Model type: edit
+            // console.log("Company structure ID:", companyStructure?.id); // Company structure ID: 19c5e35d-4294-4047-8bc3-5f1aaa413431
 
             if (modelType === "edit" && companyStructure?.id) {
-                console.log("on edit this called");
+                // DEBUG
+                // console.log("on edit this called");
                 await dispatch(
                     updateCompanyStructure({
                         id: companyStructure.id,

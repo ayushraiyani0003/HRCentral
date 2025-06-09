@@ -16,7 +16,7 @@ function CompanyStructureDetailsModel({
     companyStructure,
     handleCloseStructureModel,
 }) {
-    console.log(modelType);
+    // console.log(modelType); // DEBUG
 
     const {
         formData,
@@ -37,11 +37,11 @@ function CompanyStructureDetailsModel({
         handleCloseStructureModel,
     });
 
-    console.log(companyStructure);
-    console.log("structureTypes", structureTypes);
-    console.log("countryOptions", countryOptions);
-    console.log("parentStructureOptions", parentStructureOptions);
-    console.log("headsOptions", headsOptions);
+    // console.log(companyStructure);
+    // console.log("structureTypes", structureTypes);
+    // console.log("countryOptions", countryOptions);
+    // console.log("parentStructureOptions", parentStructureOptions);
+    // console.log("headsOptions", headsOptions);
 
     // Footer buttons
     const modalFooter = (

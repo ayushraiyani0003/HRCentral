@@ -27,6 +27,8 @@ const useCompanyStructureTab = ({
     setOpenStructureModel = () => {},
     setModelType = () => {},
 }) => {
+    console.log(setOpenDeleteModel);
+
     const dispatch = useDispatch();
 
     // Redux state selectors
@@ -67,7 +69,7 @@ const useCompanyStructureTab = ({
             return { fetch: false };
         }
     }, [countriesLoading]);
-    console.log("companyStructureData", companyStructureData);
+    // console.log("companyStructureData", companyStructureData);
 
     // Local state for search
     const [searchValue, setSearchValue] = useState("");

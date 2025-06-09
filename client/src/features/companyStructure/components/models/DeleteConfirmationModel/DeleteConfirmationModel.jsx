@@ -5,16 +5,22 @@ import {
     CustomModal,
 } from "../../../../../components";
 
+import useCompanyStructureTab from "../../../hooks/useCompanyStructureTab";
+
 function DeleteConfirmationModal({
     openDeleteModel,
     setOpenDeleteModel,
     companyStructure,
-    onConfirmDelete,
 }) {
+    const { handleConfirmDelete } = useCompanyStructureTab({
+        setOpenDeleteModel,
+        modelType: "delete",
+        companyStructure,
+        handleCloseStructureModel: () => {},
+    });
+
     const handleDelete = () => {
-        if (onConfirmDelete) {
-            onConfirmDelete(companyStructure);
-        }
+        handleConfirmDelete(companyStructure.id);
         setOpenDeleteModel(false);
     };
 
