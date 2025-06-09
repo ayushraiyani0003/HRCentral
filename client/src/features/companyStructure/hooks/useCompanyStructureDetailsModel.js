@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { createSelector } from "@reduxjs/toolkit";
+import { useToast } from "../../../components";
 import {
     createCompanyStructure,
     updateCompanyStructure,
@@ -54,6 +55,7 @@ const useCompanyStructureDetailsModel = ({
     handleCloseStructureModel,
 }) => {
     const dispatch = useDispatch();
+    const { addToast } = useToast();
 
     // Redux state selectors with memoization
     const existingCompanyStructures = useSelector(selectCompanyStructures);
@@ -133,28 +135,161 @@ const useCompanyStructureDetailsModel = ({
         }));
     }, []);
 
+    // Helper function to parse and display detailed error messages
+    const parseErrorMessage = useCallback((error) => {
+        if (typeof error === "string") {
+            return error;
+        }
+
+        // Handle validation errors (usually an object with field-specific errors)
+        if (error && typeof error === "object") {
+            // Check for common error structures
+            if (error.message) {
+                return error.message;
+            }
+
+            if (error.error) {
+                return error.error;
+            }
+
+            if (error.data) {
+                if (error.data.message) {
+                    return error.data.message;
+                }
+
+                // Handle validation errors structure like { field: ["error message"] }
+                if (typeof error.data === "object") {
+                    const errorMessages = [];
+                    Object.entries(error.data).forEach(([field, messages]) => {
+                        if (Array.isArray(messages)) {
+                            messages.forEach((msg) =>
+                                errorMessages.push(`${field}: ${msg}`)
+                            );
+                        } else if (typeof messages === "string") {
+                            errorMessages.push(`${field}: ${messages}`);
+                        }
+                    });
+                    if (errorMessages.length > 0) {
+                        return errorMessages.join(", ");
+                    }
+                }
+            }
+
+            // Handle response errors
+            if (error.response?.data) {
+                if (error.response.data.message) {
+                    return error.response.data.message;
+                }
+
+                if (typeof error.response.data === "object") {
+                    const errorMessages = [];
+                    Object.entries(error.response.data).forEach(
+                        ([field, messages]) => {
+                            if (Array.isArray(messages)) {
+                                messages.forEach((msg) =>
+                                    errorMessages.push(`${field}: ${msg}`)
+                                );
+                            } else if (typeof messages === "string") {
+                                errorMessages.push(`${field}: ${messages}`);
+                            }
+                        }
+                    );
+                    if (errorMessages.length > 0) {
+                        return errorMessages.join(", ");
+                    }
+                }
+            }
+
+            // Handle rejected promise errors
+            if (error.rejectedValue) {
+                return parseErrorMessage(error.rejectedValue);
+            }
+        }
+
+        return "An unexpected error occurred";
+    }, []);
+
+    // Helper function to display error messages via toast
+    const displayErrorToast = useCallback(
+        (error, defaultMessage = "An error occurred") => {
+            const errorMessage = parseErrorMessage(error) || defaultMessage;
+            addToast(errorMessage, "error", 6000);
+        },
+        [addToast, parseErrorMessage]
+    );
+
+    // Helper function to display success messages via toast
+    const displaySuccessToast = useCallback(
+        (message) => {
+            addToast(message, "success", 4000);
+        },
+        [addToast]
+    );
+
+    // Helper function to display validation errors via toast
+    const displayValidationErrors = useCallback(
+        (errors) => {
+            const errorMessages = Object.entries(errors)
+                .filter(([_, value]) => value)
+                .map(([field, message]) => `${field}: ${message}`);
+
+            if (errorMessages.length > 0) {
+                addToast(
+                    `Please fix the following errors: ${errorMessages.join(
+                        ", "
+                    )}`,
+                    "warning",
+                    7000
+                );
+            }
+        },
+        [addToast]
+    );
+
     // Fetch countries on component mount
     useEffect(() => {
         if (countries.length === 0 && !countriesLoading.fetch) {
-            dispatch(fetchCountries({ limit: 1000, page: 1 }));
+            dispatch(fetchCountries({ limit: 1000, page: 1 }))
+                .unwrap()
+                .then(() => {
+                    console.log("Countries fetched successfully");
+                })
+                .catch((error) => {
+                    displayErrorToast(error, "Failed to fetch countries");
+                });
         }
-    }, [dispatch, countries.length, countriesLoading.fetch]);
+    }, [dispatch, countries.length, countriesLoading.fetch, displayErrorToast]);
 
     // Fetch existing company structures
     useEffect(() => {
         if (existingCompanyStructures.length === 0 && !loading.entities) {
-            dispatch(fetchAllCompanyStructures({ page: 1, pageSize: 1000 }));
+            dispatch(fetchAllCompanyStructures({ page: 1, pageSize: 1000 }))
+                .unwrap()
+                .then(() => {
+                    console.log("Company structures fetched successfully");
+                })
+                .catch((error) => {
+                    displayErrorToast(
+                        error,
+                        "Failed to fetch company structures"
+                    );
+                });
         }
-    }, [dispatch, existingCompanyStructures.length, loading.entities]);
+    }, [
+        dispatch,
+        existingCompanyStructures.length,
+        loading.entities,
+        displayErrorToast,
+    ]);
 
     // Initialize form data for edit/view mode
     const initializeFormData = useCallback(() => {
         if (!companyStructure || isInitialized) return;
 
-        // console.log("Initializing form data:", { // DEBUG
-        //     companyStructure,
-        //     countries: countries.length,
-        // });
+        console.log("Initializing form data:", {
+            companyStructure,
+            countries: countries.length,
+        });
 
         // Find country by name/label and get its ID
         const selectedCountry = countries.find(
@@ -167,13 +302,6 @@ const useCompanyStructureDetailsModel = ({
             (structure) => structure.id === companyStructure.parent_id
         );
 
-        // console.log(existingCompanyStructures); // DEBUG
-
-        // // hear i get parent_id and uuid null
-        // console.log("selectedParent", selectedParent);
-        // console.log("selectedParent?.id", selectedParent?.parent_id);
-        // console.log("selectedParent?.uuid", selectedParent?.uuid);
-
         const newFormData = {
             name: companyStructure.name || "",
             details: companyStructure.details || "",
@@ -184,16 +312,24 @@ const useCompanyStructureDetailsModel = ({
             head_id: companyStructure.head || "",
         };
 
-        // console.log("Setting form data:", newFormData); // DEBUG
+        console.log("Setting form data:", newFormData);
 
         setFormData(newFormData);
         setFormErrors({});
         setIsInitialized(true);
-    }, [companyStructure, countries, existingCompanyStructures, isInitialized]);
+
+        displaySuccessToast("Form initialized successfully");
+    }, [
+        companyStructure,
+        countries,
+        existingCompanyStructures,
+        isInitialized,
+        displaySuccessToast,
+    ]);
 
     // Reset form data for add mode
     const resetFormData = useCallback(() => {
-        // console.log("Resetting form data"); // DEBUG
+        console.log("Resetting form data");
         setFormData({
             name: "",
             details: "",
@@ -209,13 +345,12 @@ const useCompanyStructureDetailsModel = ({
 
     // Main initialization effect
     useEffect(() => {
-        // DEBUG
-        // console.log("Initialization effect:", {
-        //     modelType,
-        //     hasCompanyStructure: !!companyStructure,
-        //     isInitialized,
-        //     countriesLength: countries.length,
-        // });
+        console.log("Initialization effect:", {
+            modelType,
+            hasCompanyStructure: !!companyStructure,
+            isInitialized,
+            countriesLength: countries.length,
+        });
 
         if (modelType === "add") {
             resetFormData();
@@ -237,13 +372,19 @@ const useCompanyStructureDetailsModel = ({
         resetFormData,
     ]);
 
-    // Handle input changes
+    // Handle input changes - FIXED VERSION
     const handleInputChange = useCallback(
         (field, value) => {
-            setFormData((prev) => ({
-                ...prev,
-                [field]: value,
-            }));
+            console.log(`Updating ${field} with value:`, value);
+
+            setFormData((prev) => {
+                const newData = {
+                    ...prev,
+                    [field]: value,
+                };
+                console.log("New form data:", newData);
+                return newData;
+            });
 
             // Clear error when user starts typing
             if (formErrors[field]) {
@@ -255,6 +396,28 @@ const useCompanyStructureDetailsModel = ({
         },
         [formErrors]
     );
+
+    // Watch for Redux errors and display them
+    useEffect(() => {
+        if (errors?.create) {
+            displayErrorToast(
+                errors.create,
+                "Failed to create company structure"
+            );
+        }
+        if (errors?.update) {
+            displayErrorToast(
+                errors.update,
+                "Failed to update company structure"
+            );
+        }
+        if (errors?.fetch) {
+            displayErrorToast(
+                errors.fetch,
+                "Failed to fetch company structures"
+            );
+        }
+    }, [errors, displayErrorToast]);
 
     // Validation function
     const validateForm = useCallback(() => {
@@ -281,8 +444,15 @@ const useCompanyStructureDetailsModel = ({
         }
 
         setFormErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    }, [formData]);
+
+        // Display validation errors if any
+        if (Object.keys(newErrors).length > 0) {
+            displayValidationErrors(newErrors);
+            return false;
+        }
+
+        return true;
+    }, [formData, displayValidationErrors]);
 
     // Handle form submission
     const handleSubmit = useCallback(async () => {
@@ -302,37 +472,34 @@ const useCompanyStructureDetailsModel = ({
                 head_id: formData.head_id || null,
             };
 
-            // DEBUG
-            // console.log("Submitting data:", submitData);
-            // Submitting data:{
-            //     "name": "dfg",
-            //     "details": "sazedg&nbsp;",
-            //     "address": "sz dgetr seg xzdga seg Za4erwgxzd",
-            //     "type": "department",
-            //     "country_id": "13bb64b5-44e9-11f0-9a31-d843aea192eb",
-            //     "parent_id": null,
-            //     "head_id": null
-            // }
-            // country_id is not change even i change the value in dropdown.
-            // DEBUG
-            // console.log("Model type:", modelType); // Model type: edit
-            // console.log("Company structure ID:", companyStructure?.id); // Company structure ID: 19c5e35d-4294-4047-8bc3-5f1aaa413431
+            console.log("Submitting data:", submitData);
+            console.log("Model type:", modelType);
+            console.log("Company structure ID:", companyStructure?.id);
 
+            let result;
             if (modelType === "edit" && companyStructure?.id) {
-                // DEBUG
-                // console.log("on edit this called");
-                await dispatch(
+                console.log("Updating company structure");
+                result = await dispatch(
                     updateCompanyStructure({
                         id: companyStructure.id,
                         data: submitData,
                     })
                 ).unwrap();
+                displaySuccessToast("Company structure updated successfully!");
             } else {
-                await dispatch(createCompanyStructure(submitData)).unwrap();
+                console.log("Creating new company structure");
+                result = await dispatch(
+                    createCompanyStructure(submitData)
+                ).unwrap();
+                displaySuccessToast("Company structure created successfully!");
             }
 
+            console.log("Operation result:", result);
+
             // Refresh the company structures list
-            dispatch(fetchAllCompanyStructures({ page: 1, pageSize: 10 }));
+            await dispatch(
+                fetchAllCompanyStructures({ page: 1, pageSize: 10 })
+            );
 
             // Close modal
             setOpenStructureModel(false);
@@ -342,7 +509,12 @@ const useCompanyStructureDetailsModel = ({
             setIsInitialized(false);
         } catch (error) {
             console.error("Error saving structure:", error);
-            // Specific error handling can be added here
+            displayErrorToast(
+                error,
+                modelType === "edit"
+                    ? "Failed to update company structure"
+                    : "Failed to create company structure"
+            );
         } finally {
             setIsSubmitting(false);
         }
@@ -354,6 +526,8 @@ const useCompanyStructureDetailsModel = ({
         dispatch,
         setOpenStructureModel,
         handleCloseStructureModel,
+        displaySuccessToast,
+        displayErrorToast,
     ]);
 
     // Handle cancel
@@ -361,7 +535,13 @@ const useCompanyStructureDetailsModel = ({
         resetFormData();
         setOpenStructureModel(false);
         handleCloseStructureModel?.();
-    }, [setOpenStructureModel, handleCloseStructureModel, resetFormData]);
+        displaySuccessToast("Operation cancelled");
+    }, [
+        setOpenStructureModel,
+        handleCloseStructureModel,
+        resetFormData,
+        displaySuccessToast,
+    ]);
 
     // Get display values for form fields (for UI components that need display values)
     const getDisplayValues = useMemo(() => {
@@ -379,7 +559,7 @@ const useCompanyStructureDetailsModel = ({
         return {
             country: selectedCountry?.name || "",
             parentStructure: selectedParent?.name || "",
-            heads: heads?.name || "",
+            heads: heads?.label || "",
         };
     }, [
         formData.country_id,
@@ -426,9 +606,12 @@ const useCompanyStructureDetailsModel = ({
         validateForm,
         initializeFormData,
         resetFormData,
+
+        // Toast functions for external use
+        displayErrorToast,
+        displaySuccessToast,
+        displayValidationErrors,
     };
 };
 
 export default useCompanyStructureDetailsModel;
-
-// because on the load i need default value like in this my ui need

@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useToast } from "../../../components";
 import {
     fetchAllCompanyStructures,
     deleteCompanyStructure,
@@ -30,6 +31,7 @@ const useCompanyStructureTab = ({
     console.log(setOpenDeleteModel);
 
     const dispatch = useDispatch();
+    const { addToast } = useToast(); // ✅ Initialize toast hook
 
     // Redux state selectors
     const companyStructureData = useSelector(selectCompanyStructures);
@@ -69,7 +71,6 @@ const useCompanyStructureTab = ({
             return { fetch: false };
         }
     }, [countriesLoading]);
-    // console.log("companyStructureData", companyStructureData);
 
     // Local state for search
     const [searchValue, setSearchValue] = useState("");
@@ -106,6 +107,79 @@ const useCompanyStructureTab = ({
         return map;
     }, [processedCountries]);
 
+    // ✅ Monitor errors and show toast notifications
+    useEffect(() => {
+        if (errors) {
+            // Handle different types of errors with detailed messages
+            if (errors.fetch) {
+                const errorMsg =
+                    errors.fetch.message || "Unknown error occurred";
+                const errorCode =
+                    errors.fetch.code || errors.fetch.status || "";
+                addToast(
+                    `Failed to load company structures. ${
+                        errorCode ? `Error ${errorCode}: ` : ""
+                    }${errorMsg}`,
+                    "error",
+                    8000
+                );
+            }
+            if (errors.delete) {
+                const errorMsg =
+                    errors.delete.message || "Unknown error occurred";
+                const errorCode =
+                    errors.delete.code || errors.delete.status || "";
+                addToast(
+                    `Failed to delete company structure. ${
+                        errorCode ? `Error ${errorCode}: ` : ""
+                    }${errorMsg}`,
+                    "error",
+                    8000
+                );
+            }
+            if (errors.create) {
+                const errorMsg =
+                    errors.create.message || "Please check your data";
+                const errorCode =
+                    errors.create.code || errors.create.status || "";
+                addToast(
+                    `Failed to create company structure. ${
+                        errorCode ? `Error ${errorCode}: ` : ""
+                    }${errorMsg}`,
+                    "error",
+                    8000
+                );
+            }
+            if (errors.update) {
+                const errorMsg =
+                    errors.update.message || "Unknown error occurred";
+                const errorCode =
+                    errors.update.code || errors.update.status || "";
+                addToast(
+                    `Failed to update company structure. ${
+                        errorCode ? `Error ${errorCode}: ` : ""
+                    }${errorMsg}`,
+                    "error",
+                    8000
+                );
+            }
+            // Generic error handling
+            if (errors.general) {
+                const errorMsg =
+                    errors.general.message || "An unexpected error occurred";
+                const errorCode =
+                    errors.general.code || errors.general.status || "";
+                addToast(
+                    `${
+                        errorCode ? `Error ${errorCode}: ` : ""
+                    }${errorMsg}. Please contact support if this persists.`,
+                    "error",
+                    10000
+                );
+            }
+        }
+    }, [errors, addToast]);
+
     // Fetch company structures on component mount
     useEffect(() => {
         if (companyStructureData.length === 0 && !loading.entities) {
@@ -140,13 +214,22 @@ const useCompanyStructureTab = ({
                     limit: 1000, // Fetch a large number to get all countries
                     page: 1,
                 })
-            );
+            ).catch((error) => {
+                const errorMsg = error.message || "Failed to load country data";
+                const errorCode = error.code || error.status || "";
+                addToast(
+                    `${errorCode ? `Error ${errorCode}: ` : ""}${errorMsg}`,
+                    "warning",
+                    6000
+                );
+            });
         }
     }, [
         dispatch,
         companyStructureData.length,
         processedCountries.length,
         processedCountriesLoading.fetch,
+        addToast,
     ]);
 
     // Create a map of all company structures by ID for quick lookup
@@ -245,6 +328,14 @@ const useCompanyStructureTab = ({
                 await dispatch(deleteCompanyStructure(id)).unwrap();
                 setOpenDeleteModel(false);
                 setCompanyStructure(null);
+
+                // ✅ Show success toast for successful deletion
+                addToast(
+                    "Company structure deleted successfully!",
+                    "success",
+                    4000
+                );
+
                 // Refresh the data after successful deletion
                 dispatch(
                     fetchAllCompanyStructures({
@@ -255,9 +346,26 @@ const useCompanyStructureTab = ({
                 );
             } catch (error) {
                 console.error("Delete failed:", error);
+                // ✅ Show detailed error toast for deletion failure
+                const errorMsg = error.message || "Unknown error occurred";
+                const errorCode = error.code || error.status || "";
+                addToast(
+                    `Failed to delete company structure. ${
+                        errorCode ? `Error ${errorCode}: ` : ""
+                    }${errorMsg}`,
+                    "error",
+                    8000
+                );
             }
         },
-        [dispatch, setOpenDeleteModel, setCompanyStructure, pagination, filters]
+        [
+            dispatch,
+            setOpenDeleteModel,
+            setCompanyStructure,
+            pagination,
+            filters,
+            addToast,
+        ]
     );
 
     const handleSearch = useCallback((value) => {
@@ -279,9 +387,17 @@ const useCompanyStructureTab = ({
                     pageSize: pagination.pageSize,
                     ...filters,
                 })
-            );
+            ).catch((error) => {
+                const errorMsg = error.message || "Failed to load page";
+                const errorCode = error.code || error.status || "";
+                addToast(
+                    `${errorCode ? `Error ${errorCode}: ` : ""}${errorMsg}`,
+                    "error",
+                    6000
+                );
+            });
         },
-        [dispatch, pagination.pageSize, filters]
+        [dispatch, pagination.pageSize, filters, addToast]
     );
 
     const handlePageSizeChange = useCallback(
@@ -298,9 +414,17 @@ const useCompanyStructureTab = ({
                     pageSize,
                     ...filters,
                 })
-            );
+            ).catch((error) => {
+                const errorMsg = error.message || "Failed to change page size";
+                const errorCode = error.code || error.status || "";
+                addToast(
+                    `${errorCode ? `Error ${errorCode}: ` : ""}${errorMsg}`,
+                    "error",
+                    6000
+                );
+            });
         },
-        [dispatch, filters]
+        [dispatch, filters, addToast]
     );
 
     // Filter handlers
@@ -314,9 +438,17 @@ const useCompanyStructureTab = ({
                     pageSize: pagination.pageSize,
                     ...newFilters,
                 })
-            );
+            ).catch((error) => {
+                const errorMsg = error.message || "Failed to apply filters";
+                const errorCode = error.code || error.status || "";
+                addToast(
+                    `${errorCode ? `Error ${errorCode}: ` : ""}${errorMsg}`,
+                    "error",
+                    6000
+                );
+            });
         },
-        [dispatch, pagination.pageSize]
+        [dispatch, pagination.pageSize, addToast]
     );
 
     // Refresh data
@@ -327,10 +459,36 @@ const useCompanyStructureTab = ({
                 pageSize: pagination.pageSize,
                 ...filters,
             })
-        );
+        )
+            .then((result) => {
+                if (result.type.endsWith("/fulfilled")) {
+                    addToast("Data refreshed successfully!", "success", 4000);
+                }
+            })
+            .catch((error) => {
+                const errorMsg = error.message || "Failed to refresh data";
+                const errorCode = error.code || error.status || "";
+                addToast(
+                    `${errorCode ? `Error ${errorCode}: ` : ""}${errorMsg}`,
+                    "error",
+                    6000
+                );
+            });
+
         // Also refresh countries if needed
         if (processedCountries.length === 0) {
-            dispatch(fetchCountries({ limit: 1000, page: 1 }));
+            dispatch(fetchCountries({ limit: 1000, page: 1 })).catch(
+                (error) => {
+                    const errorMsg =
+                        error.message || "Failed to refresh country data";
+                    const errorCode = error.code || error.status || "";
+                    addToast(
+                        `${errorCode ? `Error ${errorCode}: ` : ""}${errorMsg}`,
+                        "warning",
+                        6000
+                    );
+                }
+            );
         }
     }, [
         dispatch,
@@ -338,6 +496,7 @@ const useCompanyStructureTab = ({
         pagination.pageSize,
         filters,
         processedCountries.length,
+        addToast,
     ]);
 
     // Clear specific errors
