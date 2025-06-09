@@ -36,35 +36,37 @@ const useCompanyStructureTab = ({
     const pagination = useSelector(selectPagination);
     const filters = useSelector(selectFilters);
 
-    // Country data selectors - with error handling and proper data extraction
-    const countries = useSelector((state) => {
+    // ✅ Use regular selectors with proper memoization using useMemo
+    const countries = useSelector(selectCountries);
+    const countriesLoading = useSelector(selectCountriesLoading);
+
+    // ✅ Process countries data with useMemo to prevent unnecessary recalculations
+    const processedCountries = useMemo(() => {
         try {
-            const countryState = selectCountries(state);
             // Handle the nested data structure from API response
-            if (countryState?.data && Array.isArray(countryState.data)) {
-                return countryState.data;
+            if (countries?.data && Array.isArray(countries.data)) {
+                return countries.data;
             }
             // Fallback for direct array
-            if (Array.isArray(countryState)) {
-                return countryState;
+            if (Array.isArray(countries)) {
+                return countries;
             }
             return [];
         } catch (error) {
             console.warn("Error accessing countries:", error);
             return [];
         }
-    });
+    }, [countries]);
 
-    // console.log("Countries data:", countries); // Debug only
-
-    const countriesLoading = useSelector((state) => {
+    // ✅ Process countries loading state with useMemo
+    const processedCountriesLoading = useMemo(() => {
         try {
-            return selectCountriesLoading(state) || { fetch: false };
+            return countriesLoading || { fetch: false };
         } catch (error) {
             console.warn("Error accessing countries loading:", error);
             return { fetch: false };
         }
-    });
+    }, [countriesLoading]);
 
     // Local state for search
     const [searchValue, setSearchValue] = useState("");
@@ -85,7 +87,7 @@ const useCompanyStructureTab = ({
     // Create a map of country ID to country data for quick lookup
     const countryMap = useMemo(() => {
         const map = {};
-        countries.forEach((country) => {
+        processedCountries.forEach((country) => {
             // Handle different possible ID field names
             const id = country.id || country.uuid || country.countryId;
             if (id) {
@@ -99,7 +101,7 @@ const useCompanyStructureTab = ({
             }
         });
         return map;
-    }, [countries]);
+    }, [processedCountries]);
 
     // Fetch company structures on component mount
     useEffect(() => {
@@ -126,8 +128,8 @@ const useCompanyStructureTab = ({
         // Always fetch countries if we don't have them and we have company structure data
         if (
             companyStructureData.length > 0 &&
-            countries.length === 0 &&
-            !countriesLoading.fetch
+            processedCountries.length === 0 &&
+            !processedCountriesLoading.fetch
         ) {
             // Fetch all countries - you might want to modify this based on your API
             dispatch(
@@ -140,8 +142,8 @@ const useCompanyStructureTab = ({
     }, [
         dispatch,
         companyStructureData.length,
-        countries.length,
-        countriesLoading.fetch,
+        processedCountries.length,
+        processedCountriesLoading.fetch,
     ]);
 
     // Enhanced filtered data that includes country information
@@ -158,7 +160,6 @@ const useCompanyStructureTab = ({
                 countryCode: countryInfo?.code || item.countryCode || "",
                 countryRegion: countryInfo?.region || "",
                 countryPhoneCode: countryInfo?.phoneCode || "",
-                originalCountry: item.country,
 
                 // ✅ This will ensure `country` is filled with the actual name (e.g., "India")
                 country: countryInfo?.name || item.country || "Unknown Country",
@@ -188,15 +189,6 @@ const useCompanyStructureTab = ({
             );
         });
     }, [searchValue, companyStructureData, countryMap]);
-
-    // Debug function to check data mapping
-    // const debugCountryMapping = useCallback(() => {
-    //     console.log("Company Structure Data:", companyStructureData);
-    //     console.log("Country IDs found:", countryIds);
-    //     console.log("Countries available:", countries);
-    //     console.log("Country Map:", countryMap);
-    //     console.log("Filtered Data with Countries:", filteredData);
-    // }, [companyStructureData, countryIds, countries, countryMap, filteredData]);
 
     // Action handlers
     const handleAddNew = useCallback(() => {
@@ -321,7 +313,7 @@ const useCompanyStructureTab = ({
             })
         );
         // Also refresh countries if needed
-        if (countries.length === 0) {
+        if (processedCountries.length === 0) {
             dispatch(fetchCountries({ limit: 1000, page: 1 }));
         }
     }, [
@@ -329,7 +321,7 @@ const useCompanyStructureTab = ({
         pagination.currentPage,
         pagination.pageSize,
         filters,
-        countries.length,
+        processedCountries.length,
     ]);
 
     // Clear specific errors
@@ -339,23 +331,21 @@ const useCompanyStructureTab = ({
         },
         [dispatch]
     );
-    // DEBUG: only for debugging purposes for get is structure data correct
-    // console.log(companyStructureData);
 
     return {
         // Data
         searchValue,
         companyStructureData,
         filteredData,
-        countries,
+        countries: processedCountries,
         countryMap,
-        countryIds, // Expose this for debugging
+        countryIds,
 
         // Loading states
         loading,
         isLoading: loading?.entities || false,
         isDeleting: loading?.delete || false,
-        countriesLoading: countriesLoading?.fetch || false,
+        countriesLoading: processedCountriesLoading?.fetch || false,
 
         // Error states
         errors,
@@ -379,9 +369,6 @@ const useCompanyStructureTab = ({
         handleFilterChange,
         handleRefresh,
         handleClearError,
-
-        // Debug helper
-        // debugCountryMapping, // Uncomment for debugging
     };
 };
 

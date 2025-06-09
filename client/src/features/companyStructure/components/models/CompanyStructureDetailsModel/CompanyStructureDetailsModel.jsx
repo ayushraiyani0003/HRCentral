@@ -12,10 +12,12 @@ import useCompanyStructureDetailsModel from "../../../hooks/useCompanyStructureD
 function CompanyStructureDetailsModel({
     openStructureModel,
     setOpenStructureModel,
-    modelType,
+    modelType = "",
     companyStructure,
     handleCloseStructureModel,
 }) {
+    console.log(modelType);
+
     const {
         formData,
         errors,
@@ -28,12 +30,14 @@ function CompanyStructureDetailsModel({
         parentStructureOptions,
         headsOptions,
         setErrors,
-    } = useCompanyStructureDetailsModel(
+    } = useCompanyStructureDetailsModel({
         setOpenStructureModel,
         modelType,
         companyStructure,
-        handleCloseStructureModel
-    );
+        handleCloseStructureModel,
+    });
+
+    console.log(companyStructure);
 
     // Footer buttons
     const modalFooter = (
