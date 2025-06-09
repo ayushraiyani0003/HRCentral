@@ -703,11 +703,13 @@ const CustomTable = ({
                             </div>
                         </div>
                     )}
-                    {extraHeaderContent && (
-                        <div className="extra-header-content">
-                            {extraHeaderContent}
-                        </div>
-                    )}
+
+                    {typeof extraHeaderContent === "function" &&
+                        extraHeaderContent() && (
+                            <div className="extra-header-content">
+                                {extraHeaderContent()}
+                            </div>
+                        )}
                 </div>
 
                 {filterable && (
