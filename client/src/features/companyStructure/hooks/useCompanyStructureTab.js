@@ -67,6 +67,7 @@ const useCompanyStructureTab = ({
             return { fetch: false };
         }
     }, [countriesLoading]);
+    console.log("companyStructureData", companyStructureData);
 
     // Local state for search
     const [searchValue, setSearchValue] = useState("");
@@ -146,12 +147,26 @@ const useCompanyStructureTab = ({
         processedCountriesLoading.fetch,
     ]);
 
-    // Enhanced filtered data that includes country information
+    // Create a map of all company structures by ID for quick lookup
+    const structureMap = useMemo(() => {
+        const map = {};
+        companyStructureData.forEach((item) => {
+            const id = item.id || item.uuid || item.structureId; // adjust ID keys as needed
+            if (id) {
+                map[id] = item;
+            }
+        });
+        return map;
+    }, [companyStructureData]);
+
+    // Enhanced filtered data that includes country and parent structure info
     const filteredData = useMemo(() => {
-        let dataWithCountryInfo = companyStructureData.map((item) => {
+        let dataWithEnhancements = companyStructureData.map((item) => {
             const countryId =
                 item.countryId || item.country_id || item.countryID;
+            const parentId = item.parentId || item.parent_id || item.parentID;
             const countryInfo = countryMap[countryId];
+            const parentStructure = structureMap[parentId] || null;
 
             return {
                 ...item,
@@ -160,35 +175,34 @@ const useCompanyStructureTab = ({
                 countryCode: countryInfo?.code || item.countryCode || "",
                 countryRegion: countryInfo?.region || "",
                 countryPhoneCode: countryInfo?.phoneCode || "",
-
-                // ✅ This will ensure `country` is filled with the actual name (e.g., "India")
                 country: countryInfo?.name || item.country || "Unknown Country",
+                parentStructure: parentStructure?.name || "-", // ✅ Add parent structure reference here
             };
         });
 
-        // Apply search filter
         if (!searchValue.trim()) {
-            return dataWithCountryInfo;
+            return dataWithEnhancements;
         }
 
         const searchTerm = searchValue.toLowerCase().trim();
 
-        return dataWithCountryInfo.filter((item) => {
+        return dataWithEnhancements.filter((item) => {
             return (
                 item.name?.toLowerCase().includes(searchTerm) ||
                 item.address?.toLowerCase().includes(searchTerm) ||
                 item.type?.toLowerCase().includes(searchTerm) ||
-                item.country?.toLowerCase().includes(searchTerm) || // include the computed "country"
+                item.country?.toLowerCase().includes(searchTerm) ||
                 item.countryName?.toLowerCase().includes(searchTerm) ||
                 item.countryCode?.toLowerCase().includes(searchTerm) ||
                 item.countryRegion?.toLowerCase().includes(searchTerm) ||
                 item.originalCountry?.toLowerCase().includes(searchTerm) ||
-                item.parentStructure?.toLowerCase().includes(searchTerm) ||
-                item.Head?.toLowerCase().includes(searchTerm) ||
-                item.head?.toLowerCase().includes(searchTerm)
+                item.parent_id?.toLowerCase?.().includes(searchTerm) ||
+                item.Head?.toLowerCase?.().includes(searchTerm) ||
+                item.head?.toLowerCase?.().includes(searchTerm) ||
+                item.parentStructure?.name?.toLowerCase?.().includes(searchTerm) // ✅ Optional: search by parent name
             );
         });
-    }, [searchValue, companyStructureData, countryMap]);
+    }, [searchValue, companyStructureData, countryMap, structureMap]);
 
     // Action handlers
     const handleAddNew = useCallback(() => {

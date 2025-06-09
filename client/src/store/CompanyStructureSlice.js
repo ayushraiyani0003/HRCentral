@@ -48,6 +48,8 @@ export const fetchCompanyStructureById = createAsyncThunk(
 export const updateCompanyStructure = createAsyncThunk(
     "companyStructure/update",
     async ({ id, data }, { rejectWithValue }) => {
+        console.log("companay data service", data);
+
         try {
             const response = await companyService.update(id, data);
             return response;

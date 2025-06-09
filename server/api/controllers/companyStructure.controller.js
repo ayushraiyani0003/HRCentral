@@ -71,6 +71,8 @@ class CompanyStructureController {
      */
     createCompanyStructure = async (req, res) => {
         try {
+            console.log(req.body); // Debug
+
             // Validate country ID if provided
             if (req.body.country_id) {
                 await this.validateCountryId(req.body.country_id);
@@ -158,6 +160,7 @@ class CompanyStructureController {
         try {
             const { id } = req.params;
             const { includeCountry } = req.query;
+            console.log(id);
 
             const companyStructure = await this.companyStructureService.getById(
                 id,
@@ -195,6 +198,8 @@ class CompanyStructureController {
      * @route PUT /api/company-structure/:id
      */
     updateCompanyStructure = async (req, res) => {
+        console.log(req.body);
+
         try {
             const { id } = req.params;
 

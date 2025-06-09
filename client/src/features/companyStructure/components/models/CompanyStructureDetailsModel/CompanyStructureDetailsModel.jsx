@@ -38,6 +38,10 @@ function CompanyStructureDetailsModel({
     });
 
     console.log(companyStructure);
+    console.log("structureTypes", structureTypes);
+    console.log("countryOptions", countryOptions);
+    console.log("parentStructureOptions", parentStructureOptions);
+    console.log("headsOptions", headsOptions);
 
     // Footer buttons
     const modalFooter = (
@@ -204,13 +208,13 @@ function CompanyStructureDetailsModel({
                             <CustomDropdown
                                 label="Country"
                                 options={countryOptions}
-                                value={formData.country}
+                                value={formData.country_id}
                                 onChange={(value) => {
-                                    handleInputChange("country", value);
+                                    handleInputChange("country_id", value);
                                     if (value) {
                                         setErrors({
                                             ...errors,
-                                            country: "",
+                                            country_id: "",
                                         });
                                     }
                                 }}
@@ -241,12 +245,9 @@ function CompanyStructureDetailsModel({
                             <CustomDropdown
                                 label="Parent Structure"
                                 options={parentStructureOptions}
-                                value={formData.parentStructure}
+                                value={formData.parent_id}
                                 onChange={(value) => {
-                                    handleInputChange(
-                                        "parentStructure",
-                                        value || ""
-                                    );
+                                    handleInputChange("parent_id", value || "");
                                 }}
                                 placeholder="Select parent structure (optional)"
                                 required={false}
@@ -271,9 +272,9 @@ function CompanyStructureDetailsModel({
                             <CustomDropdown
                                 label="Department Head"
                                 options={headsOptions}
-                                value={formData.heads}
+                                value={formData.head_id} // ✅ CORRECT FIELD
                                 onChange={(value) => {
-                                    handleInputChange("heads", value || "");
+                                    handleInputChange("head_id", value || ""); // ✅ MATCHES FORM FIELD
                                 }}
                                 placeholder="Select department head (optional)"
                                 required={false}

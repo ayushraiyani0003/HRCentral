@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { createSelector } from "@reduxjs/toolkit";
 import {
     createCompanyStructure,
     updateCompanyStructure,
@@ -15,38 +16,11 @@ import {
     selectLoading as selectCountriesLoading,
 } from "../../../store/countrySlice";
 
-// TODO: Import your city slice when it's available
-// import {
-//     fetchCities,
-//     selectCities,
-//     selectLoading as selectCitiesLoading,
-// } from "../../../store/citySlice";
-
-// TODO: Import your employee slice when it's available
-// import {
-//     fetchEmployees,
-//     selectEmployees,
-//     selectLoading as selectEmployeesLoading,
-// } from "../../../store/employeeSlice";
-
-const useCompanyStructureDetailsModel = ({
-    setOpenStructureModel,
-    modelType,
-    companyStructure,
-    handleCloseStructureModel,
-}) => {
-    const dispatch = useDispatch();
-    console.log(modelType);
-
-    // Redux state selectors
-    const existingCompanyStructures = useSelector(selectCompanyStructures);
-    const loading = useSelector(selectLoading);
-    const errors = useSelector(selectErrors);
-
-    // Country data selectors - with error handling and proper data extraction
-    const countries = useSelector((state) => {
+// Memoized selectors to prevent unnecessary re-renders
+const selectMemoizedCountries = createSelector(
+    [selectCountries],
+    (countryState) => {
         try {
-            const countryState = selectCountries(state);
             if (countryState?.data && Array.isArray(countryState.data)) {
                 return countryState.data;
             }
@@ -58,258 +32,188 @@ const useCompanyStructureDetailsModel = ({
             console.warn("Error accessing countries:", error);
             return [];
         }
-    });
+    }
+);
 
-    const countriesLoading = useSelector((state) => {
+const selectMemoizedCountriesLoading = createSelector(
+    [selectCountriesLoading],
+    (loadingState) => {
         try {
-            return selectCountriesLoading(state) || { fetch: false };
+            return loadingState || { fetch: false };
         } catch (error) {
             console.warn("Error accessing countries loading:", error);
             return { fetch: false };
         }
-    });
+    }
+);
 
-    // TODO: Uncomment when city slice is available
-    // const cities = useSelector((state) => {
-    //     try {
-    //         const cityState = selectCities(state);
-    //         if (cityState?.data && Array.isArray(cityState.data)) {
-    //             return cityState.data;
-    //         }
-    //         if (Array.isArray(cityState)) {
-    //             return cityState;
-    //         }
-    //         return [];
-    //     } catch (error) {
-    //         console.warn("Error accessing cities:", error);
-    //         return [];
-    //     }
-    // });
+const useCompanyStructureDetailsModel = ({
+    setOpenStructureModel,
+    modelType,
+    companyStructure,
+    handleCloseStructureModel,
+}) => {
+    const dispatch = useDispatch();
 
-    // TODO: Uncomment when employee slice is available
-    // const employees = useSelector((state) => {
-    //     try {
-    //         const employeeState = selectEmployees(state);
-    //         if (employeeState?.data && Array.isArray(employeeState.data)) {
-    //             return employeeState.data;
-    //         }
-    //         if (Array.isArray(employeeState)) {
-    //             return employeeState;
-    //         }
-    //         return [];
-    //     } catch (error) {
-    //         console.warn("Error accessing employees:", error);
-    //         return [];
-    //     }
-    // });
+    // Redux state selectors with memoization
+    const existingCompanyStructures = useSelector(selectCompanyStructures);
+    const loading = useSelector(selectLoading);
+    const errors = useSelector(selectErrors);
+    const countries = useSelector(selectMemoizedCountries);
+    const countriesLoading = useSelector(selectMemoizedCountriesLoading);
 
-    // Form state
+    // Form state - backend compatible fields
     const [formData, setFormData] = useState({
         name: "",
         details: "",
         address: "",
         type: "",
-        country: "",
-        countryId: "",
-        city: "",
-        cityId: "",
-        parentStructure: "",
-        parentStructureId: "",
-        heads: "",
-        headsId: "",
+        country_id: "",
+        parent_id: "",
+        head_id: "",
     });
 
     const [formErrors, setFormErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isInitialized, setIsInitialized] = useState(false);
 
     // Structure type options
-    const structureTypes = [
-        { label: "Company", value: "company" },
-        { label: "Head Office", value: "head office" },
-        { label: "Regional Office", value: "regional office" },
-        { label: "Department", value: "department" },
-        { label: "Unit", value: "unit" },
-        { label: "Sub Unit", value: "subUnit" },
-        { label: "Other", value: "other" },
-    ];
+    const structureTypes = useMemo(
+        () => [
+            { label: "Company", value: "company" },
+            { label: "Head Office", value: "head office" },
+            { label: "Regional Office", value: "regional office" },
+            { label: "Department", value: "department" },
+            { label: "Unit", value: "unit" },
+            { label: "Sub Unit", value: "subUnit" },
+            { label: "Other", value: "other" },
+        ],
+        []
+    );
 
-    // Dynamic country options from Redux store
+    // Memoized country options
     const countryOptions = useMemo(() => {
         return countries.map((country) => ({
             label: country.name || country.label,
-            value: country.name || country.label,
+            value: country.id || country.uuid,
             id: country.id || country.uuid,
+            name: country.name || country.label,
             code: country.code || country.countryCode,
             phoneCode: country.phone_code,
         }));
     }, [countries]);
 
-    // TODO: Dynamic city options (uncomment when city slice is available)
-    // const cityOptions = useMemo(() => {
-    //     return cities
-    //         .filter(city => city.countryId === formData.countryId)
-    //         .map((city) => ({
-    //             label: city.name,
-    //             value: city.name,
-    //             id: city.id || city.uuid,
-    //             countryId: city.countryId,
-    //         }));
-    // }, [cities, formData.countryId]);
-
-    // Dynamic parent structure options from existing structures
+    // Memoized parent structure options
     const parentStructureOptions = useMemo(() => {
         return existingCompanyStructures
-            .filter((structure) => structure.id !== companyStructure?.id) // Exclude current structure when editing
+            .filter((structure) => structure.id !== companyStructure?.id)
             .map((structure) => ({
                 label: structure.name,
-                value: structure.name,
+                value: structure.id || structure.uuid,
                 id: structure.id || structure.uuid,
+                name: structure.name,
                 type: structure.type,
             }));
     }, [existingCompanyStructures, companyStructure?.id]);
 
-    // TODO: Dynamic heads options from employees (uncomment when employee slice is available)
-    // const headsOptions = useMemo(() => {
-    //     return employees.map((employee) => ({
-    //         label: `${employee.firstName} ${employee.lastName}`,
-    //         value: `${employee.firstName} ${employee.lastName}`,
-    //         id: employee.id || employee.uuid,
-    //         email: employee.email,
-    //         department: employee.department,
-    //     }));
-    // }, [employees]);
+    // Department heads options
+    const headsOptions = useMemo(() => {
+        const departmentHeads = [
+            { name: "Company", id: "company" },
+            { name: "Head Office", id: "head office" },
+            { name: "Regional Office", id: "regional office" },
+            { name: "Department", id: "department" },
+            { name: "Unit", id: "unit" },
+            { name: "Sub Unit", id: "subUnit" },
+        ];
 
-    // Temporary static heads options (remove when employee slice is available)
-    const headsOptions = [
-        { label: "John Doe", value: "John Doe", id: "1" },
-        { label: "Jane Smith", value: "Jane Smith", id: "2" },
-        { label: "Mike Johnson", value: "Mike Johnson", id: "3" },
-        { label: "Sarah Wilson", value: "Sarah Wilson", id: "4" },
-    ];
+        return departmentHeads.map((head) => ({
+            label: head.name,
+            value: head.id || head.name,
+        }));
+    }, []);
 
     // Fetch countries on component mount
     useEffect(() => {
         if (countries.length === 0 && !countriesLoading.fetch) {
-            dispatch(
-                fetchCountries({
-                    limit: 1000,
-                    page: 1,
-                })
-            );
+            dispatch(fetchCountries({ limit: 1000, page: 1 }));
         }
     }, [dispatch, countries.length, countriesLoading.fetch]);
 
-    // Fetch existing company structures for parent dropdown
+    // Fetch existing company structures
     useEffect(() => {
         if (existingCompanyStructures.length === 0 && !loading.entities) {
-            dispatch(
-                fetchAllCompanyStructures({
-                    page: 1,
-                    pageSize: 1000, // Get all structures for dropdown
-                })
-            );
+            dispatch(fetchAllCompanyStructures({ page: 1, pageSize: 1000 }));
         }
     }, [dispatch, existingCompanyStructures.length, loading.entities]);
 
-    // TODO: Fetch cities when country is selected
-    // useEffect(() => {
-    //     if (formData.countryId && !citiesLoading.fetch) {
-    //         dispatch(fetchCities({
-    //             countryId: formData.countryId,
-    //             limit: 1000,
-    //             page: 1,
-    //         }));
-    //     }
-    // }, [dispatch, formData.countryId, citiesLoading.fetch]);
-
-    // TODO: Fetch employees for heads dropdown
-    // useEffect(() => {
-    //     if (employees.length === 0 && !employeesLoading.fetch) {
-    //         dispatch(fetchEmployees({
-    //             limit: 1000,
-    //             page: 1,
-    //             // You might want to filter by role or department
-    //             role: 'manager', // or whatever role should be eligible as heads
-    //         }));
-    //     }
-    // }, [dispatch, employees.length, employeesLoading.fetch]);
-
     // Initialize form data for edit/view mode
     const initializeFormData = useCallback(() => {
-        if (
-            (modelType === "edit" || modelType === "view") &&
-            companyStructure
-        ) {
-            console.log(
-                "Initializing form data for edit/view:",
-                companyStructure
-            );
+        if (!companyStructure || isInitialized) return;
 
-            // Find country ID from country name/label
-            const selectedCountry = countries.find(
-                (country) =>
-                    (country.name || country.label) === companyStructure.country
-            );
+        console.log("Initializing form data:", {
+            companyStructure,
+            countries: countries.length,
+        });
 
-            // Find parent structure ID from parent structure name
-            const selectedParent = existingCompanyStructures.find(
-                (structure) =>
-                    structure.name === companyStructure.parentStructure
-            );
+        // Find country by name/label and get its ID
+        const selectedCountry = countries.find(
+            (country) =>
+                (country.name || country.label) === companyStructure.country
+        );
 
-            console.log("Found references:", {
-                selectedCountry,
-                selectedParent,
-            });
+        // Find parent structure by name and get its ID
+        const selectedParent = existingCompanyStructures.find(
+            (structure) => structure.id === companyStructure.parent_id
+        );
 
-            setFormData({
-                name: companyStructure.name || "",
-                details: companyStructure.details || "",
-                address: companyStructure.address || "",
-                type: companyStructure.type || "",
-                country: companyStructure.country || "",
-                countryId: selectedCountry?.id || selectedCountry?.uuid || "",
-                city: companyStructure.city || "",
-                cityId: companyStructure.cityId || "",
-                parentStructure: companyStructure.parentStructure || "",
-                parentStructureId:
-                    selectedParent?.id || selectedParent?.uuid || "",
-                heads: companyStructure.heads || companyStructure.Head || "",
-                headsId: companyStructure.headsId || "",
-            });
+        console.log(existingCompanyStructures);
 
-            // Clear any existing errors
-            setFormErrors({});
-        }
-    }, [modelType, companyStructure, countries, existingCompanyStructures]);
+        // hear i get parent_id and uuid null
+        console.log("selectedParent", selectedParent);
+        console.log("selectedParent?.id", selectedParent?.parent_id);
+        console.log("selectedParent?.uuid", selectedParent?.uuid);
+
+        const newFormData = {
+            name: companyStructure.name || "",
+            details: companyStructure.details || "",
+            address: companyStructure.address || "",
+            type: companyStructure.type || "",
+            country_id: selectedCountry?.id || selectedCountry?.uuid || "",
+            parent_id: selectedParent?.id || selectedParent?.uuid || "",
+            head_id: companyStructure.head || "",
+        };
+
+        console.log("Setting form data:", newFormData);
+
+        setFormData(newFormData);
+        setFormErrors({});
+        setIsInitialized(true);
+    }, [companyStructure, countries, existingCompanyStructures, isInitialized]);
 
     // Reset form data for add mode
     const resetFormData = useCallback(() => {
-        console.log("Resetting form data for add mode");
+        console.log("Resetting form data");
         setFormData({
             name: "",
             details: "",
             address: "",
             type: "",
-            country: "",
-            countryId: "",
-            city: "",
-            cityId: "",
-            parentStructure: "",
-            parentStructureId: "",
-            heads: "",
-            headsId: "",
+            country_id: "",
+            parent_id: "",
+            head_id: "",
         });
         setFormErrors({});
+        setIsInitialized(false);
     }, []);
 
-    // Main effect for form initialization
+    // Main initialization effect
     useEffect(() => {
-        console.log("Form initialization effect triggered:", {
+        console.log("Initialization effect:", {
             modelType,
             hasCompanyStructure: !!companyStructure,
+            isInitialized,
             countriesLength: countries.length,
-            existingStructuresLength: existingCompanyStructures.length,
         });
 
         if (modelType === "add") {
@@ -318,74 +222,27 @@ const useCompanyStructureDetailsModel = ({
             (modelType === "edit" || modelType === "view") &&
             companyStructure
         ) {
-            // For edit/view mode, initialize when we have the necessary data
-            // We need countries loaded for country matching, but existingCompanyStructures is optional
-            if (countries.length > 0) {
+            // Only initialize if we have countries loaded and haven't initialized yet
+            if (countries.length > 0 && !isInitialized) {
                 initializeFormData();
             }
         }
     }, [
         modelType,
         companyStructure,
-        countries,
-        existingCompanyStructures,
+        countries.length,
+        isInitialized,
         initializeFormData,
         resetFormData,
     ]);
 
-    // Separate effect to handle late-loading of existingCompanyStructures
-    useEffect(() => {
-        if (
-            (modelType === "edit" || modelType === "view") &&
-            companyStructure &&
-            existingCompanyStructures.length > 0 &&
-            formData.parentStructure &&
-            !formData.parentStructureId
-        ) {
-            // Re-initialize if we have parent structure name but no ID (means structures loaded late)
-            console.log(
-                "Re-initializing due to late-loading parent structures"
-            );
-            initializeFormData();
-        }
-    }, [
-        existingCompanyStructures,
-        modelType,
-        companyStructure,
-        formData.parentStructure,
-        formData.parentStructureId,
-        initializeFormData,
-    ]);
-
     // Handle input changes
     const handleInputChange = useCallback(
-        (field, value, additionalData = {}) => {
-            setFormData((prev) => {
-                const newData = { ...prev, [field]: value };
-
-                // Handle special cases for dropdowns with IDs
-                if (field === "country") {
-                    const selectedCountry = countryOptions.find(
-                        (country) => country.value === value
-                    );
-                    newData.countryId = selectedCountry?.id || "";
-                    // Reset city when country changes
-                    newData.city = "";
-                    newData.cityId = "";
-                } else if (field === "parentStructure") {
-                    const selectedParent = parentStructureOptions.find(
-                        (parent) => parent.value === value
-                    );
-                    newData.parentStructureId = selectedParent?.id || "";
-                } else if (field === "heads") {
-                    const selectedHead = headsOptions.find(
-                        (head) => head.value === value
-                    );
-                    newData.headsId = selectedHead?.id || "";
-                }
-
-                return newData;
-            });
+        (field, value) => {
+            setFormData((prev) => ({
+                ...prev,
+                [field]: value,
+            }));
 
             // Clear error when user starts typing
             if (formErrors[field]) {
@@ -395,7 +252,7 @@ const useCompanyStructureDetailsModel = ({
                 }));
             }
         },
-        [countryOptions, parentStructureOptions, headsOptions, formErrors]
+        [formErrors]
     );
 
     // Validation function
@@ -414,8 +271,8 @@ const useCompanyStructureDetailsModel = ({
             newErrors.type = "Type is required";
         }
 
-        if (!formData.country) {
-            newErrors.country = "Country is required";
+        if (!formData.country_id) {
+            newErrors.country_id = "Country is required";
         }
 
         if (!formData.address.trim()) {
@@ -435,25 +292,35 @@ const useCompanyStructureDetailsModel = ({
         setIsSubmitting(true);
         try {
             const submitData = {
-                name: formData.name,
-                details: formData.details,
-                address: formData.address,
+                name: formData.name.trim(),
+                details: formData.details.trim(),
+                address: formData.address.trim(),
                 type: formData.type,
-                country: formData.country,
-                countryId: formData.countryId,
-                city: formData.city,
-                cityId: formData.cityId,
-                parentStructure: formData.parentStructure,
-                parentStructureId: formData.parentStructureId,
-                heads: formData.heads,
-                headsId: formData.headsId,
+                country_id: formData.country_id,
+                parent_id: formData.parent_id || null,
+                head_id: formData.head_id || null,
             };
 
-            if (modelType === "edit") {
+            console.log("Submitting data:", submitData);
+            // Submitting data:{
+            //     "name": "dfg",
+            //     "details": "sazedg&nbsp;",
+            //     "address": "sz dgetr seg xzdga seg Za4erwgxzd",
+            //     "type": "department",
+            //     "country_id": "13bb64b5-44e9-11f0-9a31-d843aea192eb",
+            //     "parent_id": null,
+            //     "head_id": null
+            // }
+            // country_id is not change even i change the value in dropdown.
+            console.log("Model type:", modelType); // Model type: edit
+            console.log("Company structure ID:", companyStructure?.id); // Company structure ID: 19c5e35d-4294-4047-8bc3-5f1aaa413431
+
+            if (modelType === "edit" && companyStructure?.id) {
+                console.log("on edit this called");
                 await dispatch(
                     updateCompanyStructure({
                         id: companyStructure.id,
-                        ...submitData,
+                        data: submitData,
                     })
                 ).unwrap();
             } else {
@@ -461,18 +328,17 @@ const useCompanyStructureDetailsModel = ({
             }
 
             // Refresh the company structures list
-            dispatch(
-                fetchAllCompanyStructures({
-                    page: 1,
-                    pageSize: 10, // Use your default page size
-                })
-            );
+            dispatch(fetchAllCompanyStructures({ page: 1, pageSize: 10 }));
 
+            // Close modal
             setOpenStructureModel(false);
             handleCloseStructureModel?.();
+
+            // Reset initialization flag
+            setIsInitialized(false);
         } catch (error) {
             console.error("Error saving structure:", error);
-            // Handle specific error cases if needed
+            // Specific error handling can be added here
         } finally {
             setIsSubmitting(false);
         }
@@ -493,18 +359,45 @@ const useCompanyStructureDetailsModel = ({
         handleCloseStructureModel?.();
     }, [setOpenStructureModel, handleCloseStructureModel, resetFormData]);
 
+    // Get display values for form fields (for UI components that need display values)
+    const getDisplayValues = useMemo(() => {
+        const selectedCountry = countryOptions.find(
+            (country) => country.id === formData.country_id
+        );
+        const selectedParent = parentStructureOptions.find(
+            (parent) => parent.id === formData.parent_id
+        );
+
+        const heads = headsOptions.find(
+            (head) => head.value === formData.head_id
+        );
+
+        return {
+            country: selectedCountry?.name || "",
+            parentStructure: selectedParent?.name || "",
+            heads: heads?.name || "",
+        };
+    }, [
+        formData.country_id,
+        formData.parent_id,
+        countryOptions,
+        parentStructureOptions,
+        headsOptions,
+        formData.head_id,
+    ]);
+
     return {
         // Form data and state
         formData,
+        displayValues: getDisplayValues,
         errors: formErrors,
         isLoading: isSubmitting,
         isSubmitting,
+        isInitialized,
 
         // Loading states from Redux
         countriesLoading: countriesLoading?.fetch || false,
         structuresLoading: loading?.entities || false,
-        // citiesLoading: citiesLoading?.fetch || false, // TODO: Uncomment when available
-        // employeesLoading: employeesLoading?.fetch || false, // TODO: Uncomment when available
 
         // Redux errors
         reduxErrors: errors,
@@ -517,22 +410,21 @@ const useCompanyStructureDetailsModel = ({
         // Options for dropdowns
         structureTypes,
         countryOptions,
-        // cityOptions, // TODO: Uncomment when available
         parentStructureOptions,
         headsOptions,
 
         // Raw data (for debugging or additional processing)
         countries,
         existingCompanyStructures,
-        // cities, // TODO: Uncomment when available
-        // employees, // TODO: Uncomment when available
 
         // Utility functions
         setErrors: setFormErrors,
         validateForm,
-        initializeFormData, // Expose for manual initialization if needed
-        resetFormData, // Expose for manual reset if needed
+        initializeFormData,
+        resetFormData,
     };
 };
 
 export default useCompanyStructureDetailsModel;
+
+// because on the load i need default value like in this my ui need

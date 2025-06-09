@@ -150,6 +150,8 @@ class CompanyStructureService {
      * @returns {Promise<Object>} Updated company structure
      */
     async update(id, data) {
+        console.log("data", data);
+
         try {
             const response = await fetch(`${this.baseUrl}/${id}`, {
                 method: "PUT",

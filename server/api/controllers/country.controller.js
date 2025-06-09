@@ -127,6 +127,8 @@ class CountryController {
      * @returns {Promise<Object>} JSON response with updated country or error
      */
     static async updateCountry(req, res) {
+        console.log(req.body);
+
         try {
             const { id } = req.params;
             const updateData = req.body;
