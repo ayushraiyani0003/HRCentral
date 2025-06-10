@@ -22,6 +22,8 @@ import {
     selectLoading as selectCountriesLoading,
 } from "../../../store/countrySlice";
 
+// TODO: add employee slice for load the Head data base on the employee id
+
 const useCompanyStructureTab = ({
     setOpenDeleteModel,
     setCompanyStructure = () => {},
