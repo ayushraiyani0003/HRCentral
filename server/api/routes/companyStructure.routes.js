@@ -43,14 +43,4 @@ router.put("/:id", CompanyStructureController.updateCompanyStructure);
  */
 router.delete("/:id", CompanyStructureController.deleteCompanyStructure);
 
-// ==============================
-// Additional Company Structure Routes
-// ==============================
-
-/**
- * @route GET /api/company-structure/hierarchy/:id
- * @desc Get hierarchical structure for a specific entity
- */
-router.get("/hierarchy/:id", CompanyStructureController.getHierarchy);
-
 module.exports = router;
