@@ -9,6 +9,7 @@ const slipGenerateRoutes = require("./slipGenerate.routes");
 const rolesRoutes = require("./rolesList.routes");
 const companyStructureRoutes = require("./companyStructure.routes");
 const countryRoutes = require("./country.routes");
+const EmployeeTypeRoutes = require("./EmployeeType.routes");
 
 // Uncomment when ready to use
 // const salaryRoutes = require('./salary.routes');
@@ -21,6 +22,7 @@ router.use("/slip-generate", slipGenerateRoutes);
 router.use("/roles", rolesRoutes);
 router.use("/company-structure", companyStructureRoutes);
 router.use("/country", countryRoutes);
+router.use("/employee-type", EmployeeTypeRoutes);
 // Uncomment when ready to use
 // router.use('/salary', salaryRoutes);
 // router.use('/employee', employeeRoutes);
@@ -37,6 +39,7 @@ router.get("/", (req, res) => {
             roles: "/api/roles",
             companyStructure: "/api/company-structure",
             country: "/api/country",
+            employeeType: "/api/employee-type",
             // Uncomment when ready to use
             // salary: '/api/salary',
             // employee: '/api/employee',
