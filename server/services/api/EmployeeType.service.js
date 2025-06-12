@@ -1,6 +1,6 @@
 // =================== services/EmployeeType.service.js ===================
 
-const { EmployeeType } = require("../models"); // Adjust path as needed
+const { EmployeeType } = require("../../models"); // Adjust path as needed
 
 /**
  * EmployeeType Service
