@@ -2,8 +2,8 @@ import { useState, useCallback, useMemo } from "react";
 
 const useHiringSourceTab = ({
     setOpenDeleteModel,
-    setHiringSource = () => {},
-    setOpenHiringSourceModel = () => {},
+    setRowData = () => {},
+    setOpenAddEditModel = () => {},
     setModelType = () => {},
 }) => {
     const [searchValue, setSearchValue] = useState("");
@@ -100,34 +100,34 @@ const useHiringSourceTab = ({
 
     // Action handlers
     const handleAddNew = useCallback(() => {
-        setOpenHiringSourceModel(true);
+        setOpenAddEditModel(true);
         setModelType("add");
-    }, [setOpenHiringSourceModel, setModelType]);
+    }, [setOpenAddEditModel, setModelType]);
 
     const handleView = useCallback(
         (row) => {
-            setOpenHiringSourceModel(true);
+            setOpenAddEditModel(true);
             setModelType("view");
-            setHiringSource(row);
+            setRowData(row);
         },
-        [setOpenHiringSourceModel, setModelType, setHiringSource]
+        [setOpenAddEditModel, setModelType, setRowData]
     );
 
     const handleEdit = useCallback(
         (row) => {
-            setOpenHiringSourceModel(true);
+            setOpenAddEditModel(true);
             setModelType("edit");
-            setHiringSource(row);
+            setRowData(row);
         },
-        [setOpenHiringSourceModel, setModelType, setHiringSource]
+        [setOpenAddEditModel, setModelType, setRowData]
     );
 
     const handleDelete = useCallback(
         (row) => {
-            setHiringSource(row);
+            setRowData(row);
             setOpenDeleteModel(true);
         },
-        [setHiringSource, setOpenDeleteModel]
+        [setRowData, setOpenDeleteModel]
     );
 
     const handleSearch = useCallback((value) => {

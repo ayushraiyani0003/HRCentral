@@ -2,8 +2,8 @@ import { useState, useCallback, useMemo } from "react";
 
 const useDesignationsTab = ({
     setOpenDeleteModel,
-    setDesignation = () => {},
-    setOpenDesignationModel = () => {},
+    setRowData = () => {},
+    setOpenAddEditModel = () => {},
     setModelType = () => {},
 }) => {
     const [searchValue, setSearchValue] = useState("");
@@ -76,34 +76,34 @@ const useDesignationsTab = ({
 
     // Action handlers
     const handleAddNew = useCallback(() => {
-        setOpenDesignationModel(true);
+        setOpenAddEditModel(true);
         setModelType("add");
-    }, [setOpenDesignationModel, setModelType]);
+    }, [setOpenAddEditModel, setModelType]);
 
     const handleView = useCallback(
         (row) => {
-            setOpenDesignationModel(true);
+            setOpenAddEditModel(true);
             setModelType("view");
-            setDesignation(row);
+            setRowData(row);
         },
-        [setOpenDesignationModel, setModelType, setDesignation]
+        [setOpenAddEditModel, setModelType, setRowData]
     );
 
     const handleEdit = useCallback(
         (row) => {
-            setOpenDesignationModel(true);
+            setOpenAddEditModel(true);
             setModelType("edit");
-            setDesignation(row);
+            setRowData(row);
         },
-        [setOpenDesignationModel, setModelType, setDesignation]
+        [setOpenAddEditModel, setModelType, setRowData]
     );
 
     const handleDelete = useCallback(
         (row) => {
-            setDesignation(row);
+            setRowData(row);
             setOpenDeleteModel(true);
         },
-        [setDesignation, setOpenDeleteModel]
+        [setRowData, setOpenDeleteModel]
     );
 
     const handleSearch = useCallback((value) => {

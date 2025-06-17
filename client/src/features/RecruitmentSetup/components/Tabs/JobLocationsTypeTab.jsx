@@ -15,8 +15,8 @@ import useJobLocationsTypeTab from "../../hooks/useJobLocationsTypeTab";
 
 function JobLocationsTypeTab({
     setOpenDeleteModel,
-    setJobLocationType = () => {},
-    setOpenJobLocationTypeModel = () => {},
+    setRowData = () => {},
+    setOpenAddEditModel = () => {},
     setModelType = () => {},
 }) {
     const {
@@ -29,8 +29,8 @@ function JobLocationsTypeTab({
         handleSearch,
     } = useJobLocationsTypeTab({
         setOpenDeleteModel,
-        setJobLocationType,
-        setOpenJobLocationTypeModel,
+        setRowData,
+        setOpenAddEditModel,
         setModelType,
     });
 

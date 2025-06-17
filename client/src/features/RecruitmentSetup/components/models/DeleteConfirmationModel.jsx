@@ -8,25 +8,23 @@ import {
 function DeleteConfirmationModal({
     openDeleteModel,
     setOpenDeleteModel,
-    companyStructure,
-    onConfirmDelete,
+    rowData,
 }) {
-    const handleDelete = () => {
-        if (onConfirmDelete) {
-            onConfirmDelete(companyStructure);
-        }
-        setOpenDeleteModel(false);
-    };
+    // Debug only
+    // console.log(rowData);
 
-    const isEmployee = companyStructure?.type === "employee";
-    const entityType = isEmployee ? "Employee" : "Department";
-    const entityName = companyStructure?.name || "Unknown";
+    const handleDelete = () => {
+        // if (onConfirmDelete) {
+        //     onConfirmDelete(rowData);
+        // }
+        // setOpenDeleteModel(false);
+    };
 
     return (
         <CustomModal
             isOpen={openDeleteModel}
             onClose={() => setOpenDeleteModel(false)}
-            title={`Delete ${entityType}`}
+            title={`Delete ${rowData.name}`}
             size="medium"
             showCloseButton={true}
             closeOnOverlayClick={false}
@@ -51,29 +49,6 @@ function DeleteConfirmationModal({
                     </svg>
                 </div>
 
-                {/* Main Message */}
-                <div className="text-center mb-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                        Are you sure you want to delete this{" "}
-                        {entityType.toLowerCase()}?
-                    </h3>
-
-                    <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                        <p className="text-sm text-gray-600 mb-1">
-                            {entityType} Name:
-                        </p>
-                        <p className="font-medium text-gray-900">
-                            {entityName}
-                        </p>
-                    </div>
-
-                    <p className="text-sm text-gray-600">
-                        {isEmployee
-                            ? "This action will permanently remove the employee from the company structure. This action cannot be undone."
-                            : "This action will permanently remove the department and all its sub-departments from the company structure. This action cannot be undone."}
-                    </p>
-                </div>
-
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-3 sm:justify-end">
                     <button
@@ -86,7 +61,7 @@ function DeleteConfirmationModal({
                         onClick={handleDelete}
                         className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
                     >
-                        Delete {entityType}
+                        Delete This
                     </button>
                 </div>
             </div>

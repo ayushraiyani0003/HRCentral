@@ -15,8 +15,8 @@ import useEmployeeTypeTab from "../../hooks/useEmployeeTypeTab";
 
 function ExperienceLevelsTab({
     setOpenDeleteModel,
-    setEmployeeType = () => {},
-    setOpenEmployeeTypeModel = () => {},
+    setRowData = () => {},
+    setOpenAddEditModel = () => {},
     setModelType = () => {},
 }) {
     const {
@@ -29,8 +29,8 @@ function ExperienceLevelsTab({
         handleSearch,
     } = useEmployeeTypeTab({
         setOpenDeleteModel,
-        setEmployeeType,
-        setOpenEmployeeTypeModel,
+        setRowData,
+        setOpenAddEditModel,
         setModelType,
     });
 

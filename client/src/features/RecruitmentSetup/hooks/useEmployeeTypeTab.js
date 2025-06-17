@@ -2,8 +2,8 @@ import { useState, useCallback, useMemo } from "react";
 
 const useEmployeeTypeTab = ({
     setOpenDeleteModel,
-    setEmployeeType = () => {},
-    setOpenEmployeeTypeModel = () => {},
+    setRowData = () => {},
+    setOpenAddEditModel = () => {},
     setModelType = () => {},
 }) => {
     const [searchValue, setSearchValue] = useState("");
@@ -46,34 +46,41 @@ const useEmployeeTypeTab = ({
 
     // Action handlers
     const handleAddNew = useCallback(() => {
-        setOpenEmployeeTypeModel(true);
+        console.log("Add new employee type");
+
+        setOpenAddEditModel(true);
         setModelType("add");
-    }, [setOpenEmployeeTypeModel, setModelType]);
+    }, [setOpenAddEditModel, setModelType]);
 
     const handleView = useCallback(
         (row) => {
-            setOpenEmployeeTypeModel(true);
+            console.log("View employee type");
+            setOpenAddEditModel(true);
             setModelType("view");
-            setEmployeeType(row);
+            setRowData(row);
         },
-        [setOpenEmployeeTypeModel, setModelType, setEmployeeType]
+        [setOpenAddEditModel, setModelType, setRowData]
     );
 
     const handleEdit = useCallback(
         (row) => {
-            setOpenEmployeeTypeModel(true);
+            console.log("Edit employee type");
+            setOpenAddEditModel(true);
             setModelType("edit");
-            setEmployeeType(row);
+            setRowData(row);
         },
-        [setOpenEmployeeTypeModel, setModelType, setEmployeeType]
+        [setOpenAddEditModel, setModelType, setRowData]
     );
 
     const handleDelete = useCallback(
         (row) => {
-            setEmployeeType(row);
+            console.log(row);
+
+            console.log("Delete employee type");
+            setRowData(row);
             setOpenDeleteModel(true);
         },
-        [setEmployeeType, setOpenDeleteModel]
+        [setRowData, setOpenDeleteModel]
     );
 
     const handleSearch = useCallback((value) => {

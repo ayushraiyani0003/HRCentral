@@ -15,8 +15,8 @@ import useHiringSourceTab from "../../hooks/useHiringSourceTab";
 
 function HiringSourceTab({
     setOpenDeleteModel,
-    setHiringSource = () => {},
-    setOpenHiringSourceModel = () => {},
+    setRowData = () => {},
+    setOpenAddEditModel = () => {},
     setModelType = () => {},
 }) {
     const {
@@ -29,8 +29,8 @@ function HiringSourceTab({
         handleSearch,
     } = useHiringSourceTab({
         setOpenDeleteModel,
-        setHiringSource,
-        setOpenHiringSourceModel,
+        setRowData,
+        setOpenAddEditModel,
         setModelType,
     });
 

@@ -2,8 +2,8 @@ import { useState, useCallback, useMemo } from "react";
 
 const useEducationLevelsTab = ({
     setOpenDeleteModel,
-    setEducationLevel = () => {},
-    setOpenEducationLevelModel = () => {},
+    setRowData = () => {},
+    setOpenAddEditModel = () => {},
     setModelType = () => {},
 }) => {
     const [searchValue, setSearchValue] = useState("");
@@ -13,43 +13,43 @@ const useEducationLevelsTab = ({
         () => [
             {
                 id: 1,
-                name: "Not Applicable",
-            },
-            {
-                id: 2,
-                name: "Internship",
-            },
-            {
-                id: 3,
-                name: "Entry Level",
-            },
-            {
-                id: 4,
-                name: "Associate Degree",
-            },
-            {
-                id: 5,
-                name: "Bachelor's Degree",
-            },
-            {
-                id: 6,
-                name: "Master's Degree",
-            },
-            {
-                id: 7,
-                name: "Doctoral Degree (PhD)",
-            },
-            {
-                id: 8,
-                name: "Professional Certification",
-            },
-            {
-                id: 9,
                 name: "High School Diploma",
             },
             {
-                id: 10,
+                id: 2,
+                name: "Associate Degree",
+            },
+            {
+                id: 3,
+                name: "Bachelor's Degree",
+            },
+            {
+                id: 4,
+                name: "Master's Degree",
+            },
+            {
+                id: 5,
+                name: "Doctoral Degree (PhD)",
+            },
+            {
+                id: 6,
+                name: "Professional Certification",
+            },
+            {
+                id: 7,
                 name: "Trade/Vocational Certificate",
+            },
+            {
+                id: 8,
+                name: "Diploma",
+            },
+            {
+                id: 9,
+                name: "Post Graduate Diploma",
+            },
+            {
+                id: 10,
+                name: "Not Specified",
             },
         ],
         []
@@ -60,7 +60,9 @@ const useEducationLevelsTab = ({
         if (!searchValue.trim()) {
             return educationLevelData;
         }
+
         const searchTerm = searchValue.toLowerCase().trim();
+
         return educationLevelData.filter((item) => {
             return item.name.toLowerCase().includes(searchTerm);
         });
@@ -68,34 +70,41 @@ const useEducationLevelsTab = ({
 
     // Action handlers
     const handleAddNew = useCallback(() => {
-        setOpenEducationLevelModel(true);
+        console.log("Add new education level");
+
+        setOpenAddEditModel(true);
         setModelType("add");
-    }, [setOpenEducationLevelModel, setModelType]);
+    }, [setOpenAddEditModel, setModelType]);
 
     const handleView = useCallback(
         (row) => {
-            setOpenEducationLevelModel(true);
+            console.log("View education level");
+            setOpenAddEditModel(true);
             setModelType("view");
-            setEducationLevel(row);
+            setRowData(row);
         },
-        [setOpenEducationLevelModel, setModelType, setEducationLevel]
+        [setOpenAddEditModel, setModelType, setRowData]
     );
 
     const handleEdit = useCallback(
         (row) => {
-            setOpenEducationLevelModel(true);
+            console.log("Edit education level");
+            setOpenAddEditModel(true);
             setModelType("edit");
-            setEducationLevel(row);
+            setRowData(row);
         },
-        [setOpenEducationLevelModel, setModelType, setEducationLevel]
+        [setOpenAddEditModel, setModelType, setRowData]
     );
 
     const handleDelete = useCallback(
         (row) => {
-            setEducationLevel(row);
+            console.log(row);
+
+            console.log("Delete education level");
+            setRowData(row);
             setOpenDeleteModel(true);
         },
-        [setEducationLevel, setOpenDeleteModel]
+        [setRowData, setOpenDeleteModel]
     );
 
     const handleSearch = useCallback((value) => {
@@ -106,6 +115,7 @@ const useEducationLevelsTab = ({
         // State
         searchValue,
         filteredData,
+
         // Handlers
         handleAddNew,
         handleView,

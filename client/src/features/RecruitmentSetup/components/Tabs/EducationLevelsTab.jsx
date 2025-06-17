@@ -15,8 +15,8 @@ import useEducationLevelsTab from "../../hooks/useEducationLevelsTab";
 
 function EducationLevelsTab({
     setOpenDeleteModel,
-    setEducationLevel = () => {},
-    setOpenEducationLevelModel = () => {},
+    setRowData = () => {},
+    setOpenAddEditModel = () => {},
     setModelType = () => {},
 }) {
     const {
@@ -29,8 +29,8 @@ function EducationLevelsTab({
         handleSearch,
     } = useEducationLevelsTab({
         setOpenDeleteModel,
-        setEducationLevel,
-        setOpenEducationLevelModel,
+        setRowData,
+        setOpenAddEditModel,
         setModelType,
     });
 

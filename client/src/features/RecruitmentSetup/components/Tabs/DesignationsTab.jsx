@@ -15,8 +15,8 @@ import useDesignationsTab from "../../hooks/useDesignationsTab";
 
 function DesignationsTab({
     setOpenDeleteModel,
-    setDesignation = () => {},
-    setOpenDesignationModel = () => {},
+    setRowData = () => {},
+    setOpenAddEditModel = () => {},
     setModelType = () => {},
 }) {
     const {
@@ -29,8 +29,8 @@ function DesignationsTab({
         handleSearch,
     } = useDesignationsTab({
         setOpenDeleteModel,
-        setDesignation,
-        setOpenDesignationModel,
+        setRowData,
+        setOpenAddEditModel,
         setModelType,
     });
 

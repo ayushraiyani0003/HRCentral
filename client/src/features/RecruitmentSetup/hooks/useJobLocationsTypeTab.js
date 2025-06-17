@@ -2,8 +2,8 @@ import { useState, useCallback, useMemo } from "react";
 
 const useJobLocationsTypeTab = ({
     setOpenDeleteModel,
-    setJobLocationType = () => {},
-    setOpenJobLocationTypeModel = () => {},
+    setRowData = () => {},
+    setOpenAddEditModel = () => {},
     setModelType = () => {},
 }) => {
     const [searchValue, setSearchValue] = useState("");
@@ -27,34 +27,34 @@ const useJobLocationsTypeTab = ({
     }, [searchValue, jobLocationTypeData]);
 
     const handleAddNew = useCallback(() => {
-        setOpenJobLocationTypeModel(true);
+        setOpenAddEditModel(true);
         setModelType("add");
-    }, [setOpenJobLocationTypeModel, setModelType]);
+    }, [setOpenAddEditModel, setModelType]);
 
     const handleView = useCallback(
         (row) => {
-            setOpenJobLocationTypeModel(true);
+            setOpenAddEditModel(true);
             setModelType("view");
-            setJobLocationType(row);
+            setRowData(row);
         },
-        [setOpenJobLocationTypeModel, setModelType, setJobLocationType]
+        [setOpenAddEditModel, setModelType, setRowData]
     );
 
     const handleEdit = useCallback(
         (row) => {
-            setOpenJobLocationTypeModel(true);
+            setOpenAddEditModel(true);
             setModelType("edit");
-            setJobLocationType(row);
+            setRowData(row);
         },
-        [setOpenJobLocationTypeModel, setModelType, setJobLocationType]
+        [setOpenAddEditModel, setModelType, setRowData]
     );
 
     const handleDelete = useCallback(
         (row) => {
-            setJobLocationType(row);
+            setRowData(row);
             setOpenDeleteModel(true);
         },
-        [setJobLocationType, setOpenDeleteModel]
+        [setRowData, setOpenDeleteModel]
     );
 
     const handleSearch = useCallback((value) => {

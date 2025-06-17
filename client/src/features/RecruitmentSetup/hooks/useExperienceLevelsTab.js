@@ -2,8 +2,8 @@ import { useState, useCallback, useMemo } from "react";
 
 const useExperienceLevelsTab = ({
     setOpenDeleteModel,
-    setExperienceLevel = () => {},
-    setOpenExperienceLevelModel = () => {},
+    setRowData = () => {},
+    setOpenAddEditModel = () => {},
     setModelType = () => {},
 }) => {
     const [searchValue, setSearchValue] = useState("");
@@ -56,34 +56,34 @@ const useExperienceLevelsTab = ({
 
     // Action handlers
     const handleAddNew = useCallback(() => {
-        setOpenExperienceLevelModel(true);
+        setOpenAddEditModel(true);
         setModelType("add");
-    }, [setOpenExperienceLevelModel, setModelType]);
+    }, [setOpenAddEditModel, setModelType]);
 
     const handleView = useCallback(
         (row) => {
-            setOpenExperienceLevelModel(true);
+            setOpenAddEditModel(true);
             setModelType("view");
-            setExperienceLevel(row);
+            setRowData(row);
         },
-        [setOpenExperienceLevelModel, setModelType, setExperienceLevel]
+        [setOpenAddEditModel, setModelType, setRowData]
     );
 
     const handleEdit = useCallback(
         (row) => {
-            setOpenExperienceLevelModel(true);
+            setOpenAddEditModel(true);
             setModelType("edit");
-            setExperienceLevel(row);
+            setRowData(row);
         },
-        [setOpenExperienceLevelModel, setModelType, setExperienceLevel]
+        [setOpenAddEditModel, setModelType, setRowData]
     );
 
     const handleDelete = useCallback(
         (row) => {
-            setExperienceLevel(row);
+            setRowData(row);
             setOpenDeleteModel(true);
         },
-        [setExperienceLevel, setOpenDeleteModel]
+        [setRowData, setOpenDeleteModel]
     );
 
     const handleSearch = useCallback((value) => {

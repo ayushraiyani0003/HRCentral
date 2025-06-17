@@ -2,8 +2,8 @@ import { useState, useCallback, useMemo } from "react";
 
 const useSkillsTab = ({
     setOpenDeleteModel,
-    setSkill = () => {},
-    setOpenSkillModel = () => {},
+    setRowData = () => {},
+    setOpenAddEditModel = () => {},
     setModelType = () => {},
 }) => {
     const [searchValue, setSearchValue] = useState("");
@@ -88,34 +88,34 @@ const useSkillsTab = ({
 
     // Action handlers
     const handleAddNew = useCallback(() => {
-        setOpenSkillModel(true);
+        setOpenAddEditModel(true);
         setModelType("add");
-    }, [setOpenSkillModel, setModelType]);
+    }, [setOpenAddEditModel, setModelType]);
 
     const handleView = useCallback(
         (row) => {
-            setOpenSkillModel(true);
+            setOpenAddEditModel(true);
             setModelType("view");
-            setSkill(row);
+            setRowData(row);
         },
-        [setOpenSkillModel, setModelType, setSkill]
+        [setOpenAddEditModel, setModelType, setRowData]
     );
 
     const handleEdit = useCallback(
         (row) => {
-            setOpenSkillModel(true);
+            setOpenAddEditModel(true);
             setModelType("edit");
-            setSkill(row);
+            setRowData(row);
         },
-        [setOpenSkillModel, setModelType, setSkill]
+        [setOpenAddEditModel, setModelType, setRowData]
     );
 
     const handleDelete = useCallback(
         (row) => {
-            setSkill(row);
+            setRowData(row);
             setOpenDeleteModel(true);
         },
-        [setSkill, setOpenDeleteModel]
+        [setRowData, setOpenDeleteModel]
     );
 
     const handleSearch = useCallback((value) => {

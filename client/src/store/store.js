@@ -6,6 +6,7 @@ import slipGenerateReducer from "./slipGenerateSlice";
 import rolesPermissionsReducer from "./rolesPermissionsSlice";
 import companyStructureReducer from "./CompanyStructureSlice";
 import countrySlice from "./countrySlice";
+import employeeTypeReducer from "./EmployeeTypeSlice";
 
 const store = configureStore({
     reducer: {
@@ -15,6 +16,7 @@ const store = configureStore({
         rolesPermissions: rolesPermissionsReducer,
         companyStructure: companyStructureReducer,
         country: countrySlice,
+        employeeType: employeeTypeReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({

@@ -15,8 +15,8 @@ import useWorkShiftTab from "../../hooks/useWorkShiftTab";
 
 function WorkShiftTab({
     setOpenDeleteModel,
-    setWorkShift = () => {},
-    setOpenWorkShiftModel = () => {},
+    setRowData = () => {},
+    setOpenAddEditModel = () => {},
     setModelType = () => {},
 }) {
     const {
@@ -29,8 +29,8 @@ function WorkShiftTab({
         handleSearch,
     } = useWorkShiftTab({
         setOpenDeleteModel,
-        setWorkShift,
-        setOpenWorkShiftModel,
+        setRowData,
+        setOpenAddEditModel,
         setModelType,
     });
 

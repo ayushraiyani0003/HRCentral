@@ -21,21 +21,21 @@ import WorkShiftTab from "../components/Tabs/WorkShiftTab";
 import SkillsTab from "../components/Tabs/SkillsTab";
 
 import DeleteConfirmationModel from "../components/models/DeleteConfirmationModel";
-import CompanyStructureDetailsModel from "../components/models/CompanyStructureDetailsModel";
+import RecruitmentSetupModal from "../components/models/recruitmentSetupModel";
 
 function RecruitmentSetupPage() {
     const [selectedTab, setSelectedTab] = useState(0);
     const [openDeleteModel, setOpenDeleteModel] = useState(false);
-    const [companyStructure, setCompanyStructure] = useState([]);
-    const [openStructureModel, setOpenStructureModel] = useState(false);
+    const [rowData, setRowData] = useState([]);
+    const [openAddEditModel, setOpenAddEditModel] = useState(false);
     const [modelType, setModelType] = useState(""); // 'view', 'add', 'edit'
 
     // const [uploadEmployeeModelOpen, setUploadEmployeeModelOpen] =
     //     useState(false);
 
     const handleCloseStructureModel = useCallback(() => {
-        setOpenStructureModel(false);
-        setCompanyStructure([]);
+        setOpenAddEditModel(false);
+        setRowData([]);
         setModelType("");
     }, []);
 
@@ -46,8 +46,8 @@ function RecruitmentSetupPage() {
             content: (
                 <EmployeeTypeTab
                     setOpenDeleteModel={setOpenDeleteModel}
-                    setOpenStructureModel={setOpenStructureModel}
-                    setCompanyStructure={setCompanyStructure}
+                    setOpenAddEditModel={setOpenAddEditModel}
+                    setRowData={setRowData}
                     setModelType={setModelType}
                 />
             ),
@@ -57,8 +57,8 @@ function RecruitmentSetupPage() {
             content: (
                 <ExperienceLevelsTab
                     setOpenDeleteModel={setOpenDeleteModel}
-                    setOpenStructureModel={setOpenStructureModel}
-                    setCompanyStructure={setCompanyStructure}
+                    setOpenAddEditModel={setOpenAddEditModel}
+                    setRowData={setRowData}
                     setModelType={setModelType}
                 />
             ),
@@ -68,8 +68,8 @@ function RecruitmentSetupPage() {
             content: (
                 <DesignationsTab
                     setOpenDeleteModel={setOpenDeleteModel}
-                    setOpenStructureModel={setOpenStructureModel}
-                    setCompanyStructure={setCompanyStructure}
+                    setOpenAddEditModel={setOpenAddEditModel}
+                    setRowData={setRowData}
                     setModelType={setModelType}
                 />
             ),
@@ -79,8 +79,8 @@ function RecruitmentSetupPage() {
             content: (
                 <SkillsTab
                     setOpenDeleteModel={setOpenDeleteModel}
-                    setOpenStructureModel={setOpenStructureModel}
-                    setCompanyStructure={setCompanyStructure}
+                    setOpenAddEditModel={setOpenAddEditModel}
+                    setRowData={setRowData}
                     setModelType={setModelType}
                 />
             ),
@@ -90,8 +90,8 @@ function RecruitmentSetupPage() {
             content: (
                 <EducationLevelsTab
                     setOpenDeleteModel={setOpenDeleteModel}
-                    setOpenStructureModel={setOpenStructureModel}
-                    setCompanyStructure={setCompanyStructure}
+                    setOpenAddEditModel={setOpenAddEditModel}
+                    setRowData={setRowData}
                     setModelType={setModelType}
                 />
             ),
@@ -101,8 +101,8 @@ function RecruitmentSetupPage() {
             content: (
                 <HiringSourceTab
                     setOpenDeleteModel={setOpenDeleteModel}
-                    setOpenStructureModel={setOpenStructureModel}
-                    setCompanyStructure={setCompanyStructure}
+                    setOpenAddEditModel={setOpenAddEditModel}
+                    setRowData={setRowData}
                     setModelType={setModelType}
                 />
             ),
@@ -112,8 +112,8 @@ function RecruitmentSetupPage() {
             content: (
                 <WorkShiftTab
                     setOpenDeleteModel={setOpenDeleteModel}
-                    setOpenStructureModel={setOpenStructureModel}
-                    setCompanyStructure={setCompanyStructure}
+                    setOpenAddEditModel={setOpenAddEditModel}
+                    setRowData={setRowData}
                     setModelType={setModelType}
                 />
             ),
@@ -123,15 +123,20 @@ function RecruitmentSetupPage() {
             content: (
                 <JobLocationsTypeTab
                     setOpenDeleteModel={setOpenDeleteModel}
-                    setOpenStructureModel={setOpenStructureModel}
-                    setCompanyStructure={setCompanyStructure}
+                    setOpenAddEditModel={setOpenAddEditModel}
+                    setRowData={setRowData}
                     setModelType={setModelType}
                 />
             ),
         },
         {
-            label: "Hiring Stage",
-            content: <>Add hear for add Hiring stage</>,
+            label: "Hiring Status",
+            content: (
+                <>
+                    define all status like applied, interviewed, offered, hired,
+                    rejected etc...
+                </>
+            ),
         },
     ];
 
@@ -150,12 +155,12 @@ function RecruitmentSetupPage() {
             <DeleteConfirmationModel
                 openDeleteModel={openDeleteModel}
                 setOpenDeleteModel={setOpenDeleteModel}
-                companyStructure={companyStructure}
+                rowData={rowData}
             />
-            <CompanyStructureDetailsModel
-                companyStructure={companyStructure}
-                openStructureModel={openStructureModel}
-                setOpenStructureModel={setOpenStructureModel}
+            <RecruitmentSetupModal
+                companyStructure={rowData}
+                openAddEditModel={openAddEditModel}
+                setOpenAddEditModel={setOpenAddEditModel}
                 modelType={modelType}
                 existingStructures={[
                     { name: "Company", id: "company" },

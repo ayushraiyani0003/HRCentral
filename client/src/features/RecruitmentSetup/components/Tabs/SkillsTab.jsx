@@ -15,8 +15,8 @@ import useSkillsTab from "../../hooks/useSkillsTab";
 
 function SkillsTab({
     setOpenDeleteModel,
-    setSkill = () => {},
-    setOpenSkillModel = () => {},
+    setRowData = () => {},
+    setOpenAddEditModel = () => {},
     setModelType = () => {},
 }) {
     const {
@@ -29,8 +29,8 @@ function SkillsTab({
         handleSearch,
     } = useSkillsTab({
         setOpenDeleteModel,
-        setSkill,
-        setOpenSkillModel,
+        setRowData,
+        setOpenAddEditModel,
         setModelType,
     });
 

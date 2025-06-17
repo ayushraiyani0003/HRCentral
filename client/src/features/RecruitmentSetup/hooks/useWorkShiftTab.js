@@ -2,8 +2,8 @@ import { useState, useCallback, useMemo } from "react";
 
 const useWorkShiftTab = ({
     setOpenDeleteModel,
-    setWorkShift = () => {},
-    setOpenWorkShiftModel = () => {},
+    setRowData = () => {},
+    setOpenAddEditModel = () => {},
     setModelType = () => {},
 }) => {
     const [searchValue, setSearchValue] = useState("");
@@ -31,34 +31,34 @@ const useWorkShiftTab = ({
     }, [searchValue, workShiftData]);
 
     const handleAddNew = useCallback(() => {
-        setOpenWorkShiftModel(true);
+        setOpenAddEditModel(true);
         setModelType("add");
-    }, [setOpenWorkShiftModel, setModelType]);
+    }, [setOpenAddEditModel, setModelType]);
 
     const handleView = useCallback(
         (row) => {
-            setOpenWorkShiftModel(true);
+            setOpenAddEditModel(true);
             setModelType("view");
-            setWorkShift(row);
+            setRowData(row);
         },
-        [setOpenWorkShiftModel, setModelType, setWorkShift]
+        [setOpenAddEditModel, setModelType, setRowData]
     );
 
     const handleEdit = useCallback(
         (row) => {
-            setOpenWorkShiftModel(true);
+            setOpenAddEditModel(true);
             setModelType("edit");
-            setWorkShift(row);
+            setRowData(row);
         },
-        [setOpenWorkShiftModel, setModelType, setWorkShift]
+        [setOpenAddEditModel, setModelType, setRowData]
     );
 
     const handleDelete = useCallback(
         (row) => {
-            setWorkShift(row);
+            setRowData(row);
             setOpenDeleteModel(true);
         },
-        [setWorkShift, setOpenDeleteModel]
+        [setRowData, setOpenDeleteModel]
     );
 
     const handleSearch = useCallback((value) => {
