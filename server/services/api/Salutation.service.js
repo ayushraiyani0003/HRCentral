@@ -1,4 +1,5 @@
 const { Salutation } = require("../../models"); // Adjust path as needed
+const { Op } = require("sequelize");
 
 class SalutationService {
     /**
@@ -273,12 +274,10 @@ class SalutationService {
 
             const { limit = 10, offset = 0 } = options;
 
-            const { Op } = require("sequelize");
-
             const salutations = await Salutation.findAndCountAll({
                 where: {
                     name: {
-                        [Op.iLike]: `%${searchTerm.trim()}%`,
+                        [Op.like]: `%${searchTerm.trim()}%`,
                     },
                 },
                 limit: parseInt(limit),
@@ -319,42 +318,6 @@ class SalutationService {
             };
         } catch (error) {
             throw new Error(`Failed to retrieve salutations: ${error.message}`);
-        }
-    }
-
-    /**
-     * Bulk create salutations (useful for initial setup)
-     * @param {Array} salutationList - Array of salutation objects
-     * @returns {Promise<Object>} Created salutations
-     */
-    async bulkCreate(salutationList) {
-        try {
-            if (!Array.isArray(salutationList) || salutationList.length === 0) {
-                throw new Error("Salutation list must be a non-empty array");
-            }
-
-            // Validate and clean data
-            const cleanedData = salutationList.map((item) => {
-                if (!item.name) {
-                    throw new Error("All salutations must have a name");
-                }
-                return { name: item.name.trim() };
-            });
-
-            const salutations = await Salutation.bulkCreate(cleanedData, {
-                ignoreDuplicates: true,
-                returning: true,
-            });
-
-            return {
-                success: true,
-                data: salutations,
-                message: `${salutations.length} salutations created successfully`,
-            };
-        } catch (error) {
-            throw new Error(
-                `Failed to bulk create salutations: ${error.message}`
-            );
         }
     }
 }

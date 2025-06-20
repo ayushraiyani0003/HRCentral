@@ -13,6 +13,8 @@ const EmployeeTypeRoutes = require("./EmployeeType.routes");
 const AssetTypeRoutes = require("./assetType.routes");
 const BankListRoutes = require("./bankList.routes");
 const LanguageRoutes = require("./language.routes");
+const LoanTypeRoutes = require("./loanType.routes");
+const SalutationRoutes = require("./salutation.routes");
 
 // Uncomment when ready to use
 // const salaryRoutes = require('./salary.routes');
@@ -29,6 +31,9 @@ router.use("/employee-type", EmployeeTypeRoutes);
 router.use("/asset-type", AssetTypeRoutes);
 router.use("/bank-list", BankListRoutes);
 router.use("/language", LanguageRoutes);
+router.use("/loan-type", LoanTypeRoutes);
+router.use("/salutation", SalutationRoutes);
+
 // Uncomment when ready to use
 // router.use('/salary', salaryRoutes);
 // router.use('/employee', employeeRoutes);
@@ -49,6 +54,9 @@ router.get("/", (req, res) => {
             assetType: "/api/asset-type",
             bankList: "/api/bank-list",
             language: "/api/language",
+            loanType: "/api/loan-type",
+            salutation: "/api/salutation",
+
             // Uncomment when ready to use
             // salary: '/api/salary',
             // employee: '/api/employee',tu
