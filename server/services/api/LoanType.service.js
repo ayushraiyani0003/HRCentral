@@ -52,11 +52,22 @@ class LoanTypeService {
                 orderDirection = "DESC",
             } = options;
 
+            // debug only
+            // console.log(limit);
+            // console.log(offset);
+            // console.log(orderBy);
+            // console.log(orderDirection);
+
             const loanTypes = await LoanType.findAndCountAll({
                 limit: parseInt(limit),
                 offset: parseInt(offset),
                 order: [[orderBy, orderDirection]],
             });
+
+            // debug only
+            // console.log(loanTypes);
+            // console.log(loanTypes.count);
+            // console.log(loanTypes.rows);
 
             return {
                 success: true,
@@ -253,7 +264,7 @@ class LoanTypeService {
 
             if (searchTerm) {
                 whereClause.name = {
-                    [require("sequelize").Op.iLike]: `%${searchTerm.trim()}%`,
+                    [require("sequelize").Op.like]: `%${searchTerm.trim()}%`,
                 };
             }
 
