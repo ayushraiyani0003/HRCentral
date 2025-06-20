@@ -1,4 +1,4 @@
-const { LoanType } = require("../models"); // Adjust path as needed
+const { LoanType } = require("../../models"); // Adjust path as needed
 
 class LoanTypeService {
     /**
@@ -281,4 +281,4 @@ class LoanTypeService {
     }
 }
 
-module.exports = LoanTypeService();
+module.exports = new LoanTypeService();

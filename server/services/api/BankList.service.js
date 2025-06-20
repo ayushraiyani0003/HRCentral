@@ -1,5 +1,5 @@
-const { BankList } = require("../models"); // Adjust path as needed
-const { Op } = require("sequelize");
+const { BankList } = require("../../models"); // Adjust path as needed
+const { Op, fn, col, where } = require("sequelize");
 
 class BankListService {
     /**
@@ -22,12 +22,12 @@ class BankListService {
             }
 
             // Check if bank name already exists (case-insensitive)
+
             const existingBank = await BankList.findOne({
-                where: {
-                    name: {
-                        [Op.iLike]: name.trim(),
-                    },
-                },
+                where: where(
+                    fn("LOWER", col("name")),
+                    name.trim().toLowerCase()
+                ),
             });
 
             if (existingBank) {
@@ -186,7 +186,7 @@ class BankListService {
             const existingBank = await BankList.findOne({
                 where: {
                     name: {
-                        [Op.iLike]: name.trim(),
+                        [Op.like]: name.trim(),
                     },
                     id: { [Op.ne]: id },
                 },
@@ -268,7 +268,7 @@ class BankListService {
             const bank = await BankList.findOne({
                 where: {
                     name: {
-                        [Op.iLike]: name.trim(),
+                        [Op.like]: name.trim(),
                     },
                 },
             });
@@ -301,7 +301,7 @@ class BankListService {
             const bank = await BankList.findOne({
                 where: {
                     name: {
-                        [Op.iLike]: name.trim(),
+                        [Op.like]: name.trim(),
                     },
                 },
             });
@@ -359,9 +359,10 @@ class BankListService {
             const banks = await BankList.findAndCountAll({
                 where: {
                     name: {
-                        [Op.iLike]: `%${searchTerm.trim()}%`,
+                        [Op.like]: `%${searchTerm.trim()}%`,
                     },
                 },
+                collate: "utf8_general_ci", // Case-insensitive collation
                 limit: parsedLimit,
                 offset: parsedOffset,
                 order: [["name", "ASC"]],
@@ -484,4 +485,4 @@ class BankListService {
     }
 }
 
-module.exports = BankListService();
+module.exports = new BankListService();

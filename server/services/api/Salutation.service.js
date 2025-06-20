@@ -1,4 +1,4 @@
-const { Salutation } = require("../models"); // Adjust path as needed
+const { Salutation } = require("../../models"); // Adjust path as needed
 
 class SalutationService {
     /**
@@ -359,4 +359,4 @@ class SalutationService {
     }
 }
 
-module.exports = SalutationService();
+module.exports = new SalutationService();

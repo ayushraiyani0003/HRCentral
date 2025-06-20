@@ -1,4 +1,5 @@
-const { Language } = require("../models"); // Adjust path as needed
+const { Language } = require("../../models"); // Adjust path as needed
+const { Op } = require("sequelize");
 
 class LanguageService {
     /**
@@ -233,12 +234,10 @@ class LanguageService {
 
             const { limit = 10, offset = 0 } = options;
 
-            const { Op } = require("sequelize");
-
             const languages = await Language.findAndCountAll({
                 where: {
                     name: {
-                        [Op.iLike]: `%${searchTerm.trim()}%`,
+                        [Op.like]: `%${searchTerm.trim()}%`,
                     },
                 },
                 limit: parseInt(limit),
@@ -263,4 +262,4 @@ class LanguageService {
     }
 }
 
-module.exports = LanguageService();
+module.exports = new LanguageService();
