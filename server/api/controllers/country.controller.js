@@ -3,7 +3,7 @@
  * @version 1.0.0
  */
 
-const CountryService = require("../../services/api/country.service");
+const CountryService = require("../../services/api/Country.service");
 
 /**
  * Country Controller

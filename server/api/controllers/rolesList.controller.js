@@ -4,7 +4,7 @@
  * @version 1.0.0
  */
 
-const RolesListService = require("../../services/api/roleList.service"); // Adjust path as needed
+const RolesListService = require("../../services/api/RoleList.service"); // Adjust path as needed
 
 /**
  * @typedef {Object} ApiResponse

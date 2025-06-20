@@ -3,8 +3,8 @@
  * @version 1.0.0
  */
 
-const CompanyStructureService = require("../../services/api/companyStructure.service");
-const CountryService = require("../../services/api/country.service");
+const CompanyStructureService = require("../../services/api/CompanyStructure.service");
+const CountryService = require("../../services/api/Country.service");
 
 class CompanyStructureController {
     constructor() {

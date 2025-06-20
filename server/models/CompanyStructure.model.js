@@ -31,10 +31,11 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.ENUM(
                     "company",
                     "head office",
-                    "regional office",
+                    "branch",
                     "department",
                     "unit",
                     "subUnit",
+                    "division",
                     "other"
                 ),
                 allowNull: false,
