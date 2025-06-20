@@ -1,4 +1,4 @@
-const { AssetType } = require("../models"); // Adjust path as needed
+const { AssetType } = require("../../models"); // Adjust path as needed
 
 class AssetTypeService {
     /**
@@ -51,6 +51,11 @@ class AssetTypeService {
                 orderBy = "createdAt", // Fixed: use camelCase for timestamps
                 orderDirection = "DESC",
             } = options;
+            console.log("AssetType model:", AssetType);
+            console.log(limit);
+            console.log(offset);
+            console.log(orderBy);
+            console.log(orderDirection);
 
             const assetTypes = await AssetType.findAndCountAll({
                 limit: parseInt(limit),
@@ -233,4 +238,4 @@ class AssetTypeService {
     }
 }
 
-module.exports = AssetTypeService();
+module.exports = new AssetTypeService();
