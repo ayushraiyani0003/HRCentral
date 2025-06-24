@@ -14,6 +14,7 @@ import CompanyStructurePage from "./features/companyStructure/pages/CompanyStruc
 import HiringRequestsPage from "./features/HiringRequests/pages/HiringRequestsPage";
 import RecruitmentSetupPage from "./features/RecruitmentSetup/pages/RecruitmentSetupPage";
 import ApplicantTrackingPage from "./features/ApplicantTracking/pages/ApplicantTrackingPage";
+import SetupPage from "./features/Setup/pages/SetupPage";
 
 export {
     LoginPage,
@@ -35,4 +36,5 @@ export {
     HiringRequestsPage,
     RecruitmentSetupPage,
     ApplicantTrackingPage,
+    SetupPage,
 };
