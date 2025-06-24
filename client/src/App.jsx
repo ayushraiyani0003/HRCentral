@@ -28,6 +28,7 @@ import {
     HiringRequestsPage,
     RecruitmentSetupPage,
     ApplicantTrackingPage,
+    SetupPage,
 } from "./index";
 
 // Route components mapping
@@ -47,6 +48,7 @@ const routeComponents = {
     "/employees/checklist": CheckListPage,
     "/missing": () => <div className="p-4">Settings Content</div>,
     "/email": EmailPage,
+    "/setup": SetupPage,
 };
 
 // Helper function to extract all valid paths from menu items
@@ -146,6 +148,12 @@ function App() {
                                 title: "Company Structure",
                                 icon: DashboardIcon,
                                 path: "/company-structure",
+                            },
+                            {
+                                id: "2_2",
+                                title: "setup",
+                                icon: DashboardIcon,
+                                path: "/setup",
                             },
                         ],
                     },
