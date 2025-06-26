@@ -4,8 +4,8 @@ module.exports = (sequelize, DataTypes) => {
         "JobLocation",
         {
             id: {
-                type: DataTypes.INTEGER,
-                autoIncrement: true,
+                type: DataTypes.UUID,
+                defaultValue: DataTypes.UUIDV4,
                 primaryKey: true,
                 allowNull: false,
             },
@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
             },
         },
         {
-            tableName: "JobLocations",
+            tableName: "JobLocation",
             timestamps: true,
             underscored: true,
             indexes: [

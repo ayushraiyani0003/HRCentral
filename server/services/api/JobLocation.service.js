@@ -1,5 +1,5 @@
 // =================== services/JobLocation.service.js ===================
-const { JobLocation } = require("../models");
+const { JobLocation } = require("../../models");
 const { Op } = require("sequelize");
 
 class JobLocationService {
