@@ -2,22 +2,47 @@ const express = require("express");
 const router = express.Router();
 const EducationLevelController = require("../controllers/EducationLevel.controller");
 
-// POST /api/education-level
+/**
+ * @route POST /api/education-level
+ * @desc Create a new education level
+ * @access Public
+ */
 router.post("/", EducationLevelController.create);
 
-// GET /api/education-level
+/**
+ * @route GET /api/education-level
+ * @desc Get all education levels (supports pagination)
+ * @access Public
+ */
 router.get("/", EducationLevelController.getAll);
 
-// GET /api/education-level/search?q=term
+/**
+ * @route GET /api/education-level/search
+ * @desc Search education levels by query
+ * @queryParam {string} q - Search term
+ * @access Public
+ */
 router.get("/search", EducationLevelController.search);
 
-// GET /api/education-level/:id
+/**
+ * @route GET /api/education-level/:id
+ * @desc Get a single education level by ID
+ * @access Public
+ */
 router.get("/:id", EducationLevelController.getById);
 
-// PUT /api/education-level/:id
+/**
+ * @route PUT /api/education-level/:id
+ * @desc Update an existing education level
+ * @access Public
+ */
 router.put("/:id", EducationLevelController.update);
 
-// DELETE /api/education-level/:id
+/**
+ * @route DELETE /api/education-level/:id
+ * @desc Delete an education level by ID
+ * @access Public
+ */
 router.delete("/:id", EducationLevelController.delete);
 
 module.exports = router;
