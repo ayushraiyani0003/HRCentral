@@ -8,7 +8,7 @@ class WorkShiftService {
      * @param {Object} workShiftData - Work shift data
      * @returns {Promise<Object>} Created work shift
      */
-    static async create(workShiftData) {
+    async create(workShiftData) {
         try {
             const workShift = await WorkShift.create(workShiftData);
             return {
@@ -30,7 +30,7 @@ class WorkShiftService {
      * @param {Object} options - Query options (limit, offset, search)
      * @returns {Promise<Object>} List of work shifts
      */
-    static async getAll(options = {}) {
+    async getAll(options = {}) {
         try {
             const { limit = 10, offset = 0, search = "" } = options;
 
@@ -74,7 +74,7 @@ class WorkShiftService {
      * @param {number} id - Work shift ID
      * @returns {Promise<Object>} Work shift data
      */
-    static async getById(id) {
+    async getById(id) {
         try {
             const workShift = await WorkShift.findByPk(id);
 
@@ -105,7 +105,7 @@ class WorkShiftService {
      * @param {Object} updateData - Data to update
      * @returns {Promise<Object>} Updated work shift
      */
-    static async update(id, updateData) {
+    async update(id, updateData) {
         try {
             const workShift = await WorkShift.findByPk(id);
 
@@ -137,7 +137,7 @@ class WorkShiftService {
      * @param {number} id - Work shift ID
      * @returns {Promise<Object>} Deletion result
      */
-    static async delete(id) {
+    async delete(id) {
         try {
             const workShift = await WorkShift.findByPk(id);
 
@@ -170,7 +170,7 @@ class WorkShiftService {
      * @param {number} excludeId - ID to exclude from check (for updates)
      * @returns {Promise<Object>} Overlap check result
      */
-    static async checkOverlap(startTime, endTime, excludeId = null) {
+    async checkOverlap(startTime, endTime, excludeId = null) {
         try {
             const whereClause = {
                 [Op.or]: [
