@@ -222,6 +222,7 @@ function EmailMainSection({
         if (activeMenu === "draft") {
             setShowComposeModal(true);
             setSelectedDraftEmail(email);
+            // debug only
             console.log(email);
 
             return;
@@ -253,7 +254,7 @@ function EmailMainSection({
             await new Promise((resolve) => setTimeout(resolve, 1500));
 
             // In real implementation, you would fetch fresh data from your API
-            console.log("Emails refreshed for view:", activeMenu);
+            console.log("Emails refreshed for view:", activeMenu); // debug only
         } catch (error) {
             console.error("Error refreshing emails:", error);
         } finally {
@@ -266,11 +267,11 @@ function EmailMainSection({
         switch (action) {
             case "reply":
                 // Handle reply logic
-                console.log("Reply to:", email);
+                console.log("Reply to:", email); // debug only
                 break;
             case "forward":
                 // Handle forward logic
-                console.log("Forward:", email);
+                console.log("Forward:", email); // debug only
                 break;
             case "delete":
                 handleDeleteEmail(email.id);
@@ -282,7 +283,7 @@ function EmailMainSection({
                 handleMarkUnread(email.id);
                 break;
             default:
-                console.log("Unknown action:", action);
+                console.log("Unknown action:", action); // debug only
         }
     };
 

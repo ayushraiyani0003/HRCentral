@@ -239,6 +239,7 @@ function InterviewDetailsModelContent({ isViewMode }) {
 
     // Handler functions
     const handleAdd = (type) => {
+        // Debug only
         console.log(`Add ${type}`);
         // Add your logic to add new items
     };

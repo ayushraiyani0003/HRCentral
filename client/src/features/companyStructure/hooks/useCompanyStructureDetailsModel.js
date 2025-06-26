@@ -252,6 +252,7 @@ const useCompanyStructureDetailsModel = ({
             dispatch(fetchCountries({ limit: 1000, page: 1 }))
                 .unwrap()
                 .then(() => {
+                    // debug only
                     console.log("Countries fetched successfully");
                 })
                 .catch((error) => {
@@ -266,6 +267,7 @@ const useCompanyStructureDetailsModel = ({
             dispatch(fetchAllCompanyStructures({ page: 1, pageSize: 1000 }))
                 .unwrap()
                 .then(() => {
+                    // debug only
                     console.log("Company structures fetched successfully");
                 })
                 .catch((error) => {
@@ -286,6 +288,7 @@ const useCompanyStructureDetailsModel = ({
     const initializeFormData = useCallback(() => {
         if (!companyStructure || isInitialized) return;
 
+        // debug only
         console.log("Initializing form data:", {
             companyStructure,
             countries: countries.length,
@@ -312,6 +315,7 @@ const useCompanyStructureDetailsModel = ({
             head_id: companyStructure.head || "",
         };
 
+        // debug only
         console.log("Setting form data:", newFormData);
 
         setFormData(newFormData);
@@ -329,6 +333,7 @@ const useCompanyStructureDetailsModel = ({
 
     // Reset form data for add mode
     const resetFormData = useCallback(() => {
+        // debug only
         console.log("Resetting form data");
         setFormData({
             name: "",
@@ -345,6 +350,7 @@ const useCompanyStructureDetailsModel = ({
 
     // Main initialization effect
     useEffect(() => {
+        // debug only
         console.log("Initialization effect:", {
             modelType,
             hasCompanyStructure: !!companyStructure,
@@ -375,6 +381,7 @@ const useCompanyStructureDetailsModel = ({
     // Handle input changes - FIXED VERSION
     const handleInputChange = useCallback(
         (field, value) => {
+            // debug only
             console.log(`Updating ${field} with value:`, value);
 
             setFormData((prev) => {
@@ -382,6 +389,8 @@ const useCompanyStructureDetailsModel = ({
                     ...prev,
                     [field]: value,
                 };
+
+                // debug only
                 console.log("New form data:", newData);
                 return newData;
             });
@@ -472,12 +481,14 @@ const useCompanyStructureDetailsModel = ({
                 head_id: formData.head_id || null,
             };
 
+            // debug only
             console.log("Submitting data:", submitData);
             console.log("Model type:", modelType);
             console.log("Company structure ID:", companyStructure?.id);
 
             let result;
             if (modelType === "edit" && companyStructure?.id) {
+                // debug only
                 console.log("Updating company structure");
                 result = await dispatch(
                     updateCompanyStructure({
@@ -487,6 +498,7 @@ const useCompanyStructureDetailsModel = ({
                 ).unwrap();
                 displaySuccessToast("Company structure updated successfully!");
             } else {
+                // debug only
                 console.log("Creating new company structure");
                 result = await dispatch(
                     createCompanyStructure(submitData)
@@ -494,6 +506,7 @@ const useCompanyStructureDetailsModel = ({
                 displaySuccessToast("Company structure created successfully!");
             }
 
+            // debug only
             console.log("Operation result:", result);
 
             // Refresh the company structures list

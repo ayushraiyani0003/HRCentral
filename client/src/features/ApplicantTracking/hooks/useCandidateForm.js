@@ -166,6 +166,7 @@ const useCandidateForm = ({
     };
 
     const handleStepClick = (stepIndex, step, status) => {
+        // debug only
         console.log("Step clicked:", stepIndex, step, status);
         if (status !== "disabled") {
             setCurrentStep(stepIndex);
@@ -173,11 +174,13 @@ const useCandidateForm = ({
     };
 
     const handleStepChange = (stepIndex, step) => {
+        // debug only
         console.log("Step changed to:", stepIndex, step);
     };
 
     // Complete all steps
     const handleCompleteAll = () => {
+        // debug only
         console.log("All phases completed", formData);
         alert("Candidate information completed successfully!");
         handleSubmit();
@@ -187,6 +190,7 @@ const useCandidateForm = ({
     const handleSubmit = async () => {
         setIsLoading(true);
         try {
+            // Debug only
             console.log("Submitting form data:", formData);
             console.log("Modal type:", modalType);
 

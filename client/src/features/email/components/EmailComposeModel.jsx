@@ -128,6 +128,7 @@ function EmailComposeModel({
             ...(editData && { id: editData.id, isDraft: editData.isDraft }),
         };
 
+        // debug only
         console.log("Email data being sent to server:", emailData);
 
         // Call the original submit handler with enhanced data

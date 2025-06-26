@@ -79,6 +79,7 @@ const useAllCandidatesTab = ({
 
     // Action handlers
     const handleAddNew = useCallback(() => {
+        // Debug only
         console.log("Add new candidate");
         setOpenCandidateModal(true);
         setModelType("add");
@@ -86,6 +87,7 @@ const useAllCandidatesTab = ({
 
     const handleView = useCallback(
         (row) => {
+            // Debug only
             console.log("View candidate:", row);
             setOpenCandidateModal(true);
             setModelType("view");
@@ -96,6 +98,7 @@ const useAllCandidatesTab = ({
 
     const handleEdit = useCallback(
         (row) => {
+            // Debug only
             console.log("Edit candidate:", row);
             setOpenCandidateModal(true);
             setModelType("edit");
@@ -106,6 +109,7 @@ const useAllCandidatesTab = ({
 
     const handleDelete = useCallback(
         (row) => {
+            // Debug only
             console.log("Delete candidate:", row);
             setCandidate(row);
             setOpenDeleteModel(true);

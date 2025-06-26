@@ -30,6 +30,7 @@ const useCompanyStructureTab = ({
     setOpenStructureModel = () => {},
     setModelType = () => {},
 }) => {
+    // Debug only
     console.log(setOpenDeleteModel);
 
     const dispatch = useDispatch();
@@ -376,6 +377,7 @@ const useCompanyStructureTab = ({
 
     const handleMoreInfo = useCallback(() => {
         // TODO: put external site link here for documentation
+        // debug only
         console.log("More info clicked");
     }, []);
 

@@ -186,6 +186,7 @@ function EduExpStepModelContent({ formData, handleInputChange, isViewMode }) {
 
     // Handler functions
     const handleAdd = (type) => {
+        // Debug only
         console.log(`Add ${type}`);
         // Add your logic to add new items
         // TODO: open the model for the seperate form
@@ -202,6 +203,7 @@ function EduExpStepModelContent({ formData, handleInputChange, isViewMode }) {
     };
 
     const handleReset = (type) => {
+        // Debug only
         console.log(`Reset ${type}`);
         // Add your logic to reset the table data
         if (type === "work") {
@@ -214,6 +216,7 @@ function EduExpStepModelContent({ formData, handleInputChange, isViewMode }) {
     };
 
     const handleEdit = (type, record) => {
+        // Debug only
         console.log(`Edit ${type}:`, record);
         // Add your logic to edit items
 
@@ -231,6 +234,7 @@ function EduExpStepModelContent({ formData, handleInputChange, isViewMode }) {
     };
 
     const handleDelete = (type, key) => {
+        // Debug only
         console.log(`Delete ${type} with key:`, key);
         // Add your logic to delete items
         if (type === "work") {

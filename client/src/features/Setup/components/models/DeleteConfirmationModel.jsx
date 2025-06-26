@@ -15,7 +15,7 @@ function DeleteConfirmationModal({
     setupType,
 }) {
     // Debug only
-    console.log(rowData);
+    // console.log(rowData);
 
     const { handleDeleteCountry } = useCountryTab(setOpenDeleteModel);
     const { handleDeleteBank } = useBankListTab(setOpenDeleteModel);
