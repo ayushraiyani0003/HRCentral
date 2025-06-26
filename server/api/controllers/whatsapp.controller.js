@@ -1,16 +1,33 @@
-// controllers/whatsapp.controller.js
+/**
+ * @fileoverview WhatsApp Controller - Handles WhatsApp integration endpoints including
+ * QR code generation, connection management, PDF sending, and real-time status updates via SSE.
+ * @author Your Name
+ * @version 1.0.0
+ */
+
 const whatsappService = require("../../services/whatsapp.service");
 
-// Helper function for delay
+/**
+ * Helper function to create a delay using Promise
+ * @param {number} ms - Milliseconds to delay
+ * @returns {Promise<void>} Promise that resolves after the specified delay
+ */
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Track active SSE clients for each feature
+/**
+ * Track active Server-Sent Events (SSE) clients for each feature
+ * @type {Object.<string, Set<Response>>}
+ */
 const sseClients = {
     status: new Set(),
     progress: new Set(),
 };
 
-// Helper function to send SSE update to all clients for a specific feature
+/**
+ * Helper function to send SSE update to all clients for a specific feature
+ * @param {string} feature - The feature name ('status' or 'progress')
+ * @param {Object} data - Data to send to clients
+ */
 const notifyClients = (feature, data) => {
     if (sseClients[feature] && sseClients[feature].size > 0) {
         const eventData = JSON.stringify(data);
@@ -20,7 +37,18 @@ const notifyClients = (feature, data) => {
     }
 };
 
-// Generate QR code for WhatsApp authentication
+/**
+ * Generate QR code for WhatsApp authentication
+ * Handles session cleanup, QR generation, and polling for QR availability
+ * @async
+ * @function generateQRCode
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @returns {Promise<Response>} JSON response with QR code or error
+ * @example
+ * // GET /api/whatsapp/qr
+ * // Response: { success: true, qrCode: "data:image/png;base64...", timestamp: "2024-01-01T00:00:00.000Z" }
+ */
 const generateQRCode = async (req, res) => {
     try {
         // Step 1: Check if session exists and disconnect it
@@ -90,7 +118,17 @@ const generateQRCode = async (req, res) => {
     }
 };
 
-// Get current WhatsApp connection status (Regular REST endpoint)
+/**
+ * Get current WhatsApp connection status (Regular REST endpoint)
+ * @async
+ * @function getStatus
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @returns {Promise<Response>} JSON response with connection status
+ * @example
+ * // GET /api/whatsapp/status
+ * // Response: { success: true, status: "connected", clientInfo: {...} }
+ */
 const getStatus = async (req, res) => {
     try {
         const status = await whatsappService.getConnectionStatus();
@@ -116,9 +154,17 @@ const getStatus = async (req, res) => {
     }
 };
 
-// SSE endpoint for real-time status updates is now defined as createStatusStream
-
-// Disconnect WhatsApp session
+/**
+ * Disconnect WhatsApp session
+ * @async
+ * @function disconnectSession
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @returns {Promise<Response>} JSON response confirming disconnection
+ * @example
+ * // POST /api/whatsapp/disconnect
+ * // Response: { success: true, message: "Successfully disconnected" }
+ */
 const disconnectSession = async (req, res) => {
     try {
         const result = await whatsappService.disconnect();
@@ -149,7 +195,21 @@ const disconnectSession = async (req, res) => {
     }
 };
 
-// Start sending PDFs
+/**
+ * Start sending PDFs to contacts
+ * @async
+ * @function startSendingPDFs
+ * @param {Request} req - Express request object
+ * @param {Object} req.body - Request body
+ * @param {Object} req.body.settings - Sending settings (delays, message templates, etc.)
+ * @param {Array<Object>} req.body.contacts - Array of contact objects to send PDFs to
+ * @param {Response} res - Express response object
+ * @returns {Promise<Response>} JSON response with sending status and initial progress
+ * @example
+ * // POST /api/whatsapp/start-sending
+ * // Body: { settings: {...}, contacts: [{name: "John", phone: "+1234567890", pdfPath: "..."}] }
+ * // Response: { success: true, message: "Started sending PDFs successfully", progress: {...} }
+ */
 const startSendingPDFs = async (req, res) => {
     try {
         const { settings, contacts } = req.body;
@@ -219,7 +279,17 @@ const startSendingPDFs = async (req, res) => {
     }
 };
 
-// Pause sending process
+/**
+ * Pause the sending process
+ * @async
+ * @function pauseSending
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @returns {Promise<Response>} JSON response confirming pause and current progress
+ * @example
+ * // POST /api/whatsapp/pause
+ * // Response: { success: true, message: "Sending paused successfully", progress: {...} }
+ */
 const pauseSending = async (req, res) => {
     try {
         const result = await whatsappService.pauseSending();
@@ -257,7 +327,17 @@ const pauseSending = async (req, res) => {
     }
 };
 
-// Resume sending process
+/**
+ * Resume the sending process
+ * @async
+ * @function resumeSending
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @returns {Promise<Response>} JSON response confirming resume and current progress
+ * @example
+ * // POST /api/whatsapp/resume
+ * // Response: { success: true, message: "Sending resumed successfully", progress: {...} }
+ */
 const resumeSending = async (req, res) => {
     try {
         const result = await whatsappService.resumeSending();
@@ -295,7 +375,17 @@ const resumeSending = async (req, res) => {
     }
 };
 
-// Retry failed sends
+/**
+ * Retry failed message sends
+ * @async
+ * @function retryFailed
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @returns {Promise<Response>} JSON response confirming retry and current progress
+ * @example
+ * // POST /api/whatsapp/retry-failed
+ * // Response: { success: true, message: "Retrying failed sends", progress: {...} }
+ */
 const retryFailed = async (req, res) => {
     try {
         const result = await whatsappService.retryFailed();
@@ -329,7 +419,17 @@ const retryFailed = async (req, res) => {
     }
 };
 
-// Get progress of sending process (Regular REST endpoint)
+/**
+ * Get progress of sending process (Regular REST endpoint)
+ * @async
+ * @function getProgress
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @returns {Promise<Response>} JSON response with current progress information
+ * @example
+ * // GET /api/whatsapp/progress
+ * // Response: { success: true, progress: { total: 100, sent: 50, failed: 2, pending: 48, status: "sending" } }
+ */
 const getProgress = async (req, res) => {
     try {
         const progress = await whatsappService.getProgress();
@@ -355,14 +455,18 @@ const getProgress = async (req, res) => {
     }
 };
 
-// SSE endpoint for real-time progress updates is now defined as createProgressStream
-
-// Setup periodic checks for progress and status changes
-// This is optional - you may instead want to trigger updates only when actions occur
+/**
+ * Interval IDs for periodic monitoring
+ * @type {NodeJS.Timeout|null}
+ */
 let statusMonitorInterval = null;
 let progressMonitorInterval = null;
 
-// Function to start monitors if not already running
+/**
+ * Function to start monitors if not already running
+ * Sets up periodic checks for progress and status changes to notify SSE clients
+ * @function ensureMonitorsRunning
+ */
 const ensureMonitorsRunning = () => {
     // Start status monitor if it's not running and we have clients
     if (!statusMonitorInterval && sseClients.status.size > 0) {
@@ -421,7 +525,17 @@ const ensureMonitorsRunning = () => {
     }
 };
 
-// Create stream handlers that include monitor initialization
+/**
+ * Create Server-Sent Events stream for real-time status updates
+ * @async
+ * @function createStatusStream
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object (configured for SSE)
+ * @returns {Promise<void>} Sets up SSE stream for status updates
+ * @example
+ * // GET /api/whatsapp/status/stream
+ * // Returns: Server-Sent Events stream with periodic status updates
+ */
 const createStatusStream = async (req, res) => {
     // Set headers for SSE
     res.writeHead(200, {
@@ -471,6 +585,17 @@ const createStatusStream = async (req, res) => {
     ensureMonitorsRunning();
 };
 
+/**
+ * Create Server-Sent Events stream for real-time progress updates
+ * @async
+ * @function createProgressStream
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object (configured for SSE)
+ * @returns {Promise<void>} Sets up SSE stream for progress updates
+ * @example
+ * // GET /api/whatsapp/progress/stream
+ * // Returns: Server-Sent Events stream with periodic progress updates
+ */
 const createProgressStream = async (req, res) => {
     // Set headers for SSE
     res.writeHead(200, {
@@ -531,14 +656,31 @@ const createProgressStream = async (req, res) => {
     ensureMonitorsRunning();
 };
 
-// Expose a function to notify about progress changes from the service
+/**
+ * Notify SSE clients about progress changes from the service layer
+ * This function is called by the WhatsApp service to push updates to connected clients
+ * @function updateProgressFromService
+ * @param {Object} progress - Progress data to broadcast
+ * @param {number} progress.total - Total number of contacts
+ * @param {number} progress.sent - Number of successfully sent messages
+ * @param {number} progress.failed - Number of failed messages
+ * @param {number} progress.pending - Number of pending messages
+ * @param {string} progress.status - Current sending status
+ */
 const updateProgressFromService = (progress) => {
     if (progress && sseClients.progress.size > 0) {
         notifyClients("progress", { success: true, progress });
     }
 };
 
-// Expose a function to notify about status changes from the service
+/**
+ * Notify SSE clients about status changes from the service layer
+ * This function is called by the WhatsApp service to push updates to connected clients
+ * @function updateStatusFromService
+ * @param {Object} status - Status data to broadcast
+ * @param {string} status.status - Connection status (connected, disconnected, connecting, etc.)
+ * @param {Object} [status.clientInfo] - WhatsApp client information
+ */
 const updateStatusFromService = (status) => {
     if (status && sseClients.status.size > 0) {
         notifyClients("status", { success: true, ...status });

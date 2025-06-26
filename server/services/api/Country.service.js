@@ -27,6 +27,8 @@ class CountryService {
      * });
      */
     static async create(countryData) {
+        console.log(countryData);
+
         try {
             const country = await Country.create(countryData);
             return country.toJSON();

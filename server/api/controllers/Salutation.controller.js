@@ -1,20 +1,34 @@
 /**
  * @fileoverview Salutation Controller
+ * Handles all HTTP requests related to salutation management including CRUD operations,
+ * search functionality, bulk operations, and validation.
  * @version 1.0.0
+ * @author HR Central Team
  */
 
 const SalutationService = require("../../services/api/Salutation.service"); // Adjust path as needed
 
+/**
+ * Salutation Controller Class
+ * Provides REST API endpoints for managing salutations with comprehensive validation,
+ * error handling, and business logic implementation.
+ */
 class SalutationController {
     /**
      * Create a new salutation
      * @route POST /api/salutation
+     * @param {Object} req - Express request object
+     * @param {Object} req.body - Request body containing salutation data
+     * @param {string} req.body.name - Name of the salutation (required, max 100 chars)
+     * @param {Object} res - Express response object
+     * @returns {Object} JSON response with created salutation or error
+     * @description Creates a new salutation after validating uniqueness and format
      */
     async createSalutation(req, res) {
         try {
             const { name } = req.body;
 
-            // Validate required fields
+            // Validate required fields - ensure name is provided
             if (!name) {
                 return res.status(400).json({
                     success: false,
@@ -22,7 +36,7 @@ class SalutationController {
                 });
             }
 
-            // Validate name length
+            // Validate name length - business rule: max 100 characters
             if (name.length > 100) {
                 return res.status(400).json({
                     success: false,
@@ -30,7 +44,7 @@ class SalutationController {
                 });
             }
 
-            // Check if salutation already exists
+            // Check if salutation already exists - prevent duplicates
             const exists = await SalutationService.existsByName(name);
             if (exists) {
                 return res.status(409).json({
@@ -39,10 +53,12 @@ class SalutationController {
                 });
             }
 
+            // Create the salutation record
             const result = await SalutationService.create({ name });
 
             return res.status(201).json(result);
         } catch (error) {
+            // Handle unexpected errors
             return res.status(500).json({
                 success: false,
                 message: error.message,
@@ -53,6 +69,15 @@ class SalutationController {
     /**
      * Get all salutations with pagination and filtering
      * @route GET /api/salutation
+     * @param {Object} req - Express request object
+     * @param {Object} req.query - Query parameters
+     * @param {number} [req.query.limit=10] - Number of records to return (max 100)
+     * @param {number} [req.query.offset=0] - Number of records to skip
+     * @param {string} [req.query.orderBy=createdAt] - Field to order by
+     * @param {string} [req.query.orderDirection=DESC] - Sort direction (ASC/DESC)
+     * @param {Object} res - Express response object
+     * @returns {Object} JSON response with paginated salutations list
+     * @description Retrieves all salutations with pagination, sorting, and validation
      */
     async getAllSalutations(req, res) {
         try {
@@ -63,7 +88,7 @@ class SalutationController {
                 orderDirection = "DESC",
             } = req.query;
 
-            // Validate limit
+            // Validate limit - prevent excessive data retrieval
             const parsedLimit = parseInt(limit);
             if (parsedLimit > 100) {
                 return res.status(400).json({
@@ -72,7 +97,7 @@ class SalutationController {
                 });
             }
 
-            // Validate orderBy
+            // Validate orderBy - only allow specific fields for security
             const allowedOrderBy = ["id", "name", "createdAt", "updatedAt"];
             if (!allowedOrderBy.includes(orderBy)) {
                 return res.status(400).json({
@@ -81,7 +106,7 @@ class SalutationController {
                 });
             }
 
-            // Validate orderDirection
+            // Validate orderDirection - ensure proper SQL ordering
             if (!["ASC", "DESC"].includes(orderDirection.toUpperCase())) {
                 return res.status(400).json({
                     success: false,
@@ -89,6 +114,7 @@ class SalutationController {
                 });
             }
 
+            // Prepare options for service layer
             const options = {
                 limit: parsedLimit,
                 offset: parseInt(offset),
@@ -96,10 +122,12 @@ class SalutationController {
                 orderDirection: orderDirection.toUpperCase(),
             };
 
+            // Fetch data from service layer
             const result = await SalutationService.readAll(options);
 
             return res.status(200).json(result);
         } catch (error) {
+            // Handle service layer errors
             return res.status(500).json({
                 success: false,
                 message: error.message,
@@ -110,11 +138,20 @@ class SalutationController {
     /**
      * Search salutations by name
      * @route GET /api/salutation/search
+     * @param {Object} req - Express request object
+     * @param {Object} req.query - Query parameters
+     * @param {string} req.query.q - Search term (required)
+     * @param {number} [req.query.limit=10] - Number of results to return (max 100)
+     * @param {number} [req.query.offset=0] - Number of results to skip
+     * @param {Object} res - Express response object
+     * @returns {Object} JSON response with matching salutations
+     * @description Performs fuzzy search on salutation names with pagination
      */
     async searchSalutations(req, res) {
         try {
             const { q: searchTerm, limit = 10, offset = 0 } = req.query;
 
+            // Validate search term - required for search operation
             if (!searchTerm) {
                 return res.status(400).json({
                     success: false,
@@ -122,7 +159,7 @@ class SalutationController {
                 });
             }
 
-            // Validate limit
+            // Validate limit - prevent excessive results
             const parsedLimit = parseInt(limit);
             if (parsedLimit > 100) {
                 return res.status(400).json({
@@ -131,15 +168,18 @@ class SalutationController {
                 });
             }
 
+            // Prepare search options
             const options = {
                 limit: parsedLimit,
                 offset: parseInt(offset),
             };
 
+            // Perform search via service layer
             const result = await SalutationService.search(searchTerm, options);
 
             return res.status(200).json(result);
         } catch (error) {
+            // Handle search errors
             return res.status(500).json({
                 success: false,
                 message: error.message,
@@ -150,13 +190,19 @@ class SalutationController {
     /**
      * Get all salutations sorted by name
      * @route GET /api/salutation/sorted
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     * @returns {Object} JSON response with all salutations sorted alphabetically
+     * @description Returns all salutations sorted by name for dropdown/select lists
      */
     async getAllSalutationsSorted(req, res) {
         try {
+            // Get all salutations sorted by name
             const result = await SalutationService.getAllSorted();
 
             return res.status(200).json(result);
         } catch (error) {
+            // Handle service errors
             return res.status(500).json({
                 success: false,
                 message: error.message,
@@ -167,9 +213,14 @@ class SalutationController {
     /**
      * Get salutations count
      * @route GET /api/salutation/count
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     * @returns {Object} JSON response with total count of salutations
+     * @description Returns the total number of salutations in the system
      */
     async getSalutationsCount(req, res) {
         try {
+            // Use readAll with minimal limit to get total count from pagination
             const result = await SalutationService.readAll({
                 limit: 1,
                 offset: 0,
@@ -183,6 +234,7 @@ class SalutationController {
                 message: "Salutations count retrieved successfully",
             });
         } catch (error) {
+            // Handle count retrieval errors
             return res.status(500).json({
                 success: false,
                 message: error.message,
@@ -193,11 +245,18 @@ class SalutationController {
     /**
      * Bulk create salutations
      * @route POST /api/salutation/bulk
+     * @param {Object} req - Express request object
+     * @param {Array} req.body - Array of salutation objects to create
+     * @param {string} req.body[].name - Name of each salutation
+     * @param {Object} res - Express response object
+     * @returns {Object} JSON response with bulk operation results
+     * @description Creates multiple salutations in a single operation with detailed results
      */
     async bulkCreateSalutations(req, res) {
         try {
             const salutations = req.body;
 
+            // Validate input is an array with content
             if (!Array.isArray(salutations) || salutations.length === 0) {
                 return res.status(400).json({
                     success: false,
@@ -206,7 +265,7 @@ class SalutationController {
                 });
             }
 
-            // Validate each salutation
+            // Validate each salutation in the array
             for (const salutation of salutations) {
                 if (!salutation.name) {
                     return res.status(400).json({
@@ -223,10 +282,11 @@ class SalutationController {
                 }
             }
 
+            // Track results for each operation
             const results = [];
             const errors = [];
 
-            // Process each salutation individually
+            // Process each salutation individually to handle partial failures
             for (let i = 0; i < salutations.length; i++) {
                 const salutation = salutations[i];
                 try {
@@ -243,7 +303,7 @@ class SalutationController {
                         continue;
                     }
 
-                    // Create the salutation - only pass the name field
+                    // Create the salutation - only pass the name field for security
                     const result = await SalutationService.create({
                         name: salutation.name,
                     });
@@ -254,6 +314,7 @@ class SalutationController {
                         data: result,
                     });
                 } catch (error) {
+                    // Track individual creation errors
                     errors.push({
                         index: i,
                         name: salutation.name,
@@ -262,9 +323,9 @@ class SalutationController {
                 }
             }
 
-            // Return response based on results
+            // Return appropriate response based on results
             if (errors.length === 0) {
-                // All successful
+                // All operations successful
                 return res.status(201).json({
                     success: true,
                     message: `Successfully created ${results.length} salutations`,
@@ -273,7 +334,7 @@ class SalutationController {
                     failed: 0,
                 });
             } else if (results.length === 0) {
-                // All failed
+                // All operations failed
                 return res.status(400).json({
                     success: false,
                     message: "Failed to create any salutations",
@@ -282,7 +343,7 @@ class SalutationController {
                     failed: errors.length,
                 });
             } else {
-                // Partial success
+                // Partial success - some succeeded, some failed
                 return res.status(207).json({
                     success: true,
                     message: `Partially successful: ${results.length} created, ${errors.length} failed`,
@@ -293,6 +354,7 @@ class SalutationController {
                 });
             }
         } catch (error) {
+            // Handle unexpected bulk operation errors
             return res.status(500).json({
                 success: false,
                 message: error.message,
@@ -300,16 +362,23 @@ class SalutationController {
         }
     }
 
-    // : ::ffff:192.168.10.36 - - [20/Jun/2025:09:32:43 +0000] "POST /api/salutation/bulk HTTP/1.1" 400 81 "-" "PostmanRuntime/7.44.1" {"service":"hr-central"}
+    // Log entry for debugging: ::ffff:192.168.10.36 - - [20/Jun/2025:09:32:43 +0000] "POST /api/salutation/bulk HTTP/1.1" 400 81 "-" "PostmanRuntime/7.44.1" {"service":"hr-central"}
 
     /**
      * Check if salutation exists by name
      * @route GET /api/salutation/exists/name/:name
+     * @param {Object} req - Express request object
+     * @param {Object} req.params - Route parameters
+     * @param {string} req.params.name - Name to check for existence
+     * @param {Object} res - Express response object
+     * @returns {Object} JSON response indicating if salutation exists
+     * @description Utility endpoint to check name availability before creation
      */
     async checkSalutationExistsByName(req, res) {
         try {
             const { name } = req.params;
 
+            // Validate name parameter
             if (!name) {
                 return res.status(400).json({
                     success: false,
@@ -317,6 +386,7 @@ class SalutationController {
                 });
             }
 
+            // Check existence via service layer
             const exists = await SalutationService.existsByName(name);
 
             return res.status(200).json({
@@ -328,6 +398,7 @@ class SalutationController {
                 message: "Existence check completed successfully",
             });
         } catch (error) {
+            // Handle existence check errors
             return res.status(500).json({
                 success: false,
                 message: error.message,
@@ -338,11 +409,18 @@ class SalutationController {
     /**
      * Check if salutation exists by ID
      * @route GET /api/salutation/exists/id/:id
+     * @param {Object} req - Express request object
+     * @param {Object} req.params - Route parameters
+     * @param {string} req.params.id - UUID to check for existence
+     * @param {Object} res - Express response object
+     * @returns {Object} JSON response indicating if salutation exists
+     * @description Utility endpoint to validate salutation ID before operations
      */
     async checkSalutationExistsById(req, res) {
         try {
             const { id } = req.params;
 
+            // Validate ID parameter
             if (!id) {
                 return res.status(400).json({
                     success: false,
@@ -350,6 +428,7 @@ class SalutationController {
                 });
             }
 
+            // Check existence via service layer
             const exists = await SalutationService.existsById(id);
 
             return res.status(200).json({
@@ -361,6 +440,7 @@ class SalutationController {
                 message: "Existence check completed successfully",
             });
         } catch (error) {
+            // Handle ID existence check errors
             return res.status(500).json({
                 success: false,
                 message: error.message,
@@ -371,11 +451,18 @@ class SalutationController {
     /**
      * Get salutation by name
      * @route GET /api/salutation/name/:name
+     * @param {Object} req - Express request object
+     * @param {Object} req.params - Route parameters
+     * @param {string} req.params.name - Name of the salutation to retrieve
+     * @param {Object} res - Express response object
+     * @returns {Object} JSON response with salutation data or error
+     * @description Retrieves a specific salutation by its name
      */
     async getSalutationByName(req, res) {
         try {
             const { name } = req.params;
 
+            // Validate name parameter
             if (!name) {
                 return res.status(400).json({
                     success: false,
@@ -383,10 +470,12 @@ class SalutationController {
                 });
             }
 
+            // Retrieve salutation by name
             const result = await SalutationService.readByName(name);
 
             return res.status(200).json(result);
         } catch (error) {
+            // Handle specific error cases
             if (error.message.includes("not found")) {
                 return res.status(404).json({
                     success: false,
@@ -394,6 +483,7 @@ class SalutationController {
                 });
             }
 
+            // Handle other errors
             return res.status(500).json({
                 success: false,
                 message: error.message,
@@ -404,11 +494,18 @@ class SalutationController {
     /**
      * Get salutation by ID
      * @route GET /api/salutation/:id
+     * @param {Object} req - Express request object
+     * @param {Object} req.params - Route parameters
+     * @param {string} req.params.id - UUID of the salutation to retrieve
+     * @param {Object} res - Express response object
+     * @returns {Object} JSON response with salutation data or error
+     * @description Retrieves a specific salutation by its unique identifier
      */
     async getSalutationById(req, res) {
         try {
             const { id } = req.params;
 
+            // Validate ID parameter
             if (!id) {
                 return res.status(400).json({
                     success: false,
@@ -416,10 +513,12 @@ class SalutationController {
                 });
             }
 
+            // Retrieve salutation by ID
             const result = await SalutationService.readById(id);
 
             return res.status(200).json(result);
         } catch (error) {
+            // Handle UUID format errors
             if (error.message.includes("Invalid UUID")) {
                 return res.status(400).json({
                     success: false,
@@ -427,6 +526,7 @@ class SalutationController {
                 });
             }
 
+            // Handle not found errors
             if (error.message.includes("not found")) {
                 return res.status(404).json({
                     success: false,
@@ -434,6 +534,7 @@ class SalutationController {
                 });
             }
 
+            // Handle other errors
             return res.status(500).json({
                 success: false,
                 message: error.message,
@@ -444,12 +545,21 @@ class SalutationController {
     /**
      * Update salutation by ID
      * @route PUT /api/salutation/:id
+     * @param {Object} req - Express request object
+     * @param {Object} req.params - Route parameters
+     * @param {string} req.params.id - UUID of the salutation to update
+     * @param {Object} req.body - Request body containing update data
+     * @param {string} req.body.name - New name for the salutation
+     * @param {Object} res - Express response object
+     * @returns {Object} JSON response with updated salutation or error
+     * @description Updates an existing salutation with validation and conflict checking
      */
     async updateSalutation(req, res) {
         try {
             const { id } = req.params;
             const { name } = req.body;
 
+            // Validate ID parameter
             if (!id) {
                 return res.status(400).json({
                     success: false,
@@ -457,6 +567,7 @@ class SalutationController {
                 });
             }
 
+            // Validate name in request body
             if (!name) {
                 return res.status(400).json({
                     success: false,
@@ -477,7 +588,7 @@ class SalutationController {
                 name
             );
             if (existingSalutation) {
-                // Check if it's not the same record
+                // Verify it's not the same record being updated
                 try {
                     const currentSalutation = await SalutationService.readById(
                         id
@@ -497,10 +608,12 @@ class SalutationController {
                 }
             }
 
+            // Perform the update
             const result = await SalutationService.update(id, { name });
 
             return res.status(200).json(result);
         } catch (error) {
+            // Handle UUID format errors
             if (error.message.includes("Invalid UUID")) {
                 return res.status(400).json({
                     success: false,
@@ -508,6 +621,7 @@ class SalutationController {
                 });
             }
 
+            // Handle not found errors
             if (error.message.includes("not found")) {
                 return res.status(404).json({
                     success: false,
@@ -515,6 +629,7 @@ class SalutationController {
                 });
             }
 
+            // Handle other update errors
             return res.status(500).json({
                 success: false,
                 message: error.message,
@@ -525,11 +640,18 @@ class SalutationController {
     /**
      * Delete salutation by ID
      * @route DELETE /api/salutation/:id
+     * @param {Object} req - Express request object
+     * @param {Object} req.params - Route parameters
+     * @param {string} req.params.id - UUID of the salutation to delete
+     * @param {Object} res - Express response object
+     * @returns {Object} JSON response confirming deletion or error
+     * @description Permanently removes a salutation from the system
      */
     async deleteSalutation(req, res) {
         try {
             const { id } = req.params;
 
+            // Validate ID parameter
             if (!id) {
                 return res.status(400).json({
                     success: false,
@@ -537,10 +659,12 @@ class SalutationController {
                 });
             }
 
+            // Perform deletion via service layer
             const result = await SalutationService.delete(id);
 
             return res.status(200).json(result);
         } catch (error) {
+            // Handle UUID format errors
             if (error.message.includes("Invalid UUID")) {
                 return res.status(400).json({
                     success: false,
@@ -548,6 +672,7 @@ class SalutationController {
                 });
             }
 
+            // Handle not found errors
             if (error.message.includes("not found")) {
                 return res.status(404).json({
                     success: false,
@@ -555,6 +680,7 @@ class SalutationController {
                 });
             }
 
+            // Handle other deletion errors
             return res.status(500).json({
                 success: false,
                 message: error.message,
@@ -563,4 +689,5 @@ class SalutationController {
     }
 }
 
+// Export singleton instance of the controller
 module.exports = new SalutationController();
