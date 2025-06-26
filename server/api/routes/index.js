@@ -19,6 +19,7 @@ const DesignationRoutes = require("./designation.routes");
 const ExperienceLevelRoutes = require("./experienceLevel.routes");
 const SkillRoutes = require("./skill.routes");
 const EducationLevelRoutes = require("./educationLevel.routes");
+const HiringSourceRoutes = require("./hiringSource.routes");
 
 // Uncomment when ready to use
 // const salaryRoutes = require('./salary.routes');
@@ -41,6 +42,7 @@ router.use("/designation", DesignationRoutes);
 router.use("/experience-level", ExperienceLevelRoutes);
 router.use("/skill", SkillRoutes);
 router.use("/education-level", EducationLevelRoutes);
+router.use("/hiring-source", HiringSourceRoutes);
 
 // Uncomment when ready to use
 // router.use('/salary', salaryRoutes);
@@ -68,6 +70,7 @@ router.get("/", (req, res) => {
             experienceLevel: "/api/experience-level",
             skill: "/api/skill",
             educationLevel: "/api/education-level",
+            hiringSource: "/api/hiring-source",
 
             // Uncomment when ready to use
             // salary: '/api/salary',

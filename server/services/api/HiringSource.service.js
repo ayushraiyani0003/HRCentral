@@ -1,5 +1,5 @@
 // =================== services/HiringSource.service.js ===================
-const { HiringSource } = require("../models");
+const { HiringSource } = require("../../models");
 const { Op } = require("sequelize");
 
 class HiringSourceService {
