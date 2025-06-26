@@ -8,7 +8,7 @@ class JobLocationService {
      * @param {Object} jobLocationData - Job location data
      * @returns {Promise<Object>} Created job location
      */
-    static async create(jobLocationData) {
+    async create(jobLocationData) {
         try {
             const jobLocation = await JobLocation.create(jobLocationData);
             return {
@@ -30,7 +30,7 @@ class JobLocationService {
      * @param {Object} options - Query options (limit, offset, search)
      * @returns {Promise<Object>} List of job locations
      */
-    static async getAll(options = {}) {
+    async getAll(options = {}) {
         try {
             const { limit = 10, offset = 0, search = "" } = options;
 
@@ -74,7 +74,7 @@ class JobLocationService {
      * @param {number} id - Job location ID
      * @returns {Promise<Object>} Job location data
      */
-    static async getById(id) {
+    async getById(id) {
         try {
             const jobLocation = await JobLocation.findByPk(id);
 
@@ -105,7 +105,7 @@ class JobLocationService {
      * @param {Object} updateData - Data to update
      * @returns {Promise<Object>} Updated job location
      */
-    static async update(id, updateData) {
+    async update(id, updateData) {
         try {
             const jobLocation = await JobLocation.findByPk(id);
 
@@ -137,7 +137,7 @@ class JobLocationService {
      * @param {number} id - Job location ID
      * @returns {Promise<Object>} Deletion result
      */
-    static async delete(id) {
+    async delete(id) {
         try {
             const jobLocation = await JobLocation.findByPk(id);
 

@@ -8,7 +8,7 @@ class HiringSourceService {
      * @param {Object} hiringSourceData - Hiring source data
      * @returns {Promise<Object>} Created hiring source
      */
-    static async create(hiringSourceData) {
+    async create(hiringSourceData) {
         try {
             const hiringSource = await HiringSource.create(hiringSourceData);
             return {
@@ -30,7 +30,7 @@ class HiringSourceService {
      * @param {Object} options - Query options (limit, offset, search)
      * @returns {Promise<Object>} List of hiring sources
      */
-    static async getAll(options = {}) {
+    async getAll(options = {}) {
         try {
             const { limit = 10, offset = 0, search = "" } = options;
 
@@ -74,7 +74,7 @@ class HiringSourceService {
      * @param {number} id - Hiring source ID
      * @returns {Promise<Object>} Hiring source data
      */
-    static async getById(id) {
+    async getById(id) {
         try {
             const hiringSource = await HiringSource.findByPk(id);
 
@@ -105,7 +105,7 @@ class HiringSourceService {
      * @param {Object} updateData - Data to update
      * @returns {Promise<Object>} Updated hiring source
      */
-    static async update(id, updateData) {
+    async update(id, updateData) {
         try {
             const hiringSource = await HiringSource.findByPk(id);
 
@@ -137,7 +137,7 @@ class HiringSourceService {
      * @param {number} id - Hiring source ID
      * @returns {Promise<Object>} Deletion result
      */
-    static async delete(id) {
+    async delete(id) {
         try {
             const hiringSource = await HiringSource.findByPk(id);
 

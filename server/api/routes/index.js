@@ -9,13 +9,14 @@ const slipGenerateRoutes = require("./slipGenerate.routes");
 const rolesRoutes = require("./rolesList.routes");
 const companyStructureRoutes = require("./companyStructure.routes");
 const countryRoutes = require("./country.routes");
-const EmployeeTypeRoutes = require("./EmployeeType.routes");
+const EmployeeTypeRoutes = require("./employeeType.routes");
 const AssetTypeRoutes = require("./assetType.routes");
 const BankListRoutes = require("./bankList.routes");
 const LanguageRoutes = require("./language.routes");
 const LoanTypeRoutes = require("./loanType.routes");
 const SalutationRoutes = require("./salutation.routes");
 const DesignationRoutes = require("./designation.routes");
+const ExperienceLevelRoutes = require("./experienceLevel.routes");
 
 // Uncomment when ready to use
 // const salaryRoutes = require('./salary.routes');
@@ -35,6 +36,7 @@ router.use("/language", LanguageRoutes);
 router.use("/loan-type", LoanTypeRoutes);
 router.use("/salutation", SalutationRoutes);
 router.use("/designation", DesignationRoutes);
+router.use("/experience-level", ExperienceLevelRoutes);
 
 // Uncomment when ready to use
 // router.use('/salary', salaryRoutes);
@@ -59,6 +61,7 @@ router.get("/", (req, res) => {
             loanType: "/api/loan-type",
             salutation: "/api/salutation",
             designation: "/api/designation",
+            experienceLevel: "/api/experience-level",
 
             // Uncomment when ready to use
             // salary: '/api/salary',

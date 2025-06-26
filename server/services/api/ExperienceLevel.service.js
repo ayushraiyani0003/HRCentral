@@ -8,8 +8,10 @@ class ExperienceLevelService {
      * @param {Object} experienceLevelData - Experience level data
      * @returns {Promise<Object>} Created experience level
      */
-    static async create(experienceLevelData) {
+    async create(experienceLevelData) {
         try {
+            console.log("this is called");
+
             const experienceLevel = await ExperienceLevel.create(
                 experienceLevelData
             );
@@ -32,7 +34,7 @@ class ExperienceLevelService {
      * @param {Object} options - Query options (limit, offset, search)
      * @returns {Promise<Object>} List of experience levels
      */
-    static async getAll(options = {}) {
+    async getAll(options = {}) {
         try {
             const { limit = 10, offset = 0, search = "" } = options;
 
@@ -76,7 +78,7 @@ class ExperienceLevelService {
      * @param {number} id - Experience level ID
      * @returns {Promise<Object>} Experience level data
      */
-    static async getById(id) {
+    async getById(id) {
         try {
             const experienceLevel = await ExperienceLevel.findByPk(id);
 
@@ -107,7 +109,7 @@ class ExperienceLevelService {
      * @param {Object} updateData - Data to update
      * @returns {Promise<Object>} Updated experience level
      */
-    static async update(id, updateData) {
+    async update(id, updateData) {
         try {
             const experienceLevel = await ExperienceLevel.findByPk(id);
 
@@ -139,7 +141,7 @@ class ExperienceLevelService {
      * @param {number} id - Experience level ID
      * @returns {Promise<Object>} Deletion result
      */
-    static async delete(id) {
+    async delete(id) {
         try {
             const experienceLevel = await ExperienceLevel.findByPk(id);
 
