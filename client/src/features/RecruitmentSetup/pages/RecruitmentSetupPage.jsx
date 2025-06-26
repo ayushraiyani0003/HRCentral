@@ -129,15 +129,6 @@ function RecruitmentSetupPage() {
                 />
             ),
         },
-        {
-            label: "Hiring Status",
-            content: (
-                <>
-                    define all status like applied, interviewed, offered, hired,
-                    rejected etc...
-                </>
-            ),
-        },
     ];
 
     return (
