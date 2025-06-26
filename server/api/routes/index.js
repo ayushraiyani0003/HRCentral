@@ -17,6 +17,7 @@ const LoanTypeRoutes = require("./loanType.routes");
 const SalutationRoutes = require("./salutation.routes");
 const DesignationRoutes = require("./designation.routes");
 const ExperienceLevelRoutes = require("./experienceLevel.routes");
+const SkillRoutes = require("./skill.routes");
 
 // Uncomment when ready to use
 // const salaryRoutes = require('./salary.routes');
@@ -37,6 +38,7 @@ router.use("/loan-type", LoanTypeRoutes);
 router.use("/salutation", SalutationRoutes);
 router.use("/designation", DesignationRoutes);
 router.use("/experience-level", ExperienceLevelRoutes);
+router.use("/skill", SkillRoutes);
 
 // Uncomment when ready to use
 // router.use('/salary', salaryRoutes);
@@ -62,6 +64,7 @@ router.get("/", (req, res) => {
             salutation: "/api/salutation",
             designation: "/api/designation",
             experienceLevel: "/api/experience-level",
+            skill: "/api/skill",
 
             // Uncomment when ready to use
             // salary: '/api/salary',

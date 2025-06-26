@@ -8,7 +8,7 @@ class SkillService {
      * @param {Object} skillData - Skill data
      * @returns {Promise<Object>} Created skill
      */
-    static async create(skillData) {
+    async create(skillData) {
         try {
             const skill = await Skill.create(skillData);
             return {
@@ -30,7 +30,7 @@ class SkillService {
      * @param {Object} options - Query options (limit, offset, search)
      * @returns {Promise<Object>} List of skills
      */
-    static async getAll(options = {}) {
+    async getAll(options = {}) {
         try {
             const { limit = 10, offset = 0, search = "" } = options;
 
@@ -74,7 +74,7 @@ class SkillService {
      * @param {number} id - Skill ID
      * @returns {Promise<Object>} Skill data
      */
-    static async getById(id) {
+    async getById(id) {
         try {
             const skill = await Skill.findByPk(id);
 
@@ -105,7 +105,7 @@ class SkillService {
      * @param {Object} updateData - Data to update
      * @returns {Promise<Object>} Updated skill
      */
-    static async update(id, updateData) {
+    async update(id, updateData) {
         try {
             const skill = await Skill.findByPk(id);
 
@@ -137,7 +137,7 @@ class SkillService {
      * @param {number} id - Skill ID
      * @returns {Promise<Object>} Deletion result
      */
-    static async delete(id) {
+    async delete(id) {
         try {
             const skill = await Skill.findByPk(id);
 
@@ -168,7 +168,7 @@ class SkillService {
      * @param {Array} skillsData - Array of skill data
      * @returns {Promise<Object>} Created skills
      */
-    static async bulkCreate(skillsData) {
+    async bulkCreate(skillsData) {
         try {
             const skills = await Skill.bulkCreate(skillsData, {
                 ignoreDuplicates: true,
