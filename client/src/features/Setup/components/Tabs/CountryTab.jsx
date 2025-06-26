@@ -39,19 +39,14 @@ function CountryTab({
         setModelType,
     });
 
-    // Pass CRUD handlers to parent when component mounts or handlers change
+    // Pass CRUD handlers to parent when component mounts - ONLY setCrudHandlers in dependency
     useEffect(() => {
         setCrudHandlers({
             handleCreateCountry,
             handleUpdateCountry,
             handleDeleteCountry,
         });
-    }, [
-        setCrudHandlers,
-        handleCreateCountry,
-        handleUpdateCountry,
-        handleDeleteCountry,
-    ]);
+    }, [setCrudHandlers]); // Removed the CRUD handlers from dependency array
 
     // Table columns configuration
     const columns = [

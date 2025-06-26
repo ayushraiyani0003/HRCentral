@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
     CustomTable,
     CustomButton,
@@ -18,21 +18,54 @@ function BankListTab({
     setRowData = () => {},
     setOpenAddEditModel = () => {},
     setModelType = () => {},
+    setCrudHandlers = () => {},
 }) {
     const {
-        searchValue,
+        // Data
         filteredData,
+
+        // State
+        searchValue,
+
+        // Modal handlers
         handleAddNew,
         handleView,
         handleEdit,
         handleDelete,
         handleSearch,
+
+        // CRUD operations
+        handleCreateBankList,
+        handleUpdateBankList,
+        handleDeleteBank,
+
+        // Other handlers
     } = useBankListTab({
         setOpenDeleteModel,
         setRowData,
         setOpenAddEditModel,
         setModelType,
     });
+
+    // Pass CRUD handlers to parent when component mounts or handlers change
+    useEffect(() => {
+        // console.log("setCrudHandlers called", {
+        //     handleCreateBank,
+        //     handleUpdateBank,
+        //     handleDeleteBank,
+        // });
+
+        setCrudHandlers({
+            handleCreateBankList,
+            handleUpdateBankList,
+            handleDeleteBank,
+        });
+    }, [
+        setCrudHandlers,
+        handleCreateBankList,
+        handleUpdateBankList,
+        handleDeleteBank,
+    ]);
 
     // Table columns configuration
     const columns = [

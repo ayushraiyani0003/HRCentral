@@ -1,70 +1,19 @@
-// /**
-//  * @fileoverview Redux reducer for Salutation state management
-//  * @version 1.0.0
-//  */
+/**
+ * @fileoverview Redux store configuration for Salutation management
+ * @version 1.0.0
+ */
 
-// Action Types
-export const SALUTATION_ACTIONS = {
-    // Loading states
-    SET_LOADING: "salutation/SET_LOADING",
-    SET_ERROR: "salutation/SET_ERROR",
-    CLEAR_ERROR: "salutation/CLEAR_ERROR",
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import SalutationService from "../services/SalutationService";
 
-    // CRUD operations
-    CREATE_SALUTATION_REQUEST: "salutation/CREATE_SALUTATION_REQUEST",
-    CREATE_SALUTATION_SUCCESS: "salutation/CREATE_SALUTATION_SUCCESS",
-    CREATE_SALUTATION_FAILURE: "salutation/CREATE_SALUTATION_FAILURE",
+// Initialize service
+const salutationService = new SalutationService();
 
-    GET_ALL_SALUTATIONS_REQUEST: "salutation/GET_ALL_SALUTATIONS_REQUEST",
-    GET_ALL_SALUTATIONS_SUCCESS: "salutation/GET_ALL_SALUTATIONS_SUCCESS",
-    GET_ALL_SALUTATIONS_FAILURE: "salutation/GET_ALL_SALUTATIONS_FAILURE",
-
-    GET_SALUTATION_BY_ID_REQUEST: "salutation/GET_SALUTATION_BY_ID_REQUEST",
-    GET_SALUTATION_BY_ID_SUCCESS: "salutation/GET_SALUTATION_BY_ID_SUCCESS",
-    GET_SALUTATION_BY_ID_FAILURE: "salutation/GET_SALUTATION_BY_ID_FAILURE",
-
-    UPDATE_SALUTATION_REQUEST: "salutation/UPDATE_SALUTATION_REQUEST",
-    UPDATE_SALUTATION_SUCCESS: "salutation/UPDATE_SALUTATION_SUCCESS",
-    UPDATE_SALUTATION_FAILURE: "salutation/UPDATE_SALUTATION_FAILURE",
-
-    DELETE_SALUTATION_REQUEST: "salutation/DELETE_SALUTATION_REQUEST",
-    DELETE_SALUTATION_SUCCESS: "salutation/DELETE_SALUTATION_SUCCESS",
-    DELETE_SALUTATION_FAILURE: "salutation/DELETE_SALUTATION_FAILURE",
-
-    // Search operations
-    SEARCH_SALUTATIONS_REQUEST: "salutation/SEARCH_SALUTATIONS_REQUEST",
-    SEARCH_SALUTATIONS_SUCCESS: "salutation/SEARCH_SALUTATIONS_SUCCESS",
-    SEARCH_SALUTATIONS_FAILURE: "salutation/SEARCH_SALUTATIONS_FAILURE",
-
-    // Bulk operations
-    BULK_CREATE_SALUTATIONS_REQUEST:
-        "salutation/BULK_CREATE_SALUTATIONS_REQUEST",
-    BULK_CREATE_SALUTATIONS_SUCCESS:
-        "salutation/BULK_CREATE_SALUTATIONS_SUCCESS",
-    BULK_CREATE_SALUTATIONS_FAILURE:
-        "salutation/BULK_CREATE_SALUTATIONS_FAILURE",
-
-    // Utility operations
-    GET_SALUTATIONS_COUNT_SUCCESS: "salutation/GET_SALUTATIONS_COUNT_SUCCESS",
-    GET_SORTED_SALUTATIONS_SUCCESS: "salutation/GET_SORTED_SALUTATIONS_SUCCESS",
-    CHECK_SALUTATION_EXISTS_SUCCESS:
-        "salutation/CHECK_SALUTATION_EXISTS_SUCCESS",
-
-    // Pagination and filtering
-    SET_PAGINATION: "salutation/SET_PAGINATION",
-    SET_FILTERS: "salutation/SET_FILTERS",
-    RESET_FILTERS: "salutation/RESET_FILTERS",
-};
-
-// Initial State
+// Initial state
 const initialState = {
-    // Data
-    items: [],
-    currentItem: null,
-    sortedItems: [],
+    salutations: [],
+    currentSalutation: null,
     searchResults: [],
-
-    // Pagination
     pagination: {
         total: 0,
         limit: 10,
@@ -72,479 +21,671 @@ const initialState = {
         totalPages: 0,
         currentPage: 1,
     },
-
-    // Filters and sorting
+    loading: {
+        fetchAll: false,
+        fetchById: false,
+        create: false,
+        update: false,
+        delete: false,
+        search: false,
+        bulkCreate: false,
+    },
+    error: null,
+    lastAction: null,
     filters: {
         orderBy: "name",
         orderDirection: "ASC",
         searchTerm: "",
     },
-
-    // Loading states
-    loading: {
-        create: false,
-        read: false,
-        update: false,
-        delete: false,
-        search: false,
-        bulk: false,
-    },
-
-    // Error handling
-    error: null,
-
-    // Utility data
-    totalCount: 0,
-    existsCheck: null,
 };
 
-// Helper function to update loading state
-const setLoadingState = (state, operation, isLoading) => ({
-    ...state,
-    loading: {
-        ...state.loading,
-        [operation]: isLoading,
+// Async Thunks (Action Creators)
+
+/**
+ * Create a new salutation
+ */
+export const createSalutation = createAsyncThunk(
+    "salutations/create",
+    async (salutationData, { rejectWithValue }) => {
+        try {
+            const response = await salutationService.createSalutation(
+                salutationData
+            );
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
+/**
+ * Fetch all salutations with pagination and sorting
+ */
+export const fetchAllSalutations = createAsyncThunk(
+    "salutations/fetchAll",
+    async (options = {}, { rejectWithValue }) => {
+        try {
+            const response = await salutationService.getAllSalutations(options);
+            return {
+                salutations: response.data,
+                pagination: response.pagination,
+            };
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
+/**
+ * Fetch salutation by ID
+ */
+export const fetchSalutationById = createAsyncThunk(
+    "salutations/fetchById",
+    async (id, { rejectWithValue }) => {
+        try {
+            const response = await salutationService.getSalutationById(id);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
+/**
+ * Update salutation
+ */
+export const updateSalutation = createAsyncThunk(
+    "salutations/update",
+    async ({ id, salutationData }, { rejectWithValue }) => {
+        try {
+            const response = await salutationService.updateSalutation(
+                id,
+                salutationData
+            );
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
+/**
+ * Delete salutation
+ */
+export const deleteSalutation = createAsyncThunk(
+    "salutations/delete",
+    async (id, { rejectWithValue }) => {
+        try {
+            await salutationService.deleteSalutation(id);
+            return id;
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
+/**
+ * Search salutations
+ */
+export const searchSalutations = createAsyncThunk(
+    "salutations/search",
+    async ({ searchTerm, options = {} }, { rejectWithValue }) => {
+        try {
+            const response = await salutationService.searchSalutations(
+                searchTerm,
+                options
+            );
+            return {
+                results: response.data,
+                pagination: response.pagination,
+                searchTerm,
+            };
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
+/**
+ * Get salutation by name
+ */
+export const fetchSalutationByName = createAsyncThunk(
+    "salutations/fetchByName",
+    async (name, { rejectWithValue }) => {
+        try {
+            const response = await salutationService.getSalutationByName(name);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
+/**
+ * Check if salutation exists by name
+ */
+export const checkSalutationExistsByName = createAsyncThunk(
+    "salutations/checkExistsByName",
+    async (name, { rejectWithValue }) => {
+        try {
+            const response =
+                await salutationService.checkSalutationExistsByName(name);
+            return { name, exists: response.exists };
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
+/**
+ * Check if salutation exists by ID
+ */
+export const checkSalutationExistsById = createAsyncThunk(
+    "salutations/checkExistsById",
+    async (id, { rejectWithValue }) => {
+        try {
+            const response = await salutationService.checkSalutationExistsById(
+                id
+            );
+            return { id, exists: response.exists };
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
+/**
+ * Get all salutations sorted (for dropdowns)
+ */
+export const fetchSortedSalutations = createAsyncThunk(
+    "salutations/fetchSorted",
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await salutationService.getAllSalutationsSorted();
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
+/**
+ * Get salutations count
+ */
+export const fetchSalutationsCount = createAsyncThunk(
+    "salutations/fetchCount",
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await salutationService.getSalutationsCount();
+            return response.count;
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
+/**
+ * Bulk create salutations
+ */
+export const bulkCreateSalutations = createAsyncThunk(
+    "salutations/bulkCreate",
+    async (salutationsData, { rejectWithValue }) => {
+        try {
+            const response = await salutationService.bulkCreateSalutations(
+                salutationsData
+            );
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
+// Salutation Slice
+const salutationSlice = createSlice({
+    name: "salutations",
+    initialState,
+    reducers: {
+        // Synchronous actions
+        clearError: (state) => {
+            state.error = null;
+        },
+        clearCurrentSalutation: (state) => {
+            state.currentSalutation = null;
+        },
+        clearSearchResults: (state) => {
+            state.searchResults = [];
+            state.filters.searchTerm = "";
+        },
+        updateFilters: (state, action) => {
+            state.filters = { ...state.filters, ...action.payload };
+        },
+        updatePagination: (state, action) => {
+            state.pagination = { ...state.pagination, ...action.payload };
+        },
+        resetSalutationState: () => initialState,
+        setCurrentSalutation: (state, action) => {
+            state.currentSalutation = action.payload;
+        },
+        updateSalutationInList: (state, action) => {
+            const { id, updates } = action.payload;
+            const index = state.salutations.findIndex(
+                (salutation) => salutation.id === id
+            );
+            if (index !== -1) {
+                state.salutations[index] = {
+                    ...state.salutations[index],
+                    ...updates,
+                };
+            }
+        },
+        removeSalutationFromList: (state, action) => {
+            const id = action.payload;
+            state.salutations = state.salutations.filter(
+                (salutation) => salutation.id !== id
+            );
+        },
+        addSalutationToList: (state, action) => {
+            state.salutations.unshift(action.payload);
+        },
     },
-    ...(isLoading ? {} : { error: null }), // Clear error when starting new operation
+    extraReducers: (builder) => {
+        builder
+            // Create Salutation
+            .addCase(createSalutation.pending, (state) => {
+                state.loading.create = true;
+                state.error = null;
+            })
+            .addCase(createSalutation.fulfilled, (state, action) => {
+                state.loading.create = false;
+                state.salutations.unshift(action.payload);
+                state.lastAction = "create";
+                state.error = null;
+            })
+            .addCase(createSalutation.rejected, (state, action) => {
+                state.loading.create = false;
+                state.error = action.payload;
+                state.lastAction = "create";
+            })
+
+            // Fetch All Salutations
+            .addCase(fetchAllSalutations.pending, (state) => {
+                state.loading.fetchAll = true;
+                state.error = null;
+            })
+            .addCase(fetchAllSalutations.fulfilled, (state, action) => {
+                state.loading.fetchAll = false;
+                state.salutations = action.payload.salutations.data; // FIXED
+                state.pagination = action.payload.pagination;
+                state.lastAction = "fetchAll";
+                state.error = null;
+            })
+            .addCase(fetchAllSalutations.rejected, (state, action) => {
+                state.loading.fetchAll = false;
+                state.error = action.payload;
+                state.lastAction = "fetchAll";
+            })
+
+            // Fetch Salutation by ID
+            .addCase(fetchSalutationById.pending, (state) => {
+                state.loading.fetchById = true;
+                state.error = null;
+            })
+            .addCase(fetchSalutationById.fulfilled, (state, action) => {
+                state.loading.fetchById = false;
+                state.currentSalutation = action.payload;
+                state.lastAction = "fetchById";
+                state.error = null;
+            })
+            .addCase(fetchSalutationById.rejected, (state, action) => {
+                state.loading.fetchById = false;
+                state.error = action.payload;
+                state.lastAction = "fetchById";
+            })
+
+            // Update Salutation
+            .addCase(updateSalutation.pending, (state) => {
+                state.loading.update = true;
+                state.error = null;
+            })
+            .addCase(updateSalutation.fulfilled, (state, action) => {
+                state.loading.update = false;
+                const updatedSalutation = action.payload;
+
+                // Update in salutations array
+                const index = state.salutations.findIndex(
+                    (salutation) => salutation.id === updatedSalutation.id
+                );
+                if (index !== -1) {
+                    state.salutations[index] = updatedSalutation;
+                }
+
+                // Update current salutation if it's the same
+                if (
+                    state.currentSalutation &&
+                    state.currentSalutation.id === updatedSalutation.id
+                ) {
+                    state.currentSalutation = updatedSalutation;
+                }
+
+                state.lastAction = "update";
+                state.error = null;
+            })
+            .addCase(updateSalutation.rejected, (state, action) => {
+                state.loading.update = false;
+                state.error = action.payload;
+                state.lastAction = "update";
+            })
+
+            // Delete Salutation
+            .addCase(deleteSalutation.pending, (state) => {
+                state.loading.delete = true;
+                state.error = null;
+            })
+            .addCase(deleteSalutation.fulfilled, (state, action) => {
+                state.loading.delete = false;
+                const deletedId = action.payload;
+
+                // Remove from salutations array
+                state.salutations = state.salutations.filter(
+                    (salutation) => salutation.id !== deletedId
+                );
+
+                // Clear current salutation if it was deleted
+                if (
+                    state.currentSalutation &&
+                    state.currentSalutation.id === deletedId
+                ) {
+                    state.currentSalutation = null;
+                }
+
+                state.lastAction = "delete";
+                state.error = null;
+            })
+            .addCase(deleteSalutation.rejected, (state, action) => {
+                state.loading.delete = false;
+                state.error = action.payload;
+                state.lastAction = "delete";
+            })
+
+            // Search Salutations
+            .addCase(searchSalutations.pending, (state) => {
+                state.loading.search = true;
+                state.error = null;
+            })
+            .addCase(searchSalutations.fulfilled, (state, action) => {
+                state.loading.search = false;
+                state.searchResults = action.payload.results;
+                state.pagination = action.payload.pagination;
+                state.filters.searchTerm = action.payload.searchTerm;
+                state.lastAction = "search";
+                state.error = null;
+            })
+            .addCase(searchSalutations.rejected, (state, action) => {
+                state.loading.search = false;
+                state.error = action.payload;
+                state.lastAction = "search";
+            })
+
+            // Fetch Salutation by Name
+            .addCase(fetchSalutationByName.fulfilled, (state, action) => {
+                state.currentSalutation = action.payload;
+                state.lastAction = "fetchByName";
+                state.error = null;
+            })
+            .addCase(fetchSalutationByName.rejected, (state, action) => {
+                state.error = action.payload;
+                state.lastAction = "fetchByName";
+            })
+
+            // Check Salutation Exists by Name
+            .addCase(checkSalutationExistsByName.fulfilled, (state, action) => {
+                state.lastAction = "checkExistsByName";
+                state.error = null;
+            })
+            .addCase(checkSalutationExistsByName.rejected, (state, action) => {
+                state.error = action.payload;
+                state.lastAction = "checkExistsByName";
+            })
+
+            // Check Salutation Exists by ID
+            .addCase(checkSalutationExistsById.fulfilled, (state, action) => {
+                state.lastAction = "checkExistsById";
+                state.error = null;
+            })
+            .addCase(checkSalutationExistsById.rejected, (state, action) => {
+                state.error = action.payload;
+                state.lastAction = "checkExistsById";
+            })
+
+            // Fetch Sorted Salutations
+            .addCase(fetchSortedSalutations.fulfilled, (state, action) => {
+                state.salutations = action.payload;
+                state.lastAction = "fetchSorted";
+                state.error = null;
+            })
+            .addCase(fetchSortedSalutations.rejected, (state, action) => {
+                state.error = action.payload;
+                state.lastAction = "fetchSorted";
+            })
+
+            // Fetch Salutations Count
+            .addCase(fetchSalutationsCount.fulfilled, (state, action) => {
+                state.pagination.total = action.payload;
+                state.lastAction = "fetchCount";
+                state.error = null;
+            })
+            .addCase(fetchSalutationsCount.rejected, (state, action) => {
+                state.error = action.payload;
+                state.lastAction = "fetchCount";
+            })
+
+            // Bulk Create Salutations
+            .addCase(bulkCreateSalutations.pending, (state) => {
+                state.loading.bulkCreate = true;
+                state.error = null;
+            })
+            .addCase(bulkCreateSalutations.fulfilled, (state, action) => {
+                state.loading.bulkCreate = false;
+                state.salutations = [...action.payload, ...state.salutations];
+                state.lastAction = "bulkCreate";
+                state.error = null;
+            })
+            .addCase(bulkCreateSalutations.rejected, (state, action) => {
+                state.loading.bulkCreate = false;
+                state.error = action.payload;
+                state.lastAction = "bulkCreate";
+            });
+    },
 });
 
-// Helper function to handle errors
-const setErrorState = (state, operation, error) => ({
-    ...state,
-    loading: {
-        ...state.loading,
-        [operation]: false,
-    },
-    error: error,
-});
+// Export actions
+export const {
+    clearError,
+    clearCurrentSalutation,
+    clearSearchResults,
+    updateFilters,
+    updatePagination,
+    resetSalutationState,
+    setCurrentSalutation,
+    updateSalutationInList,
+    removeSalutationFromList,
+    addSalutationToList,
+} = salutationSlice.actions;
 
-// Helper function to update item in array
-const updateItemInArray = (items, updatedItem) => {
-    return items.map((item) =>
-        item.id === updatedItem.id ? updatedItem : item
+// Selectors
+export const selectSalutations = (state) => state.salutations.salutations;
+export const selectCurrentSalutation = (state) =>
+    state.salutations.currentSalutation;
+export const selectSearchResults = (state) => state.salutations.searchResults;
+export const selectPagination = (state) => state.salutations.pagination;
+export const selectLoading = (state) => state.salutations.loading;
+export const selectError = (state) => state.salutations.error;
+export const selectFilters = (state) => state.salutations.filters;
+export const selectLastAction = (state) => state.salutations.lastAction;
+
+// Complex selectors
+export const selectIsLoading = (state) =>
+    Object.values(state.salutations.loading).some((loading) => loading);
+
+export const selectSalutationById = (id) => (state) =>
+    state.salutations.salutations.find((salutation) => salutation.id === id);
+
+export const selectSalutationsByName = (name) => (state) =>
+    state.salutations.salutations.filter((salutation) =>
+        salutation.name.toLowerCase().includes(name.toLowerCase())
+    );
+
+export const selectFormattedSalutations = (state) => {
+    const service = new SalutationService();
+    return (
+        service.formatSalutationsForDisplay?.(state.salutations.salutations) ||
+        state.salutations.salutations
     );
 };
 
-// Helper function to remove item from array
-const removeItemFromArray = (items, itemId) => {
-    return items.filter((item) => item.id !== itemId);
-};
-
-// Reducer
-const salutationReducer = (state = initialState, action) => {
-    switch (action.type) {
-        // Loading and error management
-        case SALUTATION_ACTIONS.SET_LOADING:
-            return setLoadingState(
-                state,
-                action.payload.operation,
-                action.payload.isLoading
-            );
-
-        case SALUTATION_ACTIONS.SET_ERROR:
-            return {
-                ...state,
-                error: action.payload,
-            };
-
-        case SALUTATION_ACTIONS.CLEAR_ERROR:
-            return {
-                ...state,
-                error: null,
-            };
-
-        // Create Salutation
-        case SALUTATION_ACTIONS.CREATE_SALUTATION_REQUEST:
-            return setLoadingState(state, "create", true);
-
-        case SALUTATION_ACTIONS.CREATE_SALUTATION_SUCCESS:
-            return {
-                ...setLoadingState(state, "create", false),
-                items: [...state.items, action.payload],
-                totalCount: state.totalCount + 1,
-            };
-
-        case SALUTATION_ACTIONS.CREATE_SALUTATION_FAILURE:
-            return setErrorState(state, "create", action.payload);
-
-        // Get All Salutations
-        case SALUTATION_ACTIONS.GET_ALL_SALUTATIONS_REQUEST:
-            return setLoadingState(state, "read", true);
-
-        case SALUTATION_ACTIONS.GET_ALL_SALUTATIONS_SUCCESS:
-            return {
-                ...setLoadingState(state, "read", false),
-                items: action.payload.data || action.payload,
-                pagination: {
-                    ...state.pagination,
-                    total:
-                        action.payload.total ||
-                        action.payload.data?.length ||
-                        0,
-                    totalPages:
-                        action.payload.totalPages ||
-                        Math.ceil(
-                            (action.payload.total || 0) / state.pagination.limit
-                        ),
-                },
-            };
-
-        case SALUTATION_ACTIONS.GET_ALL_SALUTATIONS_FAILURE:
-            return setErrorState(state, "read", action.payload);
-
-        // Get Salutation by ID
-        case SALUTATION_ACTIONS.GET_SALUTATION_BY_ID_REQUEST:
-            return setLoadingState(state, "read", true);
-
-        case SALUTATION_ACTIONS.GET_SALUTATION_BY_ID_SUCCESS:
-            return {
-                ...setLoadingState(state, "read", false),
-                currentItem: action.payload,
-            };
-
-        case SALUTATION_ACTIONS.GET_SALUTATION_BY_ID_FAILURE:
-            return setErrorState(state, "read", action.payload);
-
-        // Update Salutation
-        case SALUTATION_ACTIONS.UPDATE_SALUTATION_REQUEST:
-            return setLoadingState(state, "update", true);
-
-        case SALUTATION_ACTIONS.UPDATE_SALUTATION_SUCCESS:
-            return {
-                ...setLoadingState(state, "update", false),
-                items: updateItemInArray(state.items, action.payload),
-                currentItem:
-                    state.currentItem?.id === action.payload.id
-                        ? action.payload
-                        : state.currentItem,
-            };
-
-        case SALUTATION_ACTIONS.UPDATE_SALUTATION_FAILURE:
-            return setErrorState(state, "update", action.payload);
-
-        // Delete Salutation
-        case SALUTATION_ACTIONS.DELETE_SALUTATION_REQUEST:
-            return setLoadingState(state, "delete", true);
-
-        case SALUTATION_ACTIONS.DELETE_SALUTATION_SUCCESS:
-            return {
-                ...setLoadingState(state, "delete", false),
-                items: removeItemFromArray(state.items, action.payload.id),
-                currentItem:
-                    state.currentItem?.id === action.payload.id
-                        ? null
-                        : state.currentItem,
-                totalCount: Math.max(0, state.totalCount - 1),
-            };
-
-        case SALUTATION_ACTIONS.DELETE_SALUTATION_FAILURE:
-            return setErrorState(state, "delete", action.payload);
-
-        // Search Salutations
-        case SALUTATION_ACTIONS.SEARCH_SALUTATIONS_REQUEST:
-            return setLoadingState(state, "search", true);
-
-        case SALUTATION_ACTIONS.SEARCH_SALUTATIONS_SUCCESS:
-            return {
-                ...setLoadingState(state, "search", false),
-                searchResults: action.payload.data || action.payload,
-                filters: {
-                    ...state.filters,
-                    searchTerm:
-                        action.payload.searchTerm || state.filters.searchTerm,
-                },
-            };
-
-        case SALUTATION_ACTIONS.SEARCH_SALUTATIONS_FAILURE:
-            return setErrorState(state, "search", action.payload);
-
-        // Bulk Create Salutations
-        case SALUTATION_ACTIONS.BULK_CREATE_SALUTATIONS_REQUEST:
-            return setLoadingState(state, "bulk", true);
-
-        case SALUTATION_ACTIONS.BULK_CREATE_SALUTATIONS_SUCCESS:
-            return {
-                ...setLoadingState(state, "bulk", false),
-                items: [
-                    ...state.items,
-                    ...(action.payload.data || action.payload),
-                ],
-                totalCount:
-                    state.totalCount +
-                    (action.payload.data?.length || action.payload.length || 0),
-            };
-
-        case SALUTATION_ACTIONS.BULK_CREATE_SALUTATIONS_FAILURE:
-            return setErrorState(state, "bulk", action.payload);
-
-        // Utility Actions
-        case SALUTATION_ACTIONS.GET_SALUTATIONS_COUNT_SUCCESS:
-            return {
-                ...state,
-                totalCount: action.payload.count || action.payload,
-            };
-
-        case SALUTATION_ACTIONS.GET_SORTED_SALUTATIONS_SUCCESS:
-            return {
-                ...state,
-                sortedItems: action.payload.data || action.payload,
-            };
-
-        case SALUTATION_ACTIONS.CHECK_SALUTATION_EXISTS_SUCCESS:
-            return {
-                ...state,
-                existsCheck: action.payload,
-            };
-
-        // Pagination and Filtering
-        case SALUTATION_ACTIONS.SET_PAGINATION:
-            return {
-                ...state,
-                pagination: {
-                    ...state.pagination,
-                    ...action.payload,
-                },
-            };
-
-        case SALUTATION_ACTIONS.SET_FILTERS:
-            return {
-                ...state,
-                filters: {
-                    ...state.filters,
-                    ...action.payload,
-                },
-            };
-
-        case SALUTATION_ACTIONS.RESET_FILTERS:
-            return {
-                ...state,
-                filters: initialState.filters,
-                searchResults: [],
-            };
-
-        default:
-            return state;
-    }
-};
-
-// Action Creators
-export const salutationActions = {
-    // Loading and error actions
-    setLoading: (operation, isLoading) => ({
-        type: SALUTATION_ACTIONS.SET_LOADING,
-        payload: { operation, isLoading },
-    }),
-
-    setError: (error) => ({
-        type: SALUTATION_ACTIONS.SET_ERROR,
-        payload: error,
-    }),
-
-    clearError: () => ({
-        type: SALUTATION_ACTIONS.CLEAR_ERROR,
-    }),
-
-    // Create actions
-    createSalutationRequest: () => ({
-        type: SALUTATION_ACTIONS.CREATE_SALUTATION_REQUEST,
-    }),
-
-    createSalutationSuccess: (salutation) => ({
-        type: SALUTATION_ACTIONS.CREATE_SALUTATION_SUCCESS,
-        payload: salutation,
-    }),
-
-    createSalutationFailure: (error) => ({
-        type: SALUTATION_ACTIONS.CREATE_SALUTATION_FAILURE,
-        payload: error,
-    }),
-
-    // Read actions
-    getAllSalutationsRequest: () => ({
-        type: SALUTATION_ACTIONS.GET_ALL_SALUTATIONS_REQUEST,
-    }),
-
-    getAllSalutationsSuccess: (data) => ({
-        type: SALUTATION_ACTIONS.GET_ALL_SALUTATIONS_SUCCESS,
-        payload: data,
-    }),
-
-    getAllSalutationsFailure: (error) => ({
-        type: SALUTATION_ACTIONS.GET_ALL_SALUTATIONS_FAILURE,
-        payload: error,
-    }),
-
-    getSalutationByIdRequest: () => ({
-        type: SALUTATION_ACTIONS.GET_SALUTATION_BY_ID_REQUEST,
-    }),
-
-    getSalutationByIdSuccess: (salutation) => ({
-        type: SALUTATION_ACTIONS.GET_SALUTATION_BY_ID_SUCCESS,
-        payload: salutation,
-    }),
-
-    getSalutationByIdFailure: (error) => ({
-        type: SALUTATION_ACTIONS.GET_SALUTATION_BY_ID_FAILURE,
-        payload: error,
-    }),
-
-    // Update actions
-    updateSalutationRequest: () => ({
-        type: SALUTATION_ACTIONS.UPDATE_SALUTATION_REQUEST,
-    }),
-
-    updateSalutationSuccess: (salutation) => ({
-        type: SALUTATION_ACTIONS.UPDATE_SALUTATION_SUCCESS,
-        payload: salutation,
-    }),
-
-    updateSalutationFailure: (error) => ({
-        type: SALUTATION_ACTIONS.UPDATE_SALUTATION_FAILURE,
-        payload: error,
-    }),
-
-    // Delete actions
-    deleteSalutationRequest: () => ({
-        type: SALUTATION_ACTIONS.DELETE_SALUTATION_REQUEST,
-    }),
-
-    deleteSalutationSuccess: (deletedItem) => ({
-        type: SALUTATION_ACTIONS.DELETE_SALUTATION_SUCCESS,
-        payload: deletedItem,
-    }),
-
-    deleteSalutationFailure: (error) => ({
-        type: SALUTATION_ACTIONS.DELETE_SALUTATION_FAILURE,
-        payload: error,
-    }),
-
-    // Search actions
-    searchSalutationsRequest: () => ({
-        type: SALUTATION_ACTIONS.SEARCH_SALUTATIONS_REQUEST,
-    }),
-
-    searchSalutationsSuccess: (data) => ({
-        type: SALUTATION_ACTIONS.SEARCH_SALUTATIONS_SUCCESS,
-        payload: data,
-    }),
-
-    searchSalutationsFailure: (error) => ({
-        type: SALUTATION_ACTIONS.SEARCH_SALUTATIONS_FAILURE,
-        payload: error,
-    }),
-
-    // Bulk actions
-    bulkCreateSalutationsRequest: () => ({
-        type: SALUTATION_ACTIONS.BULK_CREATE_SALUTATIONS_REQUEST,
-    }),
-
-    bulkCreateSalutationsSuccess: (salutations) => ({
-        type: SALUTATION_ACTIONS.BULK_CREATE_SALUTATIONS_SUCCESS,
-        payload: salutations,
-    }),
-
-    bulkCreateSalutationsFailure: (error) => ({
-        type: SALUTATION_ACTIONS.BULK_CREATE_SALUTATIONS_FAILURE,
-        payload: error,
-    }),
-
-    // Utility actions
-    getSalutationsCountSuccess: (count) => ({
-        type: SALUTATION_ACTIONS.GET_SALUTATIONS_COUNT_SUCCESS,
-        payload: count,
-    }),
-
-    getSortedSalutationsSuccess: (salutations) => ({
-        type: SALUTATION_ACTIONS.GET_SORTED_SALUTATIONS_SUCCESS,
-        payload: salutations,
-    }),
-
-    checkSalutationExistsSuccess: (existsData) => ({
-        type: SALUTATION_ACTIONS.CHECK_SALUTATION_EXISTS_SUCCESS,
-        payload: existsData,
-    }),
-
-    // Pagination and filtering actions
-    setPagination: (paginationData) => ({
-        type: SALUTATION_ACTIONS.SET_PAGINATION,
-        payload: paginationData,
-    }),
-
-    setFilters: (filters) => ({
-        type: SALUTATION_ACTIONS.SET_FILTERS,
-        payload: filters,
-    }),
-
-    resetFilters: () => ({
-        type: SALUTATION_ACTIONS.RESET_FILTERS,
-    }),
-};
-
-// Selectors
-export const salutationSelectors = {
-    // Basic selectors
-    getAllSalutations: (state) => state.salutation.items,
-    getCurrentSalutation: (state) => state.salutation.currentItem,
-    getSortedSalutations: (state) => state.salutation.sortedItems,
-    getSearchResults: (state) => state.salutation.searchResults,
-
-    // Loading selectors
-    getLoadingState: (state) => state.salutation.loading,
-    isCreating: (state) => state.salutation.loading.create,
-    isReading: (state) => state.salutation.loading.read,
-    isUpdating: (state) => state.salutation.loading.update,
-    isDeleting: (state) => state.salutation.loading.delete,
-    isSearching: (state) => state.salutation.loading.search,
-    isBulkOperating: (state) => state.salutation.loading.bulk,
-
-    // Error selectors
-    getError: (state) => state.salutation.error,
-
-    // Pagination selectors
-    getPagination: (state) => state.salutation.pagination,
-    getFilters: (state) => state.salutation.filters,
-    getTotalCount: (state) => state.salutation.totalCount,
-
-    // Utility selectors
-    getExistsCheck: (state) => state.salutation.existsCheck,
-
-    // Computed selectors
-    getSalutationById: (state, id) =>
-        state.salutation.items.find((item) => item.id === id),
-
-    getSalutationByName: (state, name) =>
-        state.salutation.items.find(
-            (item) => item.name.toLowerCase() === name.toLowerCase()
-        ),
-
-    getFilteredSalutations: (state) => {
-        const { items } = state.salutation;
-        const { searchTerm, orderBy, orderDirection } =
-            state.salutation.filters;
-
-        let filtered = items;
-
-        if (searchTerm) {
-            filtered = items.filter((item) =>
-                item.name.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
-
-        if (orderBy) {
-            filtered = [...filtered].sort((a, b) => {
-                const aVal = a[orderBy];
-                const bVal = b[orderBy];
-
-                if (orderDirection === "ASC") {
-                    return aVal > bVal ? 1 : -1;
-                } else {
-                    return aVal < bVal ? 1 : -1;
-                }
-            });
-        }
-
-        return filtered;
-    },
-};
-
-export default salutationReducer;
+// Export reducer
+export default salutationSlice.reducer;
+
+// Usage Examples:
+/*
+// In your store configuration (store.js)
+import { configureStore } from '@reduxjs/toolkit';
+import salutationReducer from './salutationSlice';
+
+export const store = configureStore({
+  reducer: {
+    salutations: salutationReducer,
+  },
+});
+
+// In your React components
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  fetchAllSalutations,
+  createSalutation,
+  updateSalutation,
+  deleteSalutation,
+  searchSalutations,
+  selectSalutations,
+  selectLoading,
+  selectError,
+  clearError
+} from './salutationSlice';
+
+function SalutationList() {
+  const dispatch = useDispatch();
+  const salutations = useSelector(selectSalutations);
+  const loading = useSelector(selectLoading);
+  const error = useSelector(selectError);
+
+  useEffect(() => {
+    dispatch(fetchAllSalutations({ limit: 20, orderBy: 'name' }));
+  }, [dispatch]);
+
+  const handleCreateSalutation = (salutationData) => {
+    dispatch(createSalutation(salutationData));
+  };
+
+  const handleUpdateSalutation = (id, salutationData) => {
+    dispatch(updateSalutation({ id, salutationData }));
+  };
+
+  const handleDeleteSalutation = (id) => {
+    dispatch(deleteSalutation(id));
+  };
+
+  const handleSearch = (searchTerm) => {
+    dispatch(searchSalutations({ searchTerm, options: { limit: 10 } }));
+  };
+
+  if (loading.fetchAll) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+
+  return (
+    <div>
+      {salutations.map(salutation => (
+        <div key={salutation.id}>
+          <h3>{salutation.name}</h3>
+          <button onClick={() => handleUpdateSalutation(salutation.id, { name: 'Updated Name' })}>
+            Update
+          </button>
+          <button onClick={() => handleDeleteSalutation(salutation.id)}>
+            Delete
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+*/
+
+// in this store salutation
+// salutations have data and inside but i need direct like
+// banks have
+// only data is not i need like salutations
+// banks: {
+//     banks: [
+//         {
+//             id: '338657f9-71c2-42b4-9aa2-b29ebebadb5b',
+//             name: 'add new',
+//             createdAt: '2025-06-26T05:58:53.000Z',
+//             updatedAt: '2025-06-26T05:59:01.000Z'
+//         },
+//         {
+//             id: '0f172859-6337-4092-9966-4e4767316d36',
+//             name: 'Beta Savings new',
+//             createdAt: '2025-06-20T06:09:15.000Z',
+//             updatedAt: '2025-06-26T05:50:00.000Z'
+//         },]
+// }
+// salutations: {
+//     salutations: {
+//       success: true,
+//       data: [
+//         {
+//           id: '964d014d-c112-451b-bb57-9d2695da4057',
+//           name: 'Mr',
+//           createdAt: '2025-06-20T09:34:22.000Z',
+//           updatedAt: '2025-06-20T09:34:22.000Z'
+//         },
+//         {
+//           id: '912b1a4f-9740-486f-ba75-465b70219036',
+//           name: 'Mrs',
+//           createdAt: '2025-06-20T09:34:22.000Z',
+//           updatedAt: '2025-06-20T09:34:22.000Z'
+//         },
+//         {
+//           id: '242b1fcb-032a-4cd7-9946-ac054bf26194',
+//           name: 'Ms',
+//           createdAt: '2025-06-20T09:34:22.000Z',
+//           updatedAt: '2025-06-20T09:34:22.000Z'
+//         }
+//       ],
+//       pagination: {
+//         total: 3,
+//         limit: 10,
+//         offset: 0,
+//         pages: 1
+//       },
+//       message: 'Salutations retrieved successfully'
+//     },
+//     currentSalutation: null,
+//     searchResults: [],
+//     loading: {
+//       fetchAll: false,
+//       fetchById: false,
+//       create: false,
+//       update: false,
+//       'delete': false,
+//       search: false,
+//       bulkCreate: false
+//     },
+//     error: null,
+//     lastAction: 'fetchAll',
+//     filters: {
+//       orderBy: 'name',
+//       orderDirection: 'ASC',
+//       searchTerm: ''
+//     }
+//   }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
     CustomTable,
     CustomButton,
@@ -18,15 +18,26 @@ function SalutationTab({
     setRowData = () => {},
     setOpenAddEditModel = () => {},
     setModelType = () => {},
+    setCrudHandlers = () => {},
 }) {
     const {
-        searchValue,
+        // Data
         filteredData,
+
+        // State
+        searchValue,
+
+        // Modal handlers
         handleAddNew,
         handleView,
         handleEdit,
         handleDelete,
         handleSearch,
+
+        // CRUD operations
+        handleCreateSalutation,
+        handleUpdateSalutation,
+        handleDeleteSalutation,
     } = useSalutationTab({
         setOpenDeleteModel,
         setRowData,
@@ -34,7 +45,19 @@ function SalutationTab({
         setModelType,
     });
 
-    // Table columns configuration
+    useEffect(() => {
+        setCrudHandlers({
+            handleCreateSalutation,
+            handleUpdateSalutation,
+            handleDeleteSalutation,
+        });
+    }, [
+        setCrudHandlers,
+        handleCreateSalutation,
+        handleUpdateSalutation,
+        handleDeleteSalutation,
+    ]);
+
     const columns = [
         {
             key: "name",

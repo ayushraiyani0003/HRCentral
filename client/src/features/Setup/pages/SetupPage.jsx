@@ -1,16 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { CustomTabs, CustomTextInput, CustomModal } from "../../../components";
-import {
-    Home,
-    Check,
-    AlertCircle,
-    User,
-    Settings,
-    Bell,
-    Mail,
-    Heart,
-    Lock,
-} from "lucide-react";
+import { CustomTabs } from "../../../components";
 import BankListTab from "../components/Tabs/BankListTab";
 import CountryTab from "../components/Tabs/CountryTab";
 import SalutationTab from "../components/Tabs/SalutationTab";
@@ -23,14 +12,7 @@ function SetupPage() {
     const [rowData, setRowData] = useState(null);
     const [openAddEditModel, setOpenAddEditModel] = useState(false);
     const [modelType, setModelType] = useState(""); // 'view', 'add', 'edit'
-
-    // Store CRUD handlers from the current tab
     const [crudHandlers, setCrudHandlers] = useState({});
-
-    console.log("rowData", rowData);
-    console.log("openDeleteModel", openDeleteModel);
-    console.log("openAddEditModel", openAddEditModel);
-    console.log("modelType", modelType);
 
     const handleCloseStructureModel = useCallback(() => {
         setOpenAddEditModel(false);
@@ -38,16 +20,19 @@ function SetupPage() {
         setModelType("");
     }, []);
 
-    // Function to receive CRUD handlers from tabs
+    // Function to receive CRUD handlers from tabs - now merges instead of overriding
     const setCrudHandlersForTab = useCallback((handlers) => {
-        setCrudHandlers(handlers);
+        setCrudHandlers((prevHandlers) => ({
+            ...prevHandlers,
+            ...(handlers || {}),
+        }));
     }, []);
 
-    // Basic tabs example
     const tabs = [
         {
             id: "BankList",
             label: "Bank List",
+            setupType: "BankList",
             content: (
                 <BankListTab
                     setOpenDeleteModel={setOpenDeleteModel}
@@ -61,6 +46,7 @@ function SetupPage() {
         {
             id: "Country",
             label: "Country",
+            setupType: "Country",
             content: (
                 <CountryTab
                     setOpenDeleteModel={setOpenDeleteModel}
@@ -74,6 +60,7 @@ function SetupPage() {
         {
             id: "Salutation",
             label: "Salutation",
+            setupType: "Salutation",
             content: (
                 <SalutationTab
                     setOpenDeleteModel={setOpenDeleteModel}
@@ -85,6 +72,8 @@ function SetupPage() {
             ),
         },
     ];
+
+    const currentSetupType = tabs[selectedTab].setupType;
 
     return (
         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
@@ -98,32 +87,22 @@ function SetupPage() {
                 contentStyle={{ marginTop: "0.2rem" }}
                 contentClassName={"min-h-[760px]"}
             />
+
             <SetupModal
                 rowData={rowData}
                 openAddEditModel={openAddEditModel}
                 setOpenAddEditModel={setOpenAddEditModel}
                 modelType={modelType}
                 handleCloseModel={handleCloseStructureModel}
-                setupType={tabs[selectedTab].label}
-                // Pass CRUD handlers
-                handleCreateCountry={crudHandlers.handleCreateCountry}
-                handleUpdateCountry={crudHandlers.handleUpdateCountry}
-                // Add other CRUD handlers as needed
-                handleCreateBank={crudHandlers.handleCreateBank}
-                handleUpdateBank={crudHandlers.handleUpdateBank}
-                handleCreateSalutation={crudHandlers.handleCreateSalutation}
-                handleUpdateSalutation={crudHandlers.handleUpdateSalutation}
+                setupType={currentSetupType}
+                crudHandlers={crudHandlers}
             />
+
             <DeleteConfirmationModel
                 openDeleteModel={openDeleteModel}
                 setOpenDeleteModel={setOpenDeleteModel}
                 rowData={rowData}
-                // Pass delete handler
-                handleDelete={
-                    crudHandlers.handleDeleteCountry ||
-                    crudHandlers.handleDeleteBank ||
-                    crudHandlers.handleDeleteSalutation
-                }
+                setupType={currentSetupType}
             />
         </div>
     );

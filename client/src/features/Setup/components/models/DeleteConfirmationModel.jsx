@@ -5,19 +5,36 @@ import {
     CustomModal,
 } from "../../../../components";
 import useCountryTab from "../../hooks/useCountryTab";
+import useBankListTab from "../../hooks/useBankListTab";
+import useSalutationTab from "../../hooks/useSalutationTab";
 
 function DeleteConfirmationModal({
     openDeleteModel,
     setOpenDeleteModel,
     rowData,
+    setupType,
 }) {
     // Debug only
     console.log(rowData);
 
     const { handleDeleteCountry } = useCountryTab(setOpenDeleteModel);
+    const { handleDeleteBank } = useBankListTab(setOpenDeleteModel);
+    const { handleDeleteSalutation } = useSalutationTab(setOpenDeleteModel);
 
     const handleDelete = () => {
-        handleDeleteCountry(rowData.id);
+        switch (setupType) {
+            case "BankList":
+                handleDeleteBank(rowData.id);
+                break;
+            case "Country":
+                handleDeleteCountry(rowData.id);
+                break;
+            case "Salutation":
+                handleDeleteSalutation(rowData.id);
+                break;
+            default:
+                break;
+        }
         setOpenDeleteModel(false);
     };
 
