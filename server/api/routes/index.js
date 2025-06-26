@@ -15,6 +15,7 @@ const BankListRoutes = require("./bankList.routes");
 const LanguageRoutes = require("./language.routes");
 const LoanTypeRoutes = require("./loanType.routes");
 const SalutationRoutes = require("./salutation.routes");
+const DesignationRoutes = require("./designation.routes");
 
 // Uncomment when ready to use
 // const salaryRoutes = require('./salary.routes');
@@ -33,6 +34,7 @@ router.use("/bank-list", BankListRoutes);
 router.use("/language", LanguageRoutes);
 router.use("/loan-type", LoanTypeRoutes);
 router.use("/salutation", SalutationRoutes);
+router.use("/designation", DesignationRoutes);
 
 // Uncomment when ready to use
 // router.use('/salary', salaryRoutes);
@@ -56,6 +58,7 @@ router.get("/", (req, res) => {
             language: "/api/language",
             loanType: "/api/loan-type",
             salutation: "/api/salutation",
+            designation: "/api/designation",
 
             // Uncomment when ready to use
             // salary: '/api/salary',
