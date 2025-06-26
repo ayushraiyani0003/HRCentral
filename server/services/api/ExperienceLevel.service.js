@@ -1,5 +1,5 @@
 // =================== services/ExperienceLevel.service.js ===================
-const { ExperienceLevel } = require("../models");
+const { ExperienceLevel } = require("../../models");
 const { Op } = require("sequelize");
 
 class ExperienceLevelService {
@@ -38,7 +38,7 @@ class ExperienceLevelService {
 
             const whereClause = search
                 ? {
-                      name: { [Op.iLike]: `%${search}%` },
+                      name: { [Op.like]: `%${search}%` },
                   }
                 : {};
 
@@ -166,4 +166,4 @@ class ExperienceLevelService {
     }
 }
 
-module.exports = ExperienceLevelService;
+module.exports = new ExperienceLevelService();

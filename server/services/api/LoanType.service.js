@@ -1,4 +1,5 @@
 const { LoanType } = require("../../models"); // Adjust path as needed
+const { Op } = require("sequelize");
 
 class LoanTypeService {
     /**

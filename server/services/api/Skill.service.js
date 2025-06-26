@@ -1,5 +1,5 @@
 // =================== services/Skill.service.js ===================
-const { Skill } = require("../models");
+const { Skill } = require("../../models");
 const { Op } = require("sequelize");
 
 class SkillService {
@@ -36,7 +36,7 @@ class SkillService {
 
             const whereClause = search
                 ? {
-                      name: { [Op.iLike]: `%${search}%` },
+                      name: { [Op.like]: `%${search}%` },
                   }
                 : {};
 
@@ -190,4 +190,4 @@ class SkillService {
     }
 }
 
-module.exports = SkillService;
+module.exports = new SkillService();

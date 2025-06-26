@@ -1,4 +1,7 @@
 // =================== services/EducationLevelService.js ===================
+const { EducationLevel } = require("../../models");
+const { Op } = require("sequelize");
+
 class EducationLevelService {
     /**
      * Create a new education level
@@ -128,7 +131,7 @@ class EducationLevelService {
         try {
             const educationLevels = await EducationLevel.findAll({
                 where: {
-                    name: { [Op.iLike]: `%${searchTerm}%` },
+                    name: { [Op.like]: `%${searchTerm}%` },
                 },
                 order: [["name", "ASC"]],
             });
@@ -139,3 +142,5 @@ class EducationLevelService {
         }
     }
 }
+
+module.exports = new EducationLevelService();

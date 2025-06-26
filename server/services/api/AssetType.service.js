@@ -1,4 +1,5 @@
 const { AssetType } = require("../../models"); // Adjust path as needed
+const { Op } = require("sequelize");
 
 class AssetTypeService {
     /**

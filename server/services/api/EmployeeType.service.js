@@ -1,6 +1,7 @@
 // =================== services/EmployeeType.service.js ===================
 
 const { EmployeeType } = require("../../models"); // Adjust path as needed
+const { Op } = require("sequelize");
 
 /**
  * EmployeeType Service

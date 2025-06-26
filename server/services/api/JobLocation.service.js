@@ -36,7 +36,7 @@ class JobLocationService {
 
             const whereClause = search
                 ? {
-                      name: { [Op.iLike]: `%${search}%` },
+                      name: { [Op.like]: `%${search}%` },
                   }
                 : {};
 
@@ -164,4 +164,4 @@ class JobLocationService {
     }
 }
 
-module.exports = JobLocationService;
+module.exports = new JobLocationService();

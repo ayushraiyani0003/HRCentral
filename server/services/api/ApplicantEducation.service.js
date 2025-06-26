@@ -1,4 +1,7 @@
 // =================== services/ApplicantEducationService.js ===================
+const { ApplicantEducation } = require("../../models");
+const { Op } = require("sequelize");
+
 class ApplicantEducationService {
     /**
      * Add education record for applicant
@@ -80,3 +83,5 @@ class ApplicantEducationService {
         }
     }
 }
+
+module.exports = new ApplicantEducationService();

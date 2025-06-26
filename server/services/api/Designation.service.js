@@ -1,4 +1,7 @@
 // =================== services/DesignationService.js ===================
+const { Designation } = require("../../models");
+const { Op } = require("sequelize");
+
 class DesignationService {
     /**
      * Create a new designation
@@ -126,7 +129,7 @@ class DesignationService {
         try {
             const designations = await Designation.findAll({
                 where: {
-                    name: { [Op.iLike]: `%${searchTerm}%` },
+                    name: { [Op.like]: `%${searchTerm}%` },
                 },
                 order: [["name", "ASC"]],
             });
@@ -137,3 +140,5 @@ class DesignationService {
         }
     }
 }
+
+module.exports = new DesignationService();

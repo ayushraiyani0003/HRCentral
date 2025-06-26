@@ -1,4 +1,7 @@
 // =================== services/ApplicantTrackingService.js ===================
+const { ApplicantTracking } = require("../../models");
+const { Op } = require("sequelize");
+
 const {
     ApplicantTracking,
     ApplicantEducation,
@@ -41,7 +44,7 @@ class ApplicantTrackingService {
             if (status) whereClause.status = status;
             if (department) whereClause.department = department;
             if (position)
-                whereClause.position_applied = { [Op.iLike]: `%${position}%` };
+                whereClause.position_applied = { [Op.like]: `%${position}%` };
 
             const { count, rows } = await ApplicantTracking.findAndCountAll({
                 where: whereClause,
@@ -129,8 +132,8 @@ class ApplicantTrackingService {
             const applicants = await ApplicantTracking.findAll({
                 where: {
                     [Op.or]: [
-                        { first_name: { [Op.iLike]: `%${searchTerm}%` } },
-                        { surname: { [Op.iLike]: `%${searchTerm}%` } },
+                        { first_name: { [Op.like]: `%${searchTerm}%` } },
+                        { surname: { [Op.like]: `%${searchTerm}%` } },
                         { mobile_no_1: { [Op.like]: `%${searchTerm}%` } },
                     ],
                 },
@@ -188,3 +191,5 @@ class ApplicantTrackingService {
         }
     }
 }
+
+module.exports = new ApplicantTrackingService();

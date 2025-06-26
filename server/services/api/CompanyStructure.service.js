@@ -4,6 +4,7 @@
  */
 
 const { CompanyStructure } = require("../../models");
+const { Op } = require("sequelize");
 
 class CompanyStructureService {
     /**

@@ -4,7 +4,7 @@
  */
 
 const { Op } = require("sequelize");
-const db = require("../models"); // Adjust path as needed
+const { ManPowerRequisition } = require("../../models"); // Adjust path as needed
 
 class ManPowerRequisitionService {
     constructor() {
@@ -553,8 +553,8 @@ class ManPowerRequisitionService {
 
         if (filters.search) {
             where[Op.or] = [
-                { requestId: { [Op.iLike]: `%${filters.search}%` } },
-                { jobDescription: { [Op.iLike]: `%${filters.search}%` } },
+                { requestId: { [Op.like]: `%${filters.search}%` } },
+                { jobDescription: { [Op.like]: `%${filters.search}%` } },
             ];
         }
 

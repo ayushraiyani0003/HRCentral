@@ -1,4 +1,7 @@
 // =================== services/EmployeeListService.js ===================
+const { EmployeeListService } = require("../../models");
+const { Op } = require("sequelize");
+
 class EmployeeListService {
     /**
      * Create a new employee
@@ -211,10 +214,10 @@ class EmployeeListService {
             const employees = await Employee.findAll({
                 where: {
                     [Op.or]: [
-                        { firstName: { [Op.iLike]: `%${searchTerm}%` } },
-                        { lastName: { [Op.iLike]: `%${searchTerm}%` } },
-                        { employeeId: { [Op.iLike]: `%${searchTerm}%` } },
-                        { email: { [Op.iLike]: `%${searchTerm}%` } },
+                        { firstName: { [Op.like]: `%${searchTerm}%` } },
+                        { lastName: { [Op.like]: `%${searchTerm}%` } },
+                        { employeeId: { [Op.like]: `%${searchTerm}%` } },
+                        { email: { [Op.like]: `%${searchTerm}%` } },
                     ],
                 },
                 include: [
@@ -360,11 +363,4 @@ class EmployeeListService {
     }
 }
 
-module.exports = {
-    ApplicantTrackingService,
-    ApplicantEducationService,
-    ApplicantWorkHistoryService,
-    DesignationService,
-    EducationLevelService,
-    EmployeeListService,
-};
+module.exports = new EmployeeListService();

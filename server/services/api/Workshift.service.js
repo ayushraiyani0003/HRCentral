@@ -1,5 +1,5 @@
 // =================== services/WorkShift.service.js ===================
-const { WorkShift } = require("../models");
+const { WorkShift } = require("../../models");
 const { Op } = require("sequelize");
 
 class WorkShiftService {
@@ -36,7 +36,7 @@ class WorkShiftService {
 
             const whereClause = search
                 ? {
-                      name: { [Op.iLike]: `%${search}%` },
+                      name: { [Op.like]: `%${search}%` },
                   }
                 : {};
 
@@ -220,4 +220,4 @@ class WorkShiftService {
     }
 }
 
-module.exports = WorkShiftService;
+module.exports = new WorkShiftService();

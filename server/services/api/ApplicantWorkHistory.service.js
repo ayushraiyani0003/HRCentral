@@ -1,4 +1,7 @@
 // =================== services/ApplicantWorkHistoryService.js ===================
+const { ApplicantWorkHistory } = require("../../models");
+const { Op } = require("sequelize");
+
 class ApplicantWorkHistoryService {
     /**
      * Add work history record for applicant
@@ -108,3 +111,5 @@ class ApplicantWorkHistoryService {
         }
     }
 }
+
+module.exports = new ApplicantWorkHistoryService();

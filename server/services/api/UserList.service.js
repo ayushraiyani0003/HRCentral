@@ -6,7 +6,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { Op } = require("sequelize");
-const db = require("../models"); // Adjust path as needed
+const { UserList } = require("../../models"); // Adjust path as needed
 
 class UserListService {
     constructor() {
@@ -825,8 +825,8 @@ class UserListService {
 
         if (filters.search) {
             where[Op.or] = [
-                { userName: { [Op.iLike]: `%${filters.search}%` } },
-                { role: { [Op.iLike]: `%${filters.search}%` } },
+                { userName: { [Op.like]: `%${filters.search}%` } },
+                { role: { [Op.like]: `%${filters.search}%` } },
             ];
         }
 
