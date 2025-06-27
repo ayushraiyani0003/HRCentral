@@ -14,7 +14,7 @@ function SetupModal({
     rowData,
     crudHandlers = {}, // New: Consolidated handlers
 }) {
-    console.log(crudHandlers);
+    //console.log(crudHandlers);
 
     const [formData, setFormData] = useState({
         name: "",

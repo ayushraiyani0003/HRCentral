@@ -10,16 +10,15 @@ import {
     clearMessage,
     setSelectedCountry,
     updateFilters,
-    updatePagination,
-    // Selectors
+    // Use the optimized selectors
     selectCountries,
     selectSelectedCountry,
-    selectLoading,
     selectError,
     selectMessage,
-    selectPagination,
     selectFilters,
+    selectLoading,
     selectIsLoading,
+    selectIsFetchLoading,
 } from "../../../store/countrySlice";
 
 const useCountryTab = ({
@@ -28,22 +27,26 @@ const useCountryTab = ({
     setOpenAddEditModel = () => {},
     setModelType = () => {},
 }) => {
-    console.log(setRowData);
-
     const dispatch = useDispatch();
 
-    // Redux state selectors
+    // Redux state selectors - using optimized memoized selectors
     const countries = useSelector(selectCountries);
+    // DEBUG: Add direct state access to compare
+    const directCountries = useSelector(
+        (state) => state.country?.countries || []
+    );
+    // const wholeCountryState = useSelector((state) => state.country);
+
     const selectedCountry = useSelector(selectSelectedCountry);
     const loading = useSelector(selectLoading);
     const error = useSelector(selectError);
     const message = useSelector(selectMessage);
-    const pagination = useSelector(selectPagination);
     const filters = useSelector(selectFilters);
     const isLoading = useSelector(selectIsLoading);
+    const isFetchLoading = useSelector(selectIsFetchLoading);
 
-    // Local state for search
-    const [searchValue, setSearchValue] = useState(filters.search || "");
+    // Local state for client-side search
+    const [searchValue, setSearchValue] = useState("");
 
     // Ref to track if initial load is done
     const initialLoadDone = useRef(false);
@@ -51,63 +54,150 @@ const useCountryTab = ({
     // Ref to prevent duplicate API calls
     const lastFetchParams = useRef(null);
 
-    // Load countries on component mount and when relevant parameters change
-    useEffect(() => {
-        const fetchParams = {
-            page: pagination.page,
-            limit: pagination.limit,
-            search: filters.search,
+    // DEBUG: Add console logs to debug the data flow
+    // useEffect(() => {
+    //     console.log("🔍 DEBUG - Redux State Comparison:", {
+    //         // From selector
+    //         countries,
+    //         countriesType: typeof countries,
+    //         countriesLength: Array.isArray(countries)
+    //             ? countries.length
+    //             : "Not an array",
+
+    //         // Direct access
+    //         directCountries,
+    //         directCountriesType: typeof directCountries,
+    //         directCountriesLength: Array.isArray(directCountries)
+    //             ? directCountries.length
+    //             : "Not an array",
+
+    //         // Whole state
+    //         wholeCountryState,
+
+    //         // Other state
+    //         loading,
+    //         error,
+    //         filters,
+    //     });
+    // }, [
+    //     countries,
+    //     directCountries,
+    //     wholeCountryState,
+    //     loading,
+    //     error,
+    //     filters,
+    // ]);
+
+    // Memoize fetch parameters to prevent unnecessary effect triggers
+    const fetchParams = useMemo(
+        () => ({
             region: filters.region,
             sortBy: filters.sortBy,
             sortOrder: filters.sortOrder,
-        };
+        }),
+        [filters.region, filters.sortBy, filters.sortOrder]
+    );
 
+    // Load countries on component mount and when relevant parameters change
+    useEffect(() => {
         // Convert to string for comparison to prevent duplicate calls
         const paramsString = JSON.stringify(fetchParams);
 
+        // console.log("🚀 DEBUG - useEffect triggered:", {
+        //     fetchParams,
+        //     paramsString,
+        //     lastFetchParams: lastFetchParams.current,
+        //     shouldSkip: lastFetchParams.current === paramsString,
+        // });
+
         // Skip if this exact request was already made
         if (lastFetchParams.current === paramsString) {
+            // console.log("⏭️ Skipping duplicate API call");
             return;
         }
 
         // Update the ref with current params
         lastFetchParams.current = paramsString;
 
-        // Make the API call
-        dispatch(fetchCountries(fetchParams));
+        // console.log("📡 Making API call with params:", fetchParams);
+
+        // Make the API call (fetch all data without pagination)
+        const fetchPromise = dispatch(fetchCountries(fetchParams));
+
+        // DEBUG: Log the promise result
+        fetchPromise
+            .then((result) => {
+                // console.log("✅ API call completed:", result);
+            })
+            .catch((err) => {
+                console.error("❌ API call failed:", err);
+            });
 
         // Mark initial load as done
         if (!initialLoadDone.current) {
             initialLoadDone.current = true;
+            // console.log("✨ Initial load marked as done");
         }
-    }, [
-        dispatch,
-        pagination.page,
-        pagination.limit,
-        filters.search,
-        filters.region,
-        filters.sortBy,
-        filters.sortOrder,
-    ]);
+    }, [dispatch, fetchParams]);
 
-    // Filter data based on search value (local filtering for immediate feedback)
+    // Client-side filtering based on search value - properly memoized
+    // Use directCountries for now to test if selector is the issue
     const filteredData = useMemo(() => {
-        if (!searchValue.trim()) {
-            return countries;
+        // Use the data that actually has content
+        const dataToFilter =
+            directCountries.length > 0 ? directCountries : countries;
+
+        // console.log("🔎 DEBUG - Filtering data:", {
+        //     countries,
+        //     countriesIsArray: Array.isArray(countries),
+        //     countriesLength: Array.isArray(countries)
+        //         ? countries.length
+        //         : "Not an array",
+        //     directCountries,
+        //     directCountriesIsArray: Array.isArray(directCountries),
+        //     directCountriesLength: Array.isArray(directCountries)
+        //         ? directCountries.length
+        //         : "Not an array",
+        //     dataToFilter,
+        //     dataToFilterLength: Array.isArray(dataToFilter)
+        //         ? dataToFilter.length
+        //         : "Not an array",
+        //     searchValue: searchValue.trim(),
+        // });
+
+        if (!Array.isArray(dataToFilter)) {
+            console.warn("⚠️ DataToFilter is not an array:", dataToFilter);
+            return [];
         }
+
+        if (!searchValue.trim()) {
+            // console.log(
+            //     "📋 Returning all countries (no search):",
+            //     dataToFilter.length
+            // );
+            return dataToFilter;
+        }
+
         const searchTerm = searchValue.toLowerCase().trim();
-        return countries.filter((country) => {
-            return (
+        const filtered = dataToFilter.filter((country) => {
+            const matches =
                 country.name?.toLowerCase().includes(searchTerm) ||
                 country.code?.toLowerCase().includes(searchTerm) ||
-                country.region?.toLowerCase().includes(searchTerm)
-            );
+                country.region?.toLowerCase().includes(searchTerm);
+            return matches;
         });
-    }, [searchValue, countries]);
+
+        // console.log("🔍 Filtered results:", {
+        //     searchTerm,
+        //     originalCount: dataToFilter.length,
+        //     filteredCount: filtered.length,
+        // });
+
+        return filtered;
+    }, [searchValue, countries, directCountries]);
 
     // Action handlers for modal operations
     const handleAddNew = useCallback(() => {
-        console.log("handleAddNew called");
         setOpenAddEditModel(true);
         setModelType("add");
         setRowData(null);
@@ -153,29 +243,11 @@ const useCountryTab = ({
         [setRowData, setOpenDeleteModel, dispatch]
     );
 
-    // Debounced search to prevent too many API calls
-    const searchTimeoutRef = useRef(null);
-
-    const handleSearch = useCallback(
-        (value) => {
-            setSearchValue(value);
-
-            // Clear existing timeout
-            if (searchTimeoutRef.current) {
-                clearTimeout(searchTimeoutRef.current);
-            }
-
-            // Debounce the search API call
-            searchTimeoutRef.current = setTimeout(() => {
-                // Update Redux filters for server-side search
-                dispatch(updateFilters({ search: value }));
-
-                // Reset pagination when searching
-                dispatch(updatePagination({ page: 1 }));
-            }, 300); // 300ms debounce
-        },
-        [dispatch]
-    );
+    // Simple client-side search handler (no debouncing needed for client-side)
+    const handleSearch = useCallback((value) => {
+        // console.log("🔍 Search value changed:", value);
+        setSearchValue(value);
+    }, []);
 
     // CRUD operations - These will be called from the modal
     const handleCreateCountry = useCallback(
@@ -251,26 +323,10 @@ const useCountryTab = ({
         [dispatch, setOpenDeleteModel, setRowData]
     );
 
-    // Pagination handlers
-    const handlePageChange = useCallback(
-        (page) => {
-            dispatch(updatePagination({ page }));
-        },
-        [dispatch]
-    );
-
-    const handleLimitChange = useCallback(
-        (limit) => {
-            dispatch(updatePagination({ limit, page: 1 }));
-        },
-        [dispatch]
-    );
-
     // Filter handlers
     const handleRegionFilter = useCallback(
         (region) => {
             dispatch(updateFilters({ region }));
-            dispatch(updatePagination({ page: 1 }));
         },
         [dispatch]
     );
@@ -278,7 +334,6 @@ const useCountryTab = ({
     const handleSortChange = useCallback(
         (sortBy, sortOrder) => {
             dispatch(updateFilters({ sortBy, sortOrder }));
-            dispatch(updatePagination({ page: 1 }));
         },
         [dispatch]
     );
@@ -292,44 +347,43 @@ const useCountryTab = ({
         dispatch(clearMessage());
     }, [dispatch]);
 
+    const clearSearchValue = useCallback(() => {
+        setSearchValue("");
+    }, []);
+
     const refreshData = useCallback(() => {
+        // console.log("🔄 Refreshing data manually");
         // Reset the ref to allow fresh API call
         lastFetchParams.current = null;
 
-        dispatch(
-            fetchCountries({
-                page: pagination.page,
-                limit: pagination.limit,
-                search: filters.search,
-                region: filters.region,
-                sortBy: filters.sortBy,
-                sortOrder: filters.sortOrder,
-            })
-        );
-    }, [dispatch, pagination, filters]);
+        // Refresh data (fetch all data)
+        dispatch(fetchCountries(fetchParams));
+    }, [dispatch, fetchParams]);
 
-    // Cleanup timeout on unmount
-    useEffect(() => {
-        return () => {
-            if (searchTimeoutRef.current) {
-                clearTimeout(searchTimeoutRef.current);
-            }
-        };
-    }, []);
+    // DEBUG: Final return values
+    // console.log("📤 DEBUG - Hook return values:", {
+    //     countries: countries?.length || 0,
+    //     directCountries: directCountries?.length || 0,
+    //     filteredData: filteredData?.length || 0,
+    //     displayData: filteredData?.length || 0,
+    //     loading,
+    //     error,
+    // });
 
     return {
         // Data
-        countries,
+        countries: directCountries.length > 0 ? directCountries : countries, // Use working data
         filteredData,
         selectedCountry,
+        displayData: filteredData, // Always use filteredData for display
 
         // State
         loading,
         error,
         message,
-        pagination,
         filters,
         isLoading,
+        isFetchLoading,
         searchValue,
 
         // Modal handlers (for opening modals)
@@ -344,10 +398,6 @@ const useCountryTab = ({
         handleUpdateCountry,
         handleDeleteCountry,
 
-        // Pagination
-        handlePageChange,
-        handleLimitChange,
-
         // Filtering & Sorting
         handleRegionFilter,
         handleSortChange,
@@ -355,6 +405,7 @@ const useCountryTab = ({
         // Utility
         clearErrorMessage,
         clearSuccessMessage,
+        clearSearchValue,
         refreshData,
     };
 };
