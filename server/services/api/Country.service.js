@@ -1,7 +1,7 @@
 // =================== services/Country.service.js ===================
 
 const { Country } = require("../../models");
-const { Op } = require("sequelize");
+const { Op, fn, col, where } = require("sequelize");
 
 /**
  * Country Service
@@ -11,336 +11,429 @@ const { Op } = require("sequelize");
 class CountryService {
     /**
      * Create a new country
-     * @param {Object} countryData - Country data object
-     * @param {string} countryData.name - Country name
-     * @param {string} countryData.code - ISO 3166-1 alpha-2 country code (2 characters, uppercase)
-     * @param {string} countryData.phone_code - Phone code with + prefix (e.g., +1, +91)
-     * @param {string} countryData.region - Geographic region
+     * @param {Object} data - Country data object
+     * @param {string} data.name - Country name
+     * @param {string} data.code - ISO 3166-1 alpha-2 country code (2 characters, uppercase)
+     * @param {string} data.phone_code - Phone code with + prefix (e.g., +1, +91)
+     * @param {string} data.region - Geographic region
      * @returns {Promise<Object>} Created country object
      * @throws {Error} Validation error or database error
-     * @example
-     * const country = await CountryService.create({
-     *   name: 'United States',
-     *   code: 'US',
-     *   phone_code: '+1',
-     *   region: 'North America'
-     * });
      */
-    static async create(countryData) {
-        console.log(countryData);
-
+    async create(data) {
         try {
-            const country = await Country.create(countryData);
-            return country.toJSON();
+            const { name, code, phone_code, region } = data;
+
+            // Validate required fields
+            if (!name || !name.trim()) {
+                throw new Error("Country name is required and cannot be empty");
+            }
+            if (!code || !code.trim()) {
+                throw new Error("Country code is required and cannot be empty");
+            }
+            if (!phone_code || !phone_code.trim()) {
+                throw new Error("Phone code is required and cannot be empty");
+            }
+            if (!region || !region.trim()) {
+                throw new Error("Region is required and cannot be empty");
+            }
+
+            // Validate field lengths
+            if (name.trim().length > 100) {
+                throw new Error("Country name cannot exceed 100 characters");
+            }
+            if (code.trim().length !== 2) {
+                throw new Error("Country code must be exactly 2 characters");
+            }
+            if (phone_code.trim().length > 10) {
+                throw new Error("Phone code cannot exceed 10 characters");
+            }
+            if (region.trim().length > 50) {
+                throw new Error("Region cannot exceed 50 characters");
+            }
+
+            // Validate country code format (2 uppercase letters)
+            if (!/^[A-Z]{2}$/.test(code.trim().toUpperCase())) {
+                throw new Error("Country code must be 2 uppercase letters");
+            }
+
+            // Validate phone code format (+ followed by digits)
+            if (!/^\+\d+$/.test(phone_code.trim())) {
+                throw new Error(
+                    "Phone code must start with + followed by digits"
+                );
+            }
+
+            // Check if country name already exists (case-insensitive)
+            const existingCountryByName = await Country.findOne({
+                where: where(
+                    fn("LOWER", col("name")),
+                    name.trim().toLowerCase()
+                ),
+            });
+
+            if (existingCountryByName) {
+                throw new Error("Country name already exists");
+            }
+
+            // Check if country code already exists (case-insensitive)
+            const existingCountryByCode = await Country.findOne({
+                where: where(
+                    fn("UPPER", col("code")),
+                    code.trim().toUpperCase()
+                ),
+            });
+
+            if (existingCountryByCode) {
+                throw new Error("Country code already exists");
+            }
+
+            const country = await Country.create({
+                name: name.trim(),
+                code: code.trim().toUpperCase(),
+                phone_code: phone_code.trim(),
+                region: region.trim(),
+            });
+
+            return {
+                success: true,
+                data: country,
+                message: "Country created successfully",
+            };
         } catch (error) {
+            // Handle Sequelize unique constraint error
+            if (error.name === "SequelizeUniqueConstraintError") {
+                const field = error.errors[0]?.path;
+                if (field === "name") {
+                    throw new Error("Country name already exists");
+                } else if (field === "code") {
+                    throw new Error("Country code already exists");
+                } else {
+                    throw new Error("Country already exists");
+                }
+            }
+            // Handle validation errors
+            if (error.name === "SequelizeValidationError") {
+                const validationErrors = error.errors
+                    .map((err) => err.message)
+                    .join(", ");
+                throw new Error(`Validation error: ${validationErrors}`);
+            }
             throw new Error(`Failed to create country: ${error.message}`);
         }
     }
 
     /**
-     * Get all countries with optional filtering and pagination
-     * @param {Object} options - Query options
-     * @param {number} [options.page=1] - Page number for pagination
-     * @param {number} [options.limit=10] - Number of records per page
-     * @param {string} [options.region] - Filter by region
-     * @param {string} [options.search] - Search in country name
-     * @param {string} [options.sortBy='name'] - Sort by field
-     * @param {string} [options.sortOrder='ASC'] - Sort order (ASC/DESC)
-     * @returns {Promise<Object>} Object containing countries array and pagination info
-     * @example
-     * const result = await CountryService.getAll({
-     *   page: 1,
-     *   limit: 20,
-     *   region: 'Asia',
-     *   search: 'India'
-     * });
+     * Get all countries
+     * @returns {Promise<Object>} List of countries
      */
-    static async getAll(options = {}) {
+    async getAll() {
         try {
-            const {
-                page = 1,
-                limit = 10,
-                region,
-                search,
-                sortBy = "name",
-                sortOrder = "ASC",
-            } = options;
-
-            const offset = (page - 1) * limit;
-            const whereClause = {};
-
-            // Add region filter
-            if (region) {
-                whereClause.region = region;
-            }
-
-            // Add search filter
-            if (search) {
-                whereClause.name = {
-                    [Op.iLike]: `%${search}%`,
-                };
-            }
-
-            const { count, rows } = await Country.findAndCountAll({
-                where: whereClause,
-                limit: parseInt(limit),
-                offset: parseInt(offset),
-                order: [[sortBy, sortOrder.toUpperCase()]],
-            });
+            const countries = await Country.findAll();
 
             return {
-                countries: rows.map((country) => country.toJSON()),
-                pagination: {
-                    currentPage: parseInt(page),
-                    totalPages: Math.ceil(count / limit),
-                    totalCount: count,
-                    hasNext: page < Math.ceil(count / limit),
-                    hasPrev: page > 1,
-                },
+                success: true,
+                data: countries,
+                message: "Countries retrieved successfully",
             };
         } catch (error) {
-            throw new Error(`Failed to fetch countries: ${error.message}`);
+            throw new Error(`Failed to retrieve countries: ${error.message}`);
         }
     }
 
     /**
-     * Get a country by ID
+     * Get country by ID (UUID)
      * @param {string} id - Country UUID
-     * @returns {Promise<Object|null>} Country object or null if not found
-     * @throws {Error} Database error
-     * @example
-     * const country = await CountryService.getById('123e4567-e89b-12d3-a456-426614174000');
+     * @returns {Promise<Object>} Country data
      */
-    static async getById(id) {
+    async readById(id) {
         try {
-            const country = await Country.findByPk(id);
-            return country ? country.toJSON() : null;
-        } catch (error) {
-            throw new Error(`Failed to fetch country by ID: ${error.message}`);
-        }
-    }
-
-    /**
-     * Get a country by country code
-     * @param {string} code - ISO 3166-1 alpha-2 country code
-     * @returns {Promise<Object|null>} Country object or null if not found
-     * @throws {Error} Database error
-     * @example
-     * const country = await CountryService.getByCode('US');
-     */
-    static async getByCode(code) {
-        try {
-            const country = await Country.findOne({
-                where: { code: code.toUpperCase() },
-            });
-            return country ? country.toJSON() : null;
-        } catch (error) {
-            throw new Error(
-                `Failed to fetch country by code: ${error.message}`
-            );
-        }
-    }
-
-    /**
-     * Get countries by region
-     * @param {string} region - Geographic region
-     * @param {Object} options - Query options
-     * @param {string} [options.sortBy='name'] - Sort by field
-     * @param {string} [options.sortOrder='ASC'] - Sort order (ASC/DESC)
-     * @returns {Promise<Array>} Array of country objects
-     * @throws {Error} Database error
-     * @example
-     * const countries = await CountryService.getByRegion('Asia');
-     */
-    static async getByRegion(region, options = {}) {
-        try {
-            const { sortBy = "name", sortOrder = "ASC" } = options;
-
-            const countries = await Country.findAll({
-                where: { region },
-                order: [[sortBy, sortOrder.toUpperCase()]],
-            });
-
-            return countries.map((country) => country.toJSON());
-        } catch (error) {
-            throw new Error(
-                `Failed to fetch countries by region: ${error.message}`
-            );
-        }
-    }
-
-    /**
-     * Update a country by ID
-     * @param {string} id - Country UUID
-     * @param {Object} updateData - Data to update
-     * @param {string} [updateData.name] - Country name
-     * @param {string} [updateData.code] - ISO 3166-1 alpha-2 country code
-     * @param {string} [updateData.phone_code] - Phone code with + prefix
-     * @param {string} [updateData.region] - Geographic region
-     * @returns {Promise<Object|null>} Updated country object or null if not found
-     * @throws {Error} Validation error or database error
-     * @example
-     * const updatedCountry = await CountryService.update('123e4567-e89b-12d3-a456-426614174000', {
-     *   name: 'United States of America',
-     *   region: 'North America'
-     * });
-     */
-    static async update(id, updateData) {
-        try {
-            const [updatedRowsCount] = await Country.update(updateData, {
-                where: { id },
-                returning: true,
-            });
-
-            if (updatedRowsCount === 0) {
-                return null;
+            if (!id) {
+                throw new Error("Country ID is required");
             }
 
-            const updatedCountry = await Country.findByPk(id);
-            return updatedCountry.toJSON();
+            // Validate UUID format
+            if (!this._isValidUUID(id)) {
+                throw new Error("Invalid UUID format");
+            }
+
+            const country = await Country.findByPk(id);
+
+            if (!country) {
+                throw new Error("Country not found");
+            }
+
+            return {
+                success: true,
+                data: country,
+                message: "Country retrieved successfully",
+            };
         } catch (error) {
+            throw new Error(`Failed to retrieve country: ${error.message}`);
+        }
+    }
+
+    /**
+     * Update country by ID (UUID)
+     * @param {string} id - Country UUID
+     * @param {Object} data - Updated country data
+     * @returns {Promise<Object>} Updated country
+     */
+    async update(id, data) {
+        try {
+            if (!id) {
+                throw new Error("Country ID is required");
+            }
+
+            // Validate UUID format
+            if (!this._isValidUUID(id)) {
+                throw new Error("Invalid UUID format");
+            }
+
+            const country = await Country.findByPk(id);
+
+            if (!country) {
+                throw new Error("Country not found");
+            }
+
+            const { name, code, phone_code, region } = data;
+            const updateData = {};
+
+            // Validate and prepare update data
+            if (name !== undefined) {
+                if (!name || !name.trim()) {
+                    throw new Error(
+                        "Country name is required and cannot be empty"
+                    );
+                }
+                if (name.trim().length > 100) {
+                    throw new Error(
+                        "Country name cannot exceed 100 characters"
+                    );
+                }
+                updateData.name = name.trim();
+            }
+
+            if (code !== undefined) {
+                if (!code || !code.trim()) {
+                    throw new Error(
+                        "Country code is required and cannot be empty"
+                    );
+                }
+                if (code.trim().length !== 2) {
+                    throw new Error(
+                        "Country code must be exactly 2 characters"
+                    );
+                }
+                if (!/^[A-Z]{2}$/.test(code.trim().toUpperCase())) {
+                    throw new Error("Country code must be 2 uppercase letters");
+                }
+                updateData.code = code.trim().toUpperCase();
+            }
+
+            if (phone_code !== undefined) {
+                if (!phone_code || !phone_code.trim()) {
+                    throw new Error(
+                        "Phone code is required and cannot be empty"
+                    );
+                }
+                if (phone_code.trim().length > 10) {
+                    throw new Error("Phone code cannot exceed 10 characters");
+                }
+                if (!/^\+\d+$/.test(phone_code.trim())) {
+                    throw new Error(
+                        "Phone code must start with + followed by digits"
+                    );
+                }
+                updateData.phone_code = phone_code.trim();
+            }
+
+            if (region !== undefined) {
+                if (!region || !region.trim()) {
+                    throw new Error("Region is required and cannot be empty");
+                }
+                if (region.trim().length > 50) {
+                    throw new Error("Region cannot exceed 50 characters");
+                }
+                updateData.region = region.trim();
+            }
+
+            // Check for duplicate name (excluding current record)
+            if (updateData.name) {
+                const existingCountryByName = await Country.findOne({
+                    where: {
+                        name: {
+                            [Op.like]: updateData.name,
+                        },
+                        id: { [Op.ne]: id },
+                    },
+                });
+
+                if (existingCountryByName) {
+                    throw new Error("Country name already exists");
+                }
+            }
+
+            // Check for duplicate code (excluding current record)
+            if (updateData.code) {
+                const existingCountryByCode = await Country.findOne({
+                    where: {
+                        code: updateData.code,
+                        id: { [Op.ne]: id },
+                    },
+                });
+
+                if (existingCountryByCode) {
+                    throw new Error("Country code already exists");
+                }
+            }
+
+            const updatedCountry = await country.update(updateData);
+
+            return {
+                success: true,
+                data: updatedCountry,
+                message: "Country updated successfully",
+            };
+        } catch (error) {
+            // Handle Sequelize unique constraint error
+            if (error.name === "SequelizeUniqueConstraintError") {
+                const field = error.errors[0]?.path;
+                if (field === "name") {
+                    throw new Error("Country name already exists");
+                } else if (field === "code") {
+                    throw new Error("Country code already exists");
+                } else {
+                    throw new Error("Country already exists");
+                }
+            }
+            // Handle validation errors
+            if (error.name === "SequelizeValidationError") {
+                const validationErrors = error.errors
+                    .map((err) => err.message)
+                    .join(", ");
+                throw new Error(`Validation error: ${validationErrors}`);
+            }
             throw new Error(`Failed to update country: ${error.message}`);
         }
     }
 
     /**
-     * Update a country by country code
-     * @param {string} code - ISO 3166-1 alpha-2 country code
-     * @param {Object} updateData - Data to update
-     * @returns {Promise<Object|null>} Updated country object or null if not found
-     * @throws {Error} Validation error or database error
-     * @example
-     * const updatedCountry = await CountryService.updateByCode('US', {
-     *   name: 'United States of America'
-     * });
+     * Delete country by ID (UUID)
+     * @param {string} id - Country UUID
+     * @returns {Promise<Object>} Deletion result
      */
-    static async updateByCode(code, updateData) {
+    async delete(id) {
         try {
-            const [updatedRowsCount] = await Country.update(updateData, {
-                where: { code: code.toUpperCase() },
-                returning: true,
-            });
-
-            if (updatedRowsCount === 0) {
-                return null;
+            if (!id) {
+                throw new Error("Country ID is required");
             }
 
-            const updatedCountry = await Country.findOne({
-                where: { code: code.toUpperCase() },
-            });
-            return updatedCountry.toJSON();
-        } catch (error) {
-            throw new Error(
-                `Failed to update country by code: ${error.message}`
-            );
-        }
-    }
+            // Validate UUID format
+            if (!this._isValidUUID(id)) {
+                throw new Error("Invalid UUID format");
+            }
 
-    /**
-     * Delete a country by ID
-     * @param {string} id - Country UUID
-     * @returns {Promise<boolean>} True if deleted, false if not found
-     * @throws {Error} Database error
-     * @example
-     * const deleted = await CountryService.delete('123e4567-e89b-12d3-a456-426614174000');
-     */
-    static async delete(id) {
-        try {
-            const deletedRowsCount = await Country.destroy({
-                where: { id },
-            });
+            const country = await Country.findByPk(id);
 
-            return deletedRowsCount > 0;
+            if (!country) {
+                throw new Error("Country not found");
+            }
+
+            await country.destroy();
+
+            return {
+                success: true,
+                message: "Country deleted successfully",
+            };
         } catch (error) {
             throw new Error(`Failed to delete country: ${error.message}`);
         }
     }
 
     /**
-     * Delete a country by country code
-     * @param {string} code - ISO 3166-1 alpha-2 country code
-     * @returns {Promise<boolean>} True if deleted, false if not found
-     * @throws {Error} Database error
-     * @example
-     * const deleted = await CountryService.deleteByCode('US');
+     * Get country by name (case-insensitive)
+     * @param {string} name - Country name
+     * @returns {Promise<Object>} Country data
      */
-    static async deleteByCode(code) {
+    async readByName(name) {
         try {
-            const deletedRowsCount = await Country.destroy({
-                where: { code: code.toUpperCase() },
+            if (!name || !name.trim()) {
+                throw new Error("Country name is required");
+            }
+
+            const country = await Country.findOne({
+                where: {
+                    name: {
+                        [Op.like]: name.trim(),
+                    },
+                },
             });
 
-            return deletedRowsCount > 0;
+            if (!country) {
+                throw new Error("Country not found");
+            }
+
+            return {
+                success: true,
+                data: country,
+                message: "Country retrieved successfully",
+            };
         } catch (error) {
-            throw new Error(
-                `Failed to delete country by code: ${error.message}`
-            );
+            throw new Error(`Failed to retrieve country: ${error.message}`);
         }
     }
 
     /**
-     * Bulk create countries
-     * @param {Array<Object>} countriesData - Array of country objects
-     * @returns {Promise<Array>} Array of created country objects
-     * @throws {Error} Validation error or database error
-     * @example
-     * const countries = await CountryService.bulkCreate([
-     *   { name: 'India', code: 'IN', phone_code: '+91', region: 'Asia' },
-     *   { name: 'China', code: 'CN', phone_code: '+86', region: 'Asia' }
-     * ]);
+     * Get country by code (case-insensitive)
+     * @param {string} code - Country code
+     * @returns {Promise<Object>} Country data
      */
-    static async bulkCreate(countriesData) {
+    async readByCode(code) {
         try {
-            const countries = await Country.bulkCreate(countriesData, {
-                returning: true,
-                validate: true,
+            if (!code || !code.trim()) {
+                throw new Error("Country code is required");
+            }
+
+            const country = await Country.findOne({
+                where: {
+                    code: code.trim().toUpperCase(),
+                },
             });
 
-            return countries.map((country) => country.toJSON());
+            if (!country) {
+                throw new Error("Country not found");
+            }
+
+            return {
+                success: true,
+                data: country,
+                message: "Country retrieved successfully",
+            };
         } catch (error) {
-            throw new Error(
-                `Failed to bulk create countries: ${error.message}`
-            );
+            throw new Error(`Failed to retrieve country: ${error.message}`);
         }
     }
 
     /**
-     * Get unique regions
-     * @returns {Promise<Array<string>>} Array of unique region names
-     * @throws {Error} Database error
-     * @example
-     * const regions = await CountryService.getUniqueRegions();
-     * // Returns: ['Asia', 'Europe', 'North America', ...]
-     */
-    static async getUniqueRegions() {
-        try {
-            const regions = await Country.findAll({
-                attributes: ["region"],
-                group: ["region"],
-                order: [["region", "ASC"]],
-            });
-
-            return regions.map((item) => item.region);
-        } catch (error) {
-            throw new Error(`Failed to fetch unique regions: ${error.message}`);
-        }
-    }
-
-    /**
-     * Check if a country exists by code
-     * @param {string} code - ISO 3166-1 alpha-2 country code
+     * Check if country exists by name (case-insensitive)
+     * @param {string} name - Country name
      * @returns {Promise<boolean>} True if exists, false otherwise
-     * @throws {Error} Database error
-     * @example
-     * const exists = await CountryService.existsByCode('US');
      */
-    static async existsByCode(code) {
+    async existsByName(name) {
         try {
-            const count = await Country.count({
-                where: { code: code.toUpperCase() },
+            if (!name || !name.trim()) {
+                return false;
+            }
+
+            const country = await Country.findOne({
+                where: {
+                    name: {
+                        [Op.like]: name.trim(),
+                    },
+                },
             });
 
-            return count > 0;
+            return !!country;
         } catch (error) {
             throw new Error(
                 `Failed to check country existence: ${error.message}`
@@ -349,38 +442,65 @@ class CountryService {
     }
 
     /**
-     * Get countries count by region
-     * @returns {Promise<Array<Object>>} Array of objects with region and count
-     * @throws {Error} Database error
-     * @example
-     * const regionCounts = await CountryService.getCountByRegion();
-     * // Returns: [{ region: 'Asia', count: 45 }, { region: 'Europe', count: 44 }, ...]
+     * Check if country exists by code
+     * @param {string} code - Country code
+     * @returns {Promise<boolean>} True if exists, false otherwise
      */
-    static async getCountByRegion() {
+    async existsByCode(code) {
         try {
-            const results = await Country.findAll({
-                attributes: [
-                    "region",
-                    [
-                        Country.sequelize.fn(
-                            "COUNT",
-                            Country.sequelize.col("id")
-                        ),
-                        "count",
-                    ],
-                ],
-                group: ["region"],
-                order: [["region", "ASC"]],
+            if (!code || !code.trim()) {
+                return false;
+            }
+
+            const country = await Country.findOne({
+                where: {
+                    code: code.trim().toUpperCase(),
+                },
             });
 
-            return results.map((item) => ({
-                region: item.region,
-                count: parseInt(item.dataValues.count),
-            }));
+            return !!country;
         } catch (error) {
-            throw new Error(`Failed to get count by region: ${error.message}`);
+            throw new Error(
+                `Failed to check country existence: ${error.message}`
+            );
         }
+    }
+
+    /**
+     * Check if country exists by ID (UUID)
+     * @param {string} id - Country UUID
+     * @returns {Promise<boolean>} True if exists, false otherwise
+     */
+    async existsById(id) {
+        try {
+            if (!id) {
+                return false;
+            }
+
+            // Validate UUID format
+            if (!this._isValidUUID(id)) {
+                return false;
+            }
+
+            const country = await Country.findByPk(id);
+            return !!country;
+        } catch (error) {
+            throw new Error(
+                `Failed to check country existence: ${error.message}`
+            );
+        }
+    }
+
+    /**
+     * Private method to validate UUID format
+     * @param {string} uuid - UUID string to validate
+     * @returns {boolean} True if valid UUID, false otherwise
+     */
+    _isValidUUID(uuid) {
+        const uuidRegex =
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        return uuidRegex.test(uuid);
     }
 }
 
-module.exports = CountryService;
+module.exports = new CountryService();

@@ -17,14 +17,6 @@ router.post("/", EducationLevelController.create);
 router.get("/", EducationLevelController.getAll);
 
 /**
- * @route GET /api/education-level/search
- * @desc Search education levels by query
- * @queryParam {string} q - Search term
- * @access Public
- */
-router.get("/search", EducationLevelController.search);
-
-/**
  * @route GET /api/education-level/:id
  * @desc Get a single education level by ID
  * @access Public

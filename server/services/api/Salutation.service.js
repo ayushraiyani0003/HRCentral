@@ -35,30 +35,13 @@ class SalutationService {
      * @param {Object} options - Query options (limit, offset, order)
      * @returns {Promise<Object>} List of salutations
      */
-    async readAll(options = {}) {
+    async readAll() {
         try {
-            const {
-                limit = 10,
-                offset = 0,
-                orderBy = "createdAt", // Fixed: use camelCase for Sequelize
-                orderDirection = "DESC",
-            } = options;
-
-            const salutations = await Salutation.findAndCountAll({
-                limit: parseInt(limit),
-                offset: parseInt(offset),
-                order: [[orderBy, orderDirection]],
-            });
+            const salutations = await Salutation.findAll();
 
             return {
                 success: true,
-                data: salutations.rows,
-                pagination: {
-                    total: salutations.count,
-                    limit: parseInt(limit),
-                    offset: parseInt(offset),
-                    pages: Math.ceil(salutations.count / limit),
-                },
+                data: salutations,
                 message: "Salutations retrieved successfully",
             };
         } catch (error) {

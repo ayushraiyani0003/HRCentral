@@ -74,24 +74,4 @@ router.put("/:id", WorkShiftController.update);
  */
 router.delete("/:id", WorkShiftController.delete);
 
-/**
- * @route GET /api/work-shifts/check/overlap
- * @desc Check if the given start and end time overlaps with any existing shift
- * @access Public
- * @param {string} req.query.start_time - Start time in HH:mm
- * @param {string} req.query.end_time - End time in HH:mm
- * @param {string} [req.query.exclude_id] - Shift ID to exclude from overlap check (e.g., during update)
- * @returns {Object} 200 - Overlap status
- * @returns {Object} 500 - Internal server error
- * @example
- * // Request: /api/work-shifts/check/overlap?start_time=08:00&end_time=12:00&exclude_id=123
- *
- * // Response:
- * {
- *   "success": true,
- *   "isOverlapping": false
- * }
- */
-router.get("/check/overlap", WorkShiftController.checkOverlap);
-
 module.exports = router;

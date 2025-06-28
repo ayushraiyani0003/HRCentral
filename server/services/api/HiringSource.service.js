@@ -27,36 +27,18 @@ class HiringSourceService {
 
     /**
      * Get all hiring sources
-     * @param {Object} options - Query options (limit, offset, search)
      * @returns {Promise<Object>} List of hiring sources
      */
-    async getAll(options = {}) {
+    async getAll() {
         try {
-            const { limit = 10, offset = 0, search = "" } = options;
-
-            const whereClause = search
-                ? {
-                      name: { [Op.like]: `%${search}%` },
-                  }
-                : {};
-
-            const { count, rows } = await HiringSource.findAndCountAll({
-                where: whereClause,
-                limit: parseInt(limit),
-                offset: parseInt(offset),
+            const hiringSources = await HiringSource.findAll({
                 order: [["name", "ASC"]],
             });
 
             return {
                 success: true,
                 data: {
-                    hiringSources: rows,
-                    pagination: {
-                        total: count,
-                        limit: parseInt(limit),
-                        offset: parseInt(offset),
-                        pages: Math.ceil(count / limit),
-                    },
+                    hiringSources,
                 },
                 message: "Hiring sources retrieved successfully",
             };
@@ -71,7 +53,7 @@ class HiringSourceService {
 
     /**
      * Get hiring source by ID
-     * @param {number} id - Hiring source ID
+     * @param {string} id - Hiring source ID (UUID)
      * @returns {Promise<Object>} Hiring source data
      */
     async getById(id) {
@@ -101,7 +83,7 @@ class HiringSourceService {
 
     /**
      * Update hiring source
-     * @param {number} id - Hiring source ID
+     * @param {string} id - Hiring source ID (UUID)
      * @param {Object} updateData - Data to update
      * @returns {Promise<Object>} Updated hiring source
      */
@@ -134,7 +116,7 @@ class HiringSourceService {
 
     /**
      * Delete hiring source
-     * @param {number} id - Hiring source ID
+     * @param {string} id - Hiring source ID (UUID)
      * @returns {Promise<Object>} Deletion result
      */
     async delete(id) {
@@ -159,6 +141,38 @@ class HiringSourceService {
                 success: false,
                 error: error.message,
                 message: "Failed to delete hiring source",
+            };
+        }
+    }
+
+    /**
+     * Search hiring sources by name
+     * @param {string} searchTerm - Search term for hiring source name
+     * @returns {Promise<Object>} List of matching hiring sources
+     */
+    async searchByName(searchTerm) {
+        try {
+            const hiringSources = await HiringSource.findAll({
+                where: {
+                    name: {
+                        [Op.iLike]: `%${searchTerm}%`,
+                    },
+                },
+                order: [["name", "ASC"]],
+            });
+
+            return {
+                success: true,
+                data: {
+                    hiringSources,
+                },
+                message: `Hiring sources matching '${searchTerm}' retrieved successfully`,
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message,
+                message: "Failed to search hiring sources",
             };
         }
     }

@@ -1,52 +1,173 @@
-const HiringSourceService = require("../../services/api/HiringSource.service");
+/**
+ * @fileoverview Controller for Hiring Source operations
+ * @version 1.0.0
+ */
 
+const HiringSourceService = require("../../services/api/HiringSource.service"); // Adjust path as needed
+
+/**
+ * HiringSource Controller Class
+ * Handles HTTP requests for hiring source operations
+ */
 class HiringSourceController {
+    /**
+     * Create a new hiring source
+     * @route POST /api/hiring-sources
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     * @returns {Promise<void>}
+     */
     async create(req, res) {
-        const result = await HiringSourceService.create(req.body);
-        if (result.success) {
+        console.log(req.body);
+        try {
+            const result = await HiringSourceService.create(req.body);
+
             return res.status(201).json(result);
+        } catch (error) {
+            return res.status(400).json({
+                success: false,
+                message: error.message,
+                error: "Bad Request",
+            });
         }
-        return res.status(400).json(result);
     }
 
+    /**
+     * Get all hiring sources
+     * @route GET /api/hiring-sources
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     * @returns {Promise<void>}
+     */
     async getAll(req, res) {
-        const { limit, offset, search } = req.query;
-        const result = await HiringSourceService.getAll({
-            limit,
-            offset,
-            search,
-        });
-        if (result.success) {
+        try {
+            const result = await HiringSourceService.getAll();
             return res.status(200).json(result);
+        } catch (error) {
+            return res.status(500).json({
+                success: false,
+                message: error.message,
+                error: "Internal Server Error",
+            });
         }
-        return res.status(500).json(result);
     }
 
+    /**
+     * Get hiring source by ID
+     * @route GET /api/hiring-sources/:id
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     * @returns {Promise<void>}
+     */
     async getById(req, res) {
-        const { id } = req.params;
-        const result = await HiringSourceService.getById(id);
-        if (result.success) {
+        try {
+            const { id } = req.params;
+            const result = await HiringSourceService.getById(id);
             return res.status(200).json(result);
+        } catch (error) {
+            const statusCode = error.message.includes("not found")
+                ? 404
+                : error.message.includes("Invalid UUID")
+                ? 400
+                : 500;
+            return res.status(statusCode).json({
+                success: false,
+                message: error.message,
+                error:
+                    statusCode === 404
+                        ? "Not Found"
+                        : statusCode === 400
+                        ? "Bad Request"
+                        : "Internal Server Error",
+            });
         }
-        return res.status(404).json(result);
     }
 
+    /**
+     * Update hiring source by ID
+     * @route PUT /api/hiring-sources/:id
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     * @returns {Promise<void>}
+     */
     async update(req, res) {
-        const { id } = req.params;
-        const result = await HiringSourceService.update(id, req.body);
-        if (result.success) {
+        try {
+            const { id } = req.params;
+            const result = await HiringSourceService.update(id, req.body);
             return res.status(200).json(result);
+        } catch (error) {
+            const statusCode = error.message.includes("not found")
+                ? 404
+                : error.message.includes("Invalid UUID")
+                ? 400
+                : error.message.includes("already exists")
+                ? 409
+                : 500;
+            return res.status(statusCode).json({
+                success: false,
+                message: error.message,
+                error:
+                    statusCode === 404
+                        ? "Not Found"
+                        : statusCode === 400
+                        ? "Bad Request"
+                        : statusCode === 409
+                        ? "Conflict"
+                        : "Internal Server Error",
+            });
         }
-        return res.status(400).json(result);
     }
 
+    /**
+     * Delete hiring source by ID
+     * @route DELETE /api/hiring-sources/:id
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     * @returns {Promise<void>}
+     */
     async delete(req, res) {
-        const { id } = req.params;
-        const result = await HiringSourceService.delete(id);
-        if (result.success) {
+        try {
+            const { id } = req.params;
+            const result = await HiringSourceService.delete(id);
             return res.status(200).json(result);
+        } catch (error) {
+            const statusCode = error.message.includes("not found")
+                ? 404
+                : error.message.includes("Invalid UUID")
+                ? 400
+                : 500;
+            return res.status(statusCode).json({
+                success: false,
+                message: error.message,
+                error:
+                    statusCode === 404
+                        ? "Not Found"
+                        : statusCode === 400
+                        ? "Bad Request"
+                        : "Internal Server Error",
+            });
         }
-        return res.status(404).json(result);
+    }
+
+    /**
+     * Search hiring sources by name
+     * @route GET /api/hiring-sources/search/:searchTerm
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     * @returns {Promise<void>}
+     */
+    async searchByName(req, res) {
+        try {
+            const { searchTerm } = req.params;
+            const result = await HiringSourceService.searchByName(searchTerm);
+            return res.status(200).json(result);
+        } catch (error) {
+            return res.status(500).json({
+                success: false,
+                message: error.message,
+                error: "Internal Server Error",
+            });
+        }
     }
 }
 

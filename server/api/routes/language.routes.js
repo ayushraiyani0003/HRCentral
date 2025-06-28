@@ -47,28 +47,4 @@ router.put("/:id", LanguageController.updateLanguage);
  */
 router.delete("/:id", LanguageController.deleteLanguage);
 
-// ==============================
-// Additional Language Routes
-// ==============================
-
-/**
- * @route GET /api/language/name/:name
- * @desc Get language by name
- */
-router.get("/name/:name", LanguageController.getLanguageByName);
-
-/**
- * @route GET /api/language/exists/:name
- * @desc Check if language exists by name
- */
-router.get("/exists/:name", LanguageController.checkLanguageExists);
-
-/**
- * @route GET /api/language/search/:searchTerm
- * @desc Search languages by name (partial match)
- * @query {number} limit - Number of records to return (default: 10)
- * @query {number} offset - Number of records to skip (default: 0)
- */
-router.get("/search/:searchTerm", LanguageController.searchLanguages);
-
 module.exports = router;

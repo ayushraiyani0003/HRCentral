@@ -1,153 +1,153 @@
 /**
- * @fileoverview JobLocation Controller - Handles HTTP requests for job location operations
+ * @fileoverview Controller for Job Location operations
  * @version 1.0.0
  */
 
-const JobLocationService = require("../../services/api/JobLocation.service");
+const JobLocationService = require("../../services/api/JobLocation.service"); // Adjust path as needed
 
 /**
- * JobLocation Controller
- * @class JobLocationController
+ * JobLocation Controller Class
+ * Handles HTTP requests for job location operations
  */
 class JobLocationController {
     /**
      * Create a new job location
+     * @route POST /api/job-locations
      * @param {Object} req - Express request object
-     * @param {Object} req.body - Request body with job location data
-     * @param {string} req.body.name - Job location name
      * @param {Object} res - Express response object
-     * @returns {Promise<Object>} JSON response
+     * @returns {Promise<void>}
      */
-    static async create(req, res) {
+    async create(req, res) {
+        console.log(req.body);
         try {
             const result = await JobLocationService.create(req.body);
 
-            return res.status(201).json({
-                success: true,
-                message: result.message,
-                data: result.data,
-            });
+            return res.status(201).json(result);
         } catch (error) {
             return res.status(400).json({
                 success: false,
                 message: error.message,
-                data: null,
+                error: "Bad Request",
             });
         }
     }
 
     /**
-     * Get all job locations with pagination and search
+     * Get all job locations
+     * @route GET /api/job-locations
      * @param {Object} req - Express request object
-     * @param {Object} req.query - Query params for pagination and search
-     * @param {number} req.query.limit - Limit of records
-     * @param {number} req.query.offset - Offset value
-     * @param {string} req.query.search - Search term
      * @param {Object} res - Express response object
-     * @returns {Promise<Object>} JSON response
+     * @returns {Promise<void>}
      */
-    static async getAll(req, res) {
+    async getAll(req, res) {
         try {
-            const { limit, offset, search } = req.query;
-            const result = await JobLocationService.getAll({
-                limit,
-                offset,
-                search,
-            });
-
-            return res.status(200).json({
-                success: true,
-                message: result.message,
-                data: result.data.jobLocations,
-                pagination: result.data.pagination,
-            });
+            const result = await JobLocationService.getAll();
+            return res.status(200).json(result);
         } catch (error) {
             return res.status(500).json({
                 success: false,
                 message: error.message,
-                data: null,
+                error: "Internal Server Error",
             });
         }
     }
 
     /**
      * Get job location by ID
+     * @route GET /api/job-locations/:id
      * @param {Object} req - Express request object
-     * @param {string} req.params.id - Job location UUID
      * @param {Object} res - Express response object
-     * @returns {Promise<Object>} JSON response
+     * @returns {Promise<void>}
      */
-    static async getById(req, res) {
+    async getById(req, res) {
         try {
-            const result = await JobLocationService.getById(req.params.id);
-
-            if (!result.success) {
-                return res.status(404).json(result);
-            }
-
+            const { id } = req.params;
+            const result = await JobLocationService.getById(id);
             return res.status(200).json(result);
         } catch (error) {
-            return res.status(500).json({
+            const statusCode = error.message.includes("not found")
+                ? 404
+                : error.message.includes("Invalid UUID")
+                ? 400
+                : 500;
+            return res.status(statusCode).json({
                 success: false,
                 message: error.message,
-                data: null,
+                error:
+                    statusCode === 404
+                        ? "Not Found"
+                        : statusCode === 400
+                        ? "Bad Request"
+                        : "Internal Server Error",
             });
         }
     }
 
     /**
-     * Update a job location
+     * Update job location by ID
+     * @route PUT /api/job-locations/:id
      * @param {Object} req - Express request object
-     * @param {string} req.params.id - Job location UUID
-     * @param {Object} req.body - Updated data
      * @param {Object} res - Express response object
-     * @returns {Promise<Object>} JSON response
+     * @returns {Promise<void>}
      */
-    static async update(req, res) {
+    async update(req, res) {
         try {
-            const result = await JobLocationService.update(
-                req.params.id,
-                req.body
-            );
-
-            if (!result.success) {
-                return res.status(404).json(result);
-            }
-
+            const { id } = req.params;
+            const result = await JobLocationService.update(id, req.body);
             return res.status(200).json(result);
         } catch (error) {
-            return res.status(400).json({
+            const statusCode = error.message.includes("not found")
+                ? 404
+                : error.message.includes("Invalid UUID")
+                ? 400
+                : error.message.includes("already exists")
+                ? 409
+                : 500;
+            return res.status(statusCode).json({
                 success: false,
                 message: error.message,
-                data: null,
+                error:
+                    statusCode === 404
+                        ? "Not Found"
+                        : statusCode === 400
+                        ? "Bad Request"
+                        : statusCode === 409
+                        ? "Conflict"
+                        : "Internal Server Error",
             });
         }
     }
 
     /**
-     * Delete a job location
+     * Delete job location by ID
+     * @route DELETE /api/job-locations/:id
      * @param {Object} req - Express request object
-     * @param {string} req.params.id - Job location UUID
      * @param {Object} res - Express response object
-     * @returns {Promise<Object>} JSON response
+     * @returns {Promise<void>}
      */
-    static async delete(req, res) {
+    async delete(req, res) {
         try {
-            const result = await JobLocationService.delete(req.params.id);
-
-            if (!result.success) {
-                return res.status(404).json(result);
-            }
-
+            const { id } = req.params;
+            const result = await JobLocationService.delete(id);
             return res.status(200).json(result);
         } catch (error) {
-            return res.status(500).json({
+            const statusCode = error.message.includes("not found")
+                ? 404
+                : error.message.includes("Invalid UUID")
+                ? 400
+                : 500;
+            return res.status(statusCode).json({
                 success: false,
                 message: error.message,
-                data: null,
+                error:
+                    statusCode === 404
+                        ? "Not Found"
+                        : statusCode === 400
+                        ? "Bad Request"
+                        : "Internal Server Error",
             });
         }
     }
 }
 
-module.exports = JobLocationController;
+module.exports = new JobLocationController();

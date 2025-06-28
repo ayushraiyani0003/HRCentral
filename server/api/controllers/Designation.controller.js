@@ -20,12 +20,12 @@ class DesignationController {
     async createDesignation(req, res) {
         console.log(req.body);
         try {
-            const result = await DesignationService.createDesignation(req.body);
+            const result = await DesignationService.create(req.body);
 
             if (!result.success) {
                 return res.status(400).json({
                     success: false,
-                    message: result.error,
+                    message: result.message,
                     error: "Bad Request",
                 });
             }
@@ -41,7 +41,7 @@ class DesignationController {
     }
 
     /**
-     * Get all designations with pagination and sorting
+     * Get all designations
      * @route GET /api/designations
      * @param {Object} req - Express request object
      * @param {Object} res - Express response object
@@ -49,17 +49,12 @@ class DesignationController {
      */
     async getAllDesignations(req, res) {
         try {
-            const options = {
-                page: req.query.page,
-                limit: req.query.limit,
-            };
-
-            const result = await DesignationService.getAllDesignations(options);
+            const result = await DesignationService.getAll();
 
             if (!result.success) {
                 return res.status(500).json({
                     success: false,
-                    message: result.error,
+                    message: result.message,
                     error: "Internal Server Error",
                 });
             }
@@ -84,25 +79,35 @@ class DesignationController {
     async getDesignationById(req, res) {
         try {
             const { id } = req.params;
-            const result = await DesignationService.getDesignationById(id);
+            const result = await DesignationService.getById(id);
 
             if (!result.success) {
-                const statusCode = result.error.includes("not found")
+                const statusCode = result.message.includes("not found")
                     ? 404
                     : 400;
                 return res.status(statusCode).json({
                     success: false,
-                    message: result.error,
+                    message: result.message,
                     error: statusCode === 404 ? "Not Found" : "Bad Request",
                 });
             }
 
             return res.status(200).json(result);
         } catch (error) {
-            return res.status(500).json({
+            const statusCode = error.message.includes("not found")
+                ? 404
+                : error.message.includes("Invalid UUID")
+                ? 400
+                : 500;
+            return res.status(statusCode).json({
                 success: false,
                 message: error.message,
-                error: "Internal Server Error",
+                error:
+                    statusCode === 404
+                        ? "Not Found"
+                        : statusCode === 400
+                        ? "Bad Request"
+                        : "Internal Server Error",
             });
         }
     }
@@ -117,20 +122,17 @@ class DesignationController {
     async updateDesignation(req, res) {
         try {
             const { id } = req.params;
-            const result = await DesignationService.updateDesignation(
-                id,
-                req.body
-            );
+            const result = await DesignationService.update(id, req.body);
 
             if (!result.success) {
-                const statusCode = result.error.includes("not found")
+                const statusCode = result.message.includes("not found")
                     ? 404
-                    : result.error.includes("already exists")
+                    : result.message.includes("already exists")
                     ? 409
                     : 400;
                 return res.status(statusCode).json({
                     success: false,
-                    message: result.error,
+                    message: result.message,
                     error:
                         statusCode === 404
                             ? "Not Found"
@@ -142,10 +144,24 @@ class DesignationController {
 
             return res.status(200).json(result);
         } catch (error) {
-            return res.status(500).json({
+            const statusCode = error.message.includes("not found")
+                ? 404
+                : error.message.includes("Invalid UUID")
+                ? 400
+                : error.message.includes("already exists")
+                ? 409
+                : 500;
+            return res.status(statusCode).json({
                 success: false,
                 message: error.message,
-                error: "Internal Server Error",
+                error:
+                    statusCode === 404
+                        ? "Not Found"
+                        : statusCode === 400
+                        ? "Bad Request"
+                        : statusCode === 409
+                        ? "Conflict"
+                        : "Internal Server Error",
             });
         }
     }
@@ -160,128 +176,35 @@ class DesignationController {
     async deleteDesignation(req, res) {
         try {
             const { id } = req.params;
-            const result = await DesignationService.deleteDesignation(id);
+            const result = await DesignationService.delete(id);
 
             if (!result.success) {
-                const statusCode = result.error.includes("not found")
+                const statusCode = result.message.includes("not found")
                     ? 404
                     : 400;
                 return res.status(statusCode).json({
                     success: false,
-                    message: result.error,
+                    message: result.message,
                     error: statusCode === 404 ? "Not Found" : "Bad Request",
                 });
             }
 
             return res.status(200).json(result);
         } catch (error) {
-            return res.status(500).json({
+            const statusCode = error.message.includes("not found")
+                ? 404
+                : error.message.includes("Invalid UUID")
+                ? 400
+                : 500;
+            return res.status(statusCode).json({
                 success: false,
                 message: error.message,
-                error: "Internal Server Error",
-            });
-        }
-    }
-
-    /**
-     * Search designations by name
-     * @route GET /api/designations/search
-     * @param {Object} req - Express request object
-     * @param {Object} res - Express response object
-     * @returns {Promise<void>}
-     */
-    async searchDesignations(req, res) {
-        try {
-            const { q: searchTerm } = req.query;
-
-            if (!searchTerm) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Search term is required",
-                    error: "Bad Request",
-                });
-            }
-
-            const result = await DesignationService.searchDesignations(
-                searchTerm
-            );
-
-            if (!result.success) {
-                return res.status(500).json({
-                    success: false,
-                    message: result.error,
-                    error: "Internal Server Error",
-                });
-            }
-
-            return res.status(200).json(result);
-        } catch (error) {
-            return res.status(500).json({
-                success: false,
-                message: error.message,
-                error: "Internal Server Error",
-            });
-        }
-    }
-
-    /**
-     * Get all designations sorted by name
-     * @route GET /api/designations/sorted
-     * @param {Object} req - Express request object
-     * @param {Object} res - Express response object
-     * @returns {Promise<void>}
-     */
-    async getAllDesignationsSorted(req, res) {
-        try {
-            const result = await DesignationService.getAllDesignations();
-
-            if (!result.success) {
-                return res.status(500).json({
-                    success: false,
-                    message: result.error,
-                    error: "Internal Server Error",
-                });
-            }
-
-            return res.status(200).json(result);
-        } catch (error) {
-            return res.status(500).json({
-                success: false,
-                message: error.message,
-                error: "Internal Server Error",
-            });
-        }
-    }
-
-    /**
-     * Get designations count
-     * @route GET /api/designations/count
-     * @param {Object} req - Express request object
-     * @param {Object} res - Express response object
-     * @returns {Promise<void>}
-     */
-    async getDesignationsCount(req, res) {
-        try {
-            const result = await DesignationService.getAllDesignations();
-
-            if (!result.success) {
-                return res.status(500).json({
-                    success: false,
-                    message: result.error,
-                    error: "Internal Server Error",
-                });
-            }
-
-            return res.status(200).json({
-                success: true,
-                data: { count: result.data.length },
-                message: "Count retrieved successfully",
-            });
-        } catch (error) {
-            return res.status(500).json({
-                success: false,
-                message: error.message,
-                error: "Internal Server Error",
+                error:
+                    statusCode === 404
+                        ? "Not Found"
+                        : statusCode === 400
+                        ? "Bad Request"
+                        : "Internal Server Error",
             });
         }
     }

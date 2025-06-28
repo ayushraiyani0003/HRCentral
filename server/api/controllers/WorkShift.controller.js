@@ -1,79 +1,152 @@
-const WorkShiftService = require("../../services/api/WorkShift.service");
+/**
+ * @fileoverview Controller for WorkShift operations
+ * @version 1.0.0
+ */
 
+const WorkShiftService = require("../../services/api/WorkShift.service"); // Adjust path as needed
+
+/**
+ * WorkShift Controller Class
+ * Handles HTTP requests for work shift operations
+ */
 class WorkShiftController {
     /**
-     * Create a new work shift.
-     * @param {import('express').Request} req - Express request object (expects shift data in req.body).
-     * @param {import('express').Response} res - Express response object.
-     * @returns {Promise<Response>} HTTP 201 on success, 400 on failure.
+     * Create a new work shift
+     * @route POST /api/work-shifts
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     * @returns {Promise<void>}
      */
     async create(req, res) {
-        const result = await WorkShiftService.create(req.body);
-        return res.status(result.success ? 201 : 400).json(result);
+        console.log(req.body);
+        try {
+            const result = await WorkShiftService.create(req.body);
+
+            return res.status(201).json(result);
+        } catch (error) {
+            return res.status(400).json({
+                success: false,
+                message: error.message,
+                error: "Bad Request",
+            });
+        }
     }
 
     /**
-     * Get all work shifts with optional pagination and search.
-     * @param {import('express').Request} req - Express request object (query: limit, offset, search).
-     * @param {import('express').Response} res - Express response object.
-     * @returns {Promise<Response>} HTTP 200 on success, 500 on error.
+     * Get all work shifts with no pagination or limits
+     * @route GET /api/work-shifts
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     * @returns {Promise<void>}
      */
     async getAll(req, res) {
-        const { limit, offset, search } = req.query;
-        const result = await WorkShiftService.getAll({ limit, offset, search });
-        return res.status(result.success ? 200 : 500).json(result);
+        try {
+            const result = await WorkShiftService.getAll();
+            return res.status(200).json(result);
+        } catch (error) {
+            return res.status(500).json({
+                success: false,
+                message: error.message,
+                error: "Internal Server Error",
+            });
+        }
     }
 
     /**
-     * Get a specific work shift by ID.
-     * @param {import('express').Request} req - Express request object (params: id).
-     * @param {import('express').Response} res - Express response object.
-     * @returns {Promise<Response>} HTTP 200 if found, 404 if not found.
+     * Get work shift by ID
+     * @route GET /api/work-shifts/:id
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     * @returns {Promise<void>}
      */
     async getById(req, res) {
-        const { id } = req.params;
-        const result = await WorkShiftService.getById(id);
-        return res.status(result.success ? 200 : 404).json(result);
+        try {
+            const { id } = req.params;
+            const result = await WorkShiftService.getById(id);
+            return res.status(200).json(result);
+        } catch (error) {
+            const statusCode = error.message.includes("not found")
+                ? 404
+                : error.message.includes("Invalid UUID")
+                ? 400
+                : 500;
+            return res.status(statusCode).json({
+                success: false,
+                message: error.message,
+                error:
+                    statusCode === 404
+                        ? "Not Found"
+                        : statusCode === 400
+                        ? "Bad Request"
+                        : "Internal Server Error",
+            });
+        }
     }
 
     /**
-     * Update a work shift by ID.
-     * @param {import('express').Request} req - Express request object (params: id, body: updated data).
-     * @param {import('express').Response} res - Express response object.
-     * @returns {Promise<Response>} HTTP 200 on success, 400 on failure.
+     * Update work shift by ID
+     * @route PUT /api/work-shifts/:id
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     * @returns {Promise<void>}
      */
     async update(req, res) {
-        const { id } = req.params;
-        const result = await WorkShiftService.update(id, req.body);
-        return res.status(result.success ? 200 : 400).json(result);
+        try {
+            const { id } = req.params;
+            const result = await WorkShiftService.update(id, req.body);
+            return res.status(200).json(result);
+        } catch (error) {
+            const statusCode = error.message.includes("not found")
+                ? 404
+                : error.message.includes("Invalid UUID")
+                ? 400
+                : error.message.includes("already exists")
+                ? 409
+                : 500;
+            return res.status(statusCode).json({
+                success: false,
+                message: error.message,
+                error:
+                    statusCode === 404
+                        ? "Not Found"
+                        : statusCode === 400
+                        ? "Bad Request"
+                        : statusCode === 409
+                        ? "Conflict"
+                        : "Internal Server Error",
+            });
+        }
     }
 
     /**
-     * Delete a work shift by ID.
-     * @param {import('express').Request} req - Express request object (params: id).
-     * @param {import('express').Response} res - Express response object.
-     * @returns {Promise<Response>} HTTP 200 on success, 404 if not found.
+     * Delete work shift by ID
+     * @route DELETE /api/work-shifts/:id
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     * @returns {Promise<void>}
      */
     async delete(req, res) {
-        const { id } = req.params;
-        const result = await WorkShiftService.delete(id);
-        return res.status(result.success ? 200 : 404).json(result);
-    }
-
-    /**
-     * Check for overlapping work shifts based on start and end time.
-     * @param {import('express').Request} req - Express request object (query: start_time, end_time, exclude_id).
-     * @param {import('express').Response} res - Express response object.
-     * @returns {Promise<Response>} HTTP 200 if processed, 500 on error.
-     */
-    async checkOverlap(req, res) {
-        const { start_time, end_time, exclude_id } = req.query;
-        const result = await WorkShiftService.checkOverlap(
-            start_time,
-            end_time,
-            exclude_id
-        );
-        return res.status(result.success ? 200 : 500).json(result);
+        try {
+            const { id } = req.params;
+            const result = await WorkShiftService.delete(id);
+            return res.status(200).json(result);
+        } catch (error) {
+            const statusCode = error.message.includes("not found")
+                ? 404
+                : error.message.includes("Invalid UUID")
+                ? 400
+                : 500;
+            return res.status(statusCode).json({
+                success: false,
+                message: error.message,
+                error:
+                    statusCode === 404
+                        ? "Not Found"
+                        : statusCode === 400
+                        ? "Bad Request"
+                        : "Internal Server Error",
+            });
+        }
     }
 }
 

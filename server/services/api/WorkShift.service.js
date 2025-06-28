@@ -27,36 +27,18 @@ class WorkShiftService {
 
     /**
      * Get all work shifts
-     * @param {Object} options - Query options (limit, offset, search)
      * @returns {Promise<Object>} List of work shifts
      */
-    async getAll(options = {}) {
+    async getAll() {
         try {
-            const { limit = 10, offset = 0, search = "" } = options;
-
-            const whereClause = search
-                ? {
-                      name: { [Op.like]: `%${search}%` },
-                  }
-                : {};
-
-            const { count, rows } = await WorkShift.findAndCountAll({
-                where: whereClause,
-                limit: parseInt(limit),
-                offset: parseInt(offset),
-                order: [["start_time", "ASC"]],
+            const workShifts = await WorkShift.findAll({
+                order: [["name", "ASC"]],
             });
 
             return {
                 success: true,
                 data: {
-                    workShifts: rows,
-                    pagination: {
-                        total: count,
-                        limit: parseInt(limit),
-                        offset: parseInt(offset),
-                        pages: Math.ceil(count / limit),
-                    },
+                    workShifts,
                 },
                 message: "Work shifts retrieved successfully",
             };
@@ -71,7 +53,7 @@ class WorkShiftService {
 
     /**
      * Get work shift by ID
-     * @param {number} id - Work shift ID
+     * @param {string} id - Work shift ID (UUID)
      * @returns {Promise<Object>} Work shift data
      */
     async getById(id) {
@@ -101,7 +83,7 @@ class WorkShiftService {
 
     /**
      * Update work shift
-     * @param {number} id - Work shift ID
+     * @param {string} id - Work shift ID (UUID)
      * @param {Object} updateData - Data to update
      * @returns {Promise<Object>} Updated work shift
      */
@@ -134,7 +116,7 @@ class WorkShiftService {
 
     /**
      * Delete work shift
-     * @param {number} id - Work shift ID
+     * @param {string} id - Work shift ID (UUID)
      * @returns {Promise<Object>} Deletion result
      */
     async delete(id) {
@@ -159,62 +141,6 @@ class WorkShiftService {
                 success: false,
                 error: error.message,
                 message: "Failed to delete work shift",
-            };
-        }
-    }
-
-    /**
-     * Check for overlapping shifts
-     * @param {string} startTime - Start time (HH:MM format)
-     * @param {string} endTime - End time (HH:MM format)
-     * @param {number} excludeId - ID to exclude from check (for updates)
-     * @returns {Promise<Object>} Overlap check result
-     */
-    async checkOverlap(startTime, endTime, excludeId = null) {
-        try {
-            const whereClause = {
-                [Op.or]: [
-                    {
-                        start_time: {
-                            [Op.between]: [startTime, endTime],
-                        },
-                    },
-                    {
-                        end_time: {
-                            [Op.between]: [startTime, endTime],
-                        },
-                    },
-                    {
-                        [Op.and]: [
-                            { start_time: { [Op.lte]: startTime } },
-                            { end_time: { [Op.gte]: endTime } },
-                        ],
-                    },
-                ],
-            };
-
-            if (excludeId) {
-                whereClause.id = { [Op.ne]: excludeId };
-            }
-
-            const overlappingShifts = await WorkShift.findAll({
-                where: whereClause,
-            });
-
-            return {
-                success: true,
-                hasOverlap: overlappingShifts.length > 0,
-                overlappingShifts,
-                message:
-                    overlappingShifts.length > 0
-                        ? "Overlapping shifts found"
-                        : "No overlapping shifts",
-            };
-        } catch (error) {
-            return {
-                success: false,
-                error: error.message,
-                message: "Failed to check for overlapping shifts",
             };
         }
     }

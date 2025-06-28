@@ -1,153 +1,153 @@
 /**
- * SkillController - Handles HTTP requests for skill management
- * Provides CRUD operations and bulk operations for skills
+ * @fileoverview Controller for Skill operations
+ * @version 1.0.0
  */
 
-const skillService = require("../../services/api/Skill.service"); // Adjust the path if needed
+const SkillService = require("../../services/api/Skill.service"); // Adjust path as needed
 
+/**
+ * Skill Controller Class
+ * Handles HTTP requests for skill operations
+ */
 class SkillController {
     /**
      * Create a new skill
-     * @param {Object} req - Express request object containing skill data in body
+     * @route POST /api/skills
+     * @param {Object} req - Express request object
      * @param {Object} res - Express response object
-     * @returns {Object} JSON response with created skill or error message
+     * @returns {Promise<void>}
      */
     async createSkill(req, res) {
+        console.log(req.body);
         try {
-            const { name } = req.body;
+            const result = await SkillService.create(req.body);
 
-            // Validate skill name is provided and not empty
-            if (!name || name.trim() === "") {
-                return res.status(400).json({
-                    success: false,
-                    message: "Skill name is required",
-                });
-            }
-
-            // Create skill with trimmed name
-            const result = await skillService.create({ name: name.trim() });
-            const status = result.success ? 201 : 400;
-            res.status(status).json(result);
+            return res.status(201).json(result);
         } catch (error) {
-            // Handle unexpected errors
-            res.status(500).json({ success: false, message: error.message });
+            return res.status(400).json({
+                success: false,
+                message: error.message,
+                error: "Bad Request",
+            });
         }
     }
 
     /**
-     * Get all skills with optional pagination and search
-     * @param {Object} req - Express request object with query parameters (limit, offset, search)
+     * Get all skills with no pagination or limits
+     * @route GET /api/skills
+     * @param {Object} req - Express request object
      * @param {Object} res - Express response object
-     * @returns {Object} JSON response with skills array or error message
+     * @returns {Promise<void>}
      */
     async getAllSkills(req, res) {
         try {
-            // Extract query parameters with defaults
-            const options = {
-                limit: req.query.limit || 10,
-                offset: req.query.offset || 0,
-                search: req.query.search || "",
-            };
-
-            const result = await skillService.getAll(options);
-            res.status(result.success ? 200 : 500).json(result);
+            const result = await SkillService.getAll();
+            return res.status(200).json(result);
         } catch (error) {
-            // Handle unexpected errors
-            res.status(500).json({ success: false, message: error.message });
+            return res.status(500).json({
+                success: false,
+                message: error.message,
+                error: "Internal Server Error",
+            });
         }
     }
 
     /**
-     * Get a single skill by its ID
-     * @param {Object} req - Express request object with skill ID in params
+     * Get skill by ID
+     * @route GET /api/skills/:id
+     * @param {Object} req - Express request object
      * @param {Object} res - Express response object
-     * @returns {Object} JSON response with skill data or error message
+     * @returns {Promise<void>}
      */
     async getSkillById(req, res) {
         try {
-            const result = await skillService.getById(req.params.id);
-            // Return 404 if skill not found, 200 if found
-            const status = result.success ? 200 : 404;
-            res.status(status).json(result);
+            const { id } = req.params;
+            const result = await SkillService.getById(id);
+            return res.status(200).json(result);
         } catch (error) {
-            // Handle unexpected errors
-            res.status(500).json({ success: false, message: error.message });
+            const statusCode = error.message.includes("not found")
+                ? 404
+                : error.message.includes("Invalid UUID")
+                ? 400
+                : 500;
+            return res.status(statusCode).json({
+                success: false,
+                message: error.message,
+                error:
+                    statusCode === 404
+                        ? "Not Found"
+                        : statusCode === 400
+                        ? "Bad Request"
+                        : "Internal Server Error",
+            });
         }
     }
 
     /**
-     * Update an existing skill by ID
-     * @param {Object} req - Express request object with skill ID in params and updated data in body
+     * Update skill by ID
+     * @route PUT /api/skills/:id
+     * @param {Object} req - Express request object
      * @param {Object} res - Express response object
-     * @returns {Object} JSON response with updated skill or error message
+     * @returns {Promise<void>}
      */
     async updateSkill(req, res) {
         try {
             const { id } = req.params;
-            const { name } = req.body;
-
-            // Validate skill name is provided and not empty
-            if (!name || name.trim() === "") {
-                return res.status(400).json({
-                    success: false,
-                    message: "Skill name is required",
-                });
-            }
-
-            // Update skill with trimmed name
-            const result = await skillService.update(id, { name: name.trim() });
-            const status = result.success ? 200 : 404;
-            res.status(status).json(result);
+            const result = await SkillService.update(id, req.body);
+            return res.status(200).json(result);
         } catch (error) {
-            // Handle unexpected errors
-            res.status(500).json({ success: false, message: error.message });
+            const statusCode = error.message.includes("not found")
+                ? 404
+                : error.message.includes("Invalid UUID")
+                ? 400
+                : error.message.includes("already exists")
+                ? 409
+                : 500;
+            return res.status(statusCode).json({
+                success: false,
+                message: error.message,
+                error:
+                    statusCode === 404
+                        ? "Not Found"
+                        : statusCode === 400
+                        ? "Bad Request"
+                        : statusCode === 409
+                        ? "Conflict"
+                        : "Internal Server Error",
+            });
         }
     }
 
     /**
-     * Delete a skill by ID
-     * @param {Object} req - Express request object with skill ID in params
+     * Delete skill by ID
+     * @route DELETE /api/skills/:id
+     * @param {Object} req - Express request object
      * @param {Object} res - Express response object
-     * @returns {Object} JSON response with success message or error
+     * @returns {Promise<void>}
      */
     async deleteSkill(req, res) {
         try {
-            const result = await skillService.delete(req.params.id);
-            // Return 404 if skill not found, 200 if deleted successfully
-            const status = result.success ? 200 : 404;
-            res.status(status).json(result);
+            const { id } = req.params;
+            const result = await SkillService.delete(id);
+            return res.status(200).json(result);
         } catch (error) {
-            // Handle unexpected errors
-            res.status(500).json({ success: false, message: error.message });
-        }
-    }
-
-    /**
-     * Create multiple skills in bulk
-     * @param {Object} req - Express request object with array of skill objects in body
-     * @param {Object} res - Express response object
-     * @returns {Object} JSON response with created skills or error message
-     */
-    async bulkCreateSkills(req, res) {
-        try {
-            const skills = req.body; // Expected format: [{ name: "Skill1" }, { name: "Skill2" }]
-
-            // Validate input is a non-empty array
-            if (!Array.isArray(skills) || skills.length === 0) {
-                return res.status(400).json({
-                    success: false,
-                    message: "An array of skills is required",
-                });
-            }
-
-            const result = await skillService.bulkCreate(skills);
-            res.status(result.success ? 201 : 400).json(result);
-        } catch (error) {
-            // Handle unexpected errors
-            res.status(500).json({ success: false, message: error.message });
+            const statusCode = error.message.includes("not found")
+                ? 404
+                : error.message.includes("Invalid UUID")
+                ? 400
+                : 500;
+            return res.status(statusCode).json({
+                success: false,
+                message: error.message,
+                error:
+                    statusCode === 404
+                        ? "Not Found"
+                        : statusCode === 400
+                        ? "Bad Request"
+                        : "Internal Server Error",
+            });
         }
     }
 }
 
-// Export a singleton instance of the controller
 module.exports = new SkillController();

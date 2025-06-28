@@ -44,35 +44,16 @@ class CountryController {
     /**
      * Get all countries with pagination and filtering
      * @param {Object} req - Express request object
-     * @param {Object} req.query - Query parameters
-     * @param {number} req.query.page - Page number
-     * @param {number} req.query.limit - Records per page
-     * @param {string} req.query.region - Filter by region
-     * @param {string} req.query.search - Search term
-     * @param {string} req.query.sortBy - Sort field
-     * @param {string} req.query.sortOrder - Sort order (ASC/DESC)
      * @param {Object} res - Express response object
      * @returns {Promise<Object>} JSON response with countries list and pagination
      */
     static async getAllCountries(req, res) {
+        console.log("this is called");
+
         try {
-            const options = {
-                page: parseInt(req.query.page) || 1,
-                limit: parseInt(req.query.limit) || 10,
-                region: req.query.region,
-                search: req.query.search,
-                sortBy: req.query.sortBy || "name",
-                sortOrder: req.query.sortOrder || "ASC",
-            };
+            const result = await CountryService.getAll();
 
-            const result = await CountryService.getAll(options);
-
-            return res.status(200).json({
-                success: true,
-                message: "Countries fetched successfully",
-                data: result.countries,
-                pagination: result.pagination,
-            });
+            return res.status(200).json({ result });
         } catch (error) {
             return res.status(500).json({
                 success: false,
@@ -93,7 +74,7 @@ class CountryController {
     static async getCountryById(req, res) {
         try {
             const { id } = req.params;
-            const country = await CountryService.getById(id);
+            const country = await CountryService.readById(id);
 
             if (!country) {
                 return res.status(404).json({

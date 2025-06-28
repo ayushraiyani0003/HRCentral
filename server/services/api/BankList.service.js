@@ -64,50 +64,13 @@ class BankListService {
      * @param {Object} options - Query options (limit, offset, order)
      * @returns {Promise<Object>} List of banks
      */
-    async readAll(options = {}) {
+    async readAll() {
         try {
-            const {
-                limit = 10,
-                offset = 0,
-                orderBy = "created_at",
-                orderDirection = "DESC",
-            } = options;
-
-            // Validate pagination parameters
-            const parsedLimit = Math.max(
-                1,
-                Math.min(100, parseInt(limit) || 10)
-            );
-            const parsedOffset = Math.max(0, parseInt(offset) || 0);
-
-            // Validate order parameters
-            const validOrderFields = ["id", "name", "created_at", "updated_at"];
-            const validOrderDirections = ["ASC", "DESC"];
-
-            const finalOrderBy = validOrderFields.includes(orderBy)
-                ? orderBy
-                : "created_at";
-            const finalOrderDirection = validOrderDirections.includes(
-                orderDirection.toUpperCase()
-            )
-                ? orderDirection.toUpperCase()
-                : "DESC";
-
-            const banks = await BankList.findAndCountAll({
-                limit: parsedLimit,
-                offset: parsedOffset,
-                order: [[finalOrderBy, finalOrderDirection]],
-            });
+            const banks = await BankList.findAll();
 
             return {
                 success: true,
-                data: banks.rows,
-                pagination: {
-                    total: banks.count,
-                    limit: parsedLimit,
-                    offset: parsedOffset,
-                    pages: Math.ceil(banks.count / parsedLimit),
-                },
+                data: banks,
                 message: "Banks retrieved successfully",
             };
         } catch (error) {

@@ -25,39 +25,11 @@ router.post("/", DesignationController.createDesignation);
 
 /**
  * @route GET /api/designations
- * @desc Get all designations (supports pagination)
- * @query {number} page - Page number (default: 1)
- * @query {number} limit - Number of records per page (default: 10)
+ * @desc Get all designations
  * @returns {Object} 200 - List of designations with pagination info
  * @returns {Object} 500 - Internal server error
  */
 router.get("/", DesignationController.getAllDesignations);
-
-/**
- * @route GET /api/designations/search
- * @desc Search designations by name (partial match, case-insensitive)
- * @query {string} q - Search term for designation name (required)
- * @returns {Object} 200 - List of matching designations
- * @returns {Object} 400 - Bad request (search term required)
- * @returns {Object} 500 - Internal server error
- */
-router.get("/search", DesignationController.searchDesignations);
-
-/**
- * @route GET /api/designations/sorted
- * @desc Get all designations sorted by name (for dropdown lists)
- * @returns {Object} 200 - List of designations sorted by name
- * @returns {Object} 500 - Internal server error
- */
-router.get("/sorted", DesignationController.getAllDesignationsSorted);
-
-/**
- * @route GET /api/designations/count
- * @desc Get total count of designations
- * @returns {Object} 200 - Designations count
- * @returns {Object} 500 - Internal server error
- */
-router.get("/count", DesignationController.getDesignationsCount);
 
 /**
  * @route GET /api/designations/:id

@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
             },
         },
         {
-            tableName: "Skills",
+            tableName: "Skill",
             timestamps: true,
             underscored: true,
             indexes: [

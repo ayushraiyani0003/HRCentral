@@ -27,36 +27,18 @@ class JobLocationService {
 
     /**
      * Get all job locations
-     * @param {Object} options - Query options (limit, offset, search)
      * @returns {Promise<Object>} List of job locations
      */
-    async getAll(options = {}) {
+    async getAll() {
         try {
-            const { limit = 10, offset = 0, search = "" } = options;
-
-            const whereClause = search
-                ? {
-                      name: { [Op.like]: `%${search}%` },
-                  }
-                : {};
-
-            const { count, rows } = await JobLocation.findAndCountAll({
-                where: whereClause,
-                limit: parseInt(limit),
-                offset: parseInt(offset),
+            const jobLocations = await JobLocation.findAll({
                 order: [["name", "ASC"]],
             });
 
             return {
                 success: true,
                 data: {
-                    jobLocations: rows,
-                    pagination: {
-                        total: count,
-                        limit: parseInt(limit),
-                        offset: parseInt(offset),
-                        pages: Math.ceil(count / limit),
-                    },
+                    jobLocations,
                 },
                 message: "Job locations retrieved successfully",
             };

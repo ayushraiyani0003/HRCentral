@@ -2,19 +2,35 @@
 const { ExperienceLevel } = require("../../models");
 const { Op } = require("sequelize");
 
+/**
+ * ExperienceLevel Service
+ * Handles all database operations for ExperienceLevel model
+ */
 class ExperienceLevelService {
     /**
      * Create a new experience level
      * @param {Object} experienceLevelData - Experience level data
-     * @returns {Promise<Object>} Created experience level
+     * @param {string} experienceLevelData.name - Name of the experience level
+     * @returns {Promise<Object>} Created experience level object
      */
     async create(experienceLevelData) {
         try {
-            console.log("this is called");
+            // Check if experience level already exists
+            const existingExperienceLevel = await ExperienceLevel.findOne({
+                where: { name: experienceLevelData.name },
+            });
+
+            if (existingExperienceLevel) {
+                return {
+                    success: false,
+                    message: "Experience level already exists",
+                };
+            }
 
             const experienceLevel = await ExperienceLevel.create(
                 experienceLevelData
             );
+
             return {
                 success: true,
                 data: experienceLevel,
@@ -30,37 +46,29 @@ class ExperienceLevelService {
     }
 
     /**
+     * Add a new experience level (alias for create - backward compatibility)
+     * @param {Object} experienceLevelData - Experience level data
+     * @param {string} experienceLevelData.name - Name of the experience level
+     * @returns {Promise<Object>} Created experience level object
+     */
+    async add(experienceLevelData) {
+        return await this.create(experienceLevelData);
+    }
+
+    /**
      * Get all experience levels
-     * @param {Object} options - Query options (limit, offset, search)
      * @returns {Promise<Object>} List of experience levels
      */
-    async getAll(options = {}) {
+    async getAll() {
         try {
-            const { limit = 10, offset = 0, search = "" } = options;
-
-            const whereClause = search
-                ? {
-                      name: { [Op.like]: `%${search}%` },
-                  }
-                : {};
-
-            const { count, rows } = await ExperienceLevel.findAndCountAll({
-                where: whereClause,
-                limit: parseInt(limit),
-                offset: parseInt(offset),
+            const experienceLevels = await ExperienceLevel.findAll({
                 order: [["name", "ASC"]],
             });
 
             return {
                 success: true,
                 data: {
-                    experienceLevels: rows,
-                    pagination: {
-                        total: count,
-                        limit: parseInt(limit),
-                        offset: parseInt(offset),
-                        pages: Math.ceil(count / limit),
-                    },
+                    experienceLevels,
                 },
                 message: "Experience levels retrieved successfully",
             };
@@ -74,8 +82,16 @@ class ExperienceLevelService {
     }
 
     /**
+     * Retrieve all experience levels (alias for getAll - backward compatibility)
+     * @returns {Promise<Object>} List of experience levels
+     */
+    async readAll() {
+        return await this.getAll();
+    }
+
+    /**
      * Get experience level by ID
-     * @param {number} id - Experience level ID
+     * @param {string} id - Experience level ID (UUID)
      * @returns {Promise<Object>} Experience level data
      */
     async getById(id) {
@@ -104,9 +120,42 @@ class ExperienceLevelService {
     }
 
     /**
+     * Retrieve experience level by name
+     * @param {string} name - Name of the experience level
+     * @returns {Promise<Object>} Experience level data
+     */
+    async readByName(name) {
+        try {
+            const experienceLevel = await ExperienceLevel.findOne({
+                where: { name: name },
+            });
+
+            if (!experienceLevel) {
+                return {
+                    success: false,
+                    message: "Experience level not found",
+                };
+            }
+
+            return {
+                success: true,
+                data: experienceLevel,
+                message: "Experience level retrieved successfully",
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message,
+                message: "Failed to retrieve experience level by name",
+            };
+        }
+    }
+
+    /**
      * Update experience level
-     * @param {number} id - Experience level ID
+     * @param {string} id - Experience level ID (UUID)
      * @param {Object} updateData - Data to update
+     * @param {string} [updateData.name] - Updated name of the experience level
      * @returns {Promise<Object>} Updated experience level
      */
     async update(id, updateData) {
@@ -118,6 +167,21 @@ class ExperienceLevelService {
                     success: false,
                     message: "Experience level not found",
                 };
+            }
+
+            // Check if new name already exists (if name is being updated)
+            if (updateData.name && updateData.name !== experienceLevel.name) {
+                const existingExperienceLevel = await ExperienceLevel.findOne({
+                    where: { name: updateData.name },
+                });
+
+                if (existingExperienceLevel) {
+                    return {
+                        success: false,
+                        message:
+                            "Experience level with this name already exists",
+                    };
+                }
             }
 
             await experienceLevel.update(updateData);
@@ -138,7 +202,7 @@ class ExperienceLevelService {
 
     /**
      * Delete experience level
-     * @param {number} id - Experience level ID
+     * @param {string} id - Experience level ID (UUID)
      * @returns {Promise<Object>} Deletion result
      */
     async delete(id) {
@@ -163,6 +227,52 @@ class ExperienceLevelService {
                 success: false,
                 error: error.message,
                 message: "Failed to delete experience level",
+            };
+        }
+    }
+
+    /**
+     * Get total count of experience levels
+     * @returns {Promise<Object>} Total count of experience levels
+     */
+    async count() {
+        try {
+            const count = await ExperienceLevel.count();
+            return {
+                success: true,
+                data: { count },
+                message: "Experience levels count retrieved successfully",
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message,
+                message: "Failed to count experience levels",
+            };
+        }
+    }
+
+    /**
+     * Check if experience level exists by name
+     * @param {string} name - Name to check
+     * @returns {Promise<Object>} Existence check result
+     */
+    async exists(name) {
+        try {
+            const experienceLevel = await ExperienceLevel.findOne({
+                where: { name: name },
+            });
+
+            return {
+                success: true,
+                data: { exists: !!experienceLevel },
+                message: "Experience level existence checked successfully",
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message,
+                message: "Failed to check experience level existence",
             };
         }
     }

@@ -131,35 +131,4 @@ router.put("/:id", skillController.updateSkill);
  */
 router.delete("/:id", skillController.deleteSkill);
 
-/**
- * @route POST /api/skills/bulk
- * @desc Bulk create multiple skills
- * @access Public
- * @param {Array<Object>} req.body - Array of skill objects to create
- * @param {string} req.body[].name - Name of each skill to create
- * @returns {Object} 201 - Array of created skills
- * @returns {Object} 400 - Bad request error (invalid array or validation errors)
- * @returns {Object} 500 - Internal server error
- * @example
- * // Request body:
- * [
- *   { "name": "HTML" },
- *   { "name": "CSS" },
- *   { "name": "JavaScript" }
- * ]
- *
- * // Response:
- * {
- *   "success": true,
- *   "data": [
- *     { "id": 1, "name": "HTML" },
- *     { "id": 2, "name": "CSS" },
- *     { "id": 3, "name": "JavaScript" }
- *   ],
- *   "created": 3,
- *   "failed": 0
- * }
- */
-router.post("/bulk", skillController.bulkCreateSkills);
-
 module.exports = router;

@@ -47,20 +47,4 @@ router.put("/:id", AssetTypeController.updateAssetType);
  */
 router.delete("/:id", AssetTypeController.deleteAssetType);
 
-// ==============================
-// Additional Asset Type Routes
-// ==============================
-
-/**
- * @route GET /api/asset-type/name/:name
- * @desc Get asset type by name
- */
-router.get("/name/:name", AssetTypeController.getAssetTypeByName);
-
-/**
- * @route GET /api/asset-type/exists/:name
- * @desc Check if asset type exists by name
- */
-router.get("/exists/:name", AssetTypeController.checkAssetTypeExists);
-
 module.exports = router;

@@ -19,7 +19,7 @@ router.post("/", CountryController.createCountry);
 
 /**
  * @route GET /api/countries
- * @desc Get all countries (supports pagination, filtering, search)
+ * @desc Get all countries
  */
 router.get("/", CountryController.getAllCountries);
 
@@ -40,21 +40,5 @@ router.put("/:id", CountryController.updateCountry);
  * @desc Delete a country by ID
  */
 router.delete("/:id", CountryController.deleteCountry);
-
-// ==============================
-// Additional Country Routes
-// ==============================
-
-/**
- * @route GET /api/countries/code/:code
- * @desc Get country by country code (ISO 2 or 3 letter codes)
- */
-router.get("/code/:code", CountryController.getCountryByCode);
-
-/**
- * @route GET /api/countries/region/:region
- * @desc Get all countries by region
- */
-router.get("/region/:region", CountryController.getCountriesByRegion);
 
 module.exports = router;

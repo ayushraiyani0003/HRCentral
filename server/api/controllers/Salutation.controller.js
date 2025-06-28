@@ -67,63 +67,17 @@ class SalutationController {
     }
 
     /**
-     * Get all salutations with pagination and filtering
+     * Get all salutations without pagination or limits
      * @route GET /api/salutation
      * @param {Object} req - Express request object
-     * @param {Object} req.query - Query parameters
-     * @param {number} [req.query.limit=10] - Number of records to return (max 100)
-     * @param {number} [req.query.offset=0] - Number of records to skip
-     * @param {string} [req.query.orderBy=createdAt] - Field to order by
-     * @param {string} [req.query.orderDirection=DESC] - Sort direction (ASC/DESC)
      * @param {Object} res - Express response object
-     * @returns {Object} JSON response with paginated salutations list
-     * @description Retrieves all salutations with pagination, sorting, and validation
+     * @returns {Object} JSON response with all salutations
+     * @description Retrieves all salutations without any pagination or limits
      */
     async getAllSalutations(req, res) {
         try {
-            const {
-                limit = 10,
-                offset = 0,
-                orderBy = "createdAt",
-                orderDirection = "DESC",
-            } = req.query;
-
-            // Validate limit - prevent excessive data retrieval
-            const parsedLimit = parseInt(limit);
-            if (parsedLimit > 100) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Limit cannot exceed 100",
-                });
-            }
-
-            // Validate orderBy - only allow specific fields for security
-            const allowedOrderBy = ["id", "name", "createdAt", "updatedAt"];
-            if (!allowedOrderBy.includes(orderBy)) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Invalid orderBy field",
-                });
-            }
-
-            // Validate orderDirection - ensure proper SQL ordering
-            if (!["ASC", "DESC"].includes(orderDirection.toUpperCase())) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Invalid order direction. Use ASC or DESC",
-                });
-            }
-
-            // Prepare options for service layer
-            const options = {
-                limit: parsedLimit,
-                offset: parseInt(offset),
-                orderBy,
-                orderDirection: orderDirection.toUpperCase(),
-            };
-
-            // Fetch data from service layer
-            const result = await SalutationService.readAll(options);
+            // Fetch all data from service layer without any options
+            const result = await SalutationService.readAll();
 
             return res.status(200).json(result);
         } catch (error) {

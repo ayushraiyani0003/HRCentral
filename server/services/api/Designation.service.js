@@ -1,4 +1,4 @@
-// =================== services/DesignationService.js ===================
+// =================== services/Designation.service.js ===================
 const { Designation } = require("../../models");
 const { Op } = require("sequelize");
 
@@ -8,43 +8,46 @@ class DesignationService {
      * @param {Object} designationData - Designation data
      * @returns {Promise<Object>} Created designation
      */
-    async createDesignation(designationData) {
+    async create(designationData) {
         try {
             const designation = await Designation.create(designationData);
-            return { success: true, data: designation };
+            return {
+                success: true,
+                data: designation,
+                message: "Designation created successfully",
+            };
         } catch (error) {
-            if (error.name === "SequelizeUniqueConstraintError") {
-                return {
-                    success: false,
-                    error: "Designation name already exists",
-                };
-            }
-            return { success: false, error: error.message };
+            return {
+                success: false,
+                error: error.message,
+                message: "Failed to create designation",
+            };
         }
     }
 
     /**
      * Get all designations
-     * @param {Object} options - Query options
-     * @returns {Promise<Object>} Designations list
+     * @returns {Promise<Object>} List of designations
      */
-    async getAllDesignations(options = {}) {
+    async getAll() {
         try {
-            const { page, limit } = options;
-            let queryOptions = {
+            const designations = await Designation.findAll({
                 order: [["name", "ASC"]],
+            });
+
+            return {
+                success: true,
+                data: {
+                    designations,
+                },
+                message: "Designations retrieved successfully",
             };
-
-            if (page && limit) {
-                const offset = (page - 1) * limit;
-                queryOptions.limit = parseInt(limit);
-                queryOptions.offset = parseInt(offset);
-            }
-
-            const designations = await Designation.findAll(queryOptions);
-            return { success: true, data: designations };
         } catch (error) {
-            return { success: false, error: error.message };
+            return {
+                success: false,
+                error: error.message,
+                message: "Failed to retrieve designations",
+            };
         }
     }
 
@@ -53,90 +56,124 @@ class DesignationService {
      * @param {string} id - Designation ID (UUID)
      * @returns {Promise<Object>} Designation data
      */
-    async getDesignationById(id) {
+    async getById(id) {
         try {
             const designation = await Designation.findByPk(id);
 
             if (!designation) {
-                return { success: false, error: "Designation not found" };
+                return {
+                    success: false,
+                    message: "Designation not found",
+                };
             }
 
-            return { success: true, data: designation };
+            return {
+                success: true,
+                data: designation,
+                message: "Designation retrieved successfully",
+            };
         } catch (error) {
-            return { success: false, error: error.message };
+            return {
+                success: false,
+                error: error.message,
+                message: "Failed to retrieve designation",
+            };
         }
     }
 
     /**
      * Update designation
-     * @param {string} id - Designation ID
-     * @param {Object} updateData - Update data
+     * @param {string} id - Designation ID (UUID)
+     * @param {Object} updateData - Data to update
      * @returns {Promise<Object>} Updated designation
      */
-    async updateDesignation(id, updateData) {
+    async update(id, updateData) {
         try {
-            const [updatedRowsCount] = await Designation.update(updateData, {
-                where: { id },
-            });
+            const designation = await Designation.findByPk(id);
 
-            if (updatedRowsCount === 0) {
-                return { success: false, error: "Designation not found" };
-            }
-
-            const updatedDesignation = await Designation.findByPk(id);
-            return { success: true, data: updatedDesignation };
-        } catch (error) {
-            if (error.name === "SequelizeUniqueConstraintError") {
+            if (!designation) {
                 return {
                     success: false,
-                    error: "Designation name already exists",
+                    message: "Designation not found",
                 };
             }
-            return { success: false, error: error.message };
+
+            await designation.update(updateData);
+
+            return {
+                success: true,
+                data: designation,
+                message: "Designation updated successfully",
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message,
+                message: "Failed to update designation",
+            };
         }
     }
 
     /**
      * Delete designation
-     * @param {string} id - Designation ID
-     * @returns {Promise<Object>} Delete result
+     * @param {string} id - Designation ID (UUID)
+     * @returns {Promise<Object>} Deletion result
      */
-    async deleteDesignation(id) {
+    async delete(id) {
         try {
-            const deletedRowsCount = await Designation.destroy({
-                where: { id },
-            });
+            const designation = await Designation.findByPk(id);
 
-            if (deletedRowsCount === 0) {
-                return { success: false, error: "Designation not found" };
+            if (!designation) {
+                return {
+                    success: false,
+                    message: "Designation not found",
+                };
             }
+
+            await designation.destroy();
 
             return {
                 success: true,
                 message: "Designation deleted successfully",
             };
         } catch (error) {
-            return { success: false, error: error.message };
+            return {
+                success: false,
+                error: error.message,
+                message: "Failed to delete designation",
+            };
         }
     }
 
     /**
      * Search designations by name
-     * @param {string} searchTerm - Search term
-     * @returns {Promise<Object>} Search results
+     * @param {string} searchTerm - Search term for designation name
+     * @returns {Promise<Object>} List of matching designations
      */
-    async searchDesignations(searchTerm) {
+    async searchByName(searchTerm) {
         try {
             const designations = await Designation.findAll({
                 where: {
-                    name: { [Op.like]: `%${searchTerm}%` },
+                    name: {
+                        [Op.iLike]: `%${searchTerm}%`,
+                    },
                 },
                 order: [["name", "ASC"]],
             });
 
-            return { success: true, data: designations };
+            return {
+                success: true,
+                data: {
+                    designations,
+                },
+                message: `Designations matching '${searchTerm}' retrieved successfully`,
+            };
         } catch (error) {
-            return { success: false, error: error.message };
+            return {
+                success: false,
+                error: error.message,
+                message: "Failed to search designations",
+            };
         }
     }
 }

@@ -12,3 +12,7 @@ client is likely intended to be "Client".s likely intended to be "Client".
     
 task 5: Add simple ingestion. with the server.
 
+client/
+
+Task 1: instead of "Delete this" button we need to write Confirm Delete
+

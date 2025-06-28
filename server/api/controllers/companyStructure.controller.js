@@ -22,7 +22,7 @@ class CompanyStructureController {
         const enhanceStructure = async (structure) => {
             if (structure.country_id) {
                 try {
-                    const country = await CountryService.getById(
+                    const country = await CountryService.readById(
                         structure.country_id
                     );
                     if (country) {
@@ -58,7 +58,7 @@ class CompanyStructureController {
      */
     async validateCountryId(countryId) {
         if (countryId) {
-            const country = await CountryService.getById(countryId);
+            const country = await CountryService.readById(countryId);
             if (!country) {
                 throw new Error(`Country with ID ${countryId} not found`);
             }

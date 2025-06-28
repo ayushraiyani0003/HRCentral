@@ -27,36 +27,18 @@ class SkillService {
 
     /**
      * Get all skills
-     * @param {Object} options - Query options (limit, offset, search)
      * @returns {Promise<Object>} List of skills
      */
-    async getAll(options = {}) {
+    async getAll() {
         try {
-            const { limit = 10, offset = 0, search = "" } = options;
-
-            const whereClause = search
-                ? {
-                      name: { [Op.like]: `%${search}%` },
-                  }
-                : {};
-
-            const { count, rows } = await Skill.findAndCountAll({
-                where: whereClause,
-                limit: parseInt(limit),
-                offset: parseInt(offset),
+            const skills = await Skill.findAll({
                 order: [["name", "ASC"]],
             });
 
             return {
                 success: true,
                 data: {
-                    skills: rows,
-                    pagination: {
-                        total: count,
-                        limit: parseInt(limit),
-                        offset: parseInt(offset),
-                        pages: Math.ceil(count / limit),
-                    },
+                    skills,
                 },
                 message: "Skills retrieved successfully",
             };
@@ -71,7 +53,7 @@ class SkillService {
 
     /**
      * Get skill by ID
-     * @param {number} id - Skill ID
+     * @param {string} id - Skill ID (UUID)
      * @returns {Promise<Object>} Skill data
      */
     async getById(id) {
@@ -101,7 +83,7 @@ class SkillService {
 
     /**
      * Update skill
-     * @param {number} id - Skill ID
+     * @param {string} id - Skill ID (UUID)
      * @param {Object} updateData - Data to update
      * @returns {Promise<Object>} Updated skill
      */
@@ -134,7 +116,7 @@ class SkillService {
 
     /**
      * Delete skill
-     * @param {number} id - Skill ID
+     * @param {string} id - Skill ID (UUID)
      * @returns {Promise<Object>} Deletion result
      */
     async delete(id) {
@@ -159,32 +141,6 @@ class SkillService {
                 success: false,
                 error: error.message,
                 message: "Failed to delete skill",
-            };
-        }
-    }
-
-    /**
-     * Bulk create skills
-     * @param {Array} skillsData - Array of skill data
-     * @returns {Promise<Object>} Created skills
-     */
-    async bulkCreate(skillsData) {
-        try {
-            const skills = await Skill.bulkCreate(skillsData, {
-                ignoreDuplicates: true,
-                returning: true,
-            });
-
-            return {
-                success: true,
-                data: skills,
-                message: "Skills created successfully",
-            };
-        } catch (error) {
-            return {
-                success: false,
-                error: error.message,
-                message: "Failed to create skills",
             };
         }
     }
