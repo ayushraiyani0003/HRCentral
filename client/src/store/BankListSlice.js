@@ -9,34 +9,19 @@ import BankListService from "../services/BankListService";
 // Initialize service
 const bankService = new BankListService();
 
-// Initial state
+// Initial state - simplified for getting all data
 const initialState = {
     banks: [],
     currentBank: null,
-    searchResults: [],
-    pagination: {
-        total: 0,
-        limit: 10,
-        offset: 0,
-        totalPages: 0,
-        currentPage: 1,
-    },
     loading: {
         fetchAll: false,
         fetchById: false,
         create: false,
         update: false,
         delete: false,
-        search: false,
-        bulkCreate: false,
     },
     error: null,
     lastAction: null,
-    filters: {
-        orderBy: "name",
-        orderDirection: "ASC",
-        searchTerm: "",
-    },
 };
 
 // Async Thunks (Action Creators)
@@ -57,17 +42,15 @@ export const createBank = createAsyncThunk(
 );
 
 /**
- * Fetch all banks with pagination and sorting
+ * Fetch all banks - simplified to get all data without pagination
  */
 export const fetchAllBanks = createAsyncThunk(
     "banks/fetchAll",
-    async (options = {}, { rejectWithValue }) => {
+    async (_, { rejectWithValue }) => {
         try {
-            const response = await bankService.getAllBanks(options);
-            return {
-                banks: response.data,
-                pagination: response.pagination,
-            };
+            // Remove pagination parameters to get all data
+            const response = await bankService.getAllBanks();
+            return response.data; // Return just the data array
         } catch (error) {
             return rejectWithValue(error.message);
         }
@@ -119,115 +102,6 @@ export const deleteBank = createAsyncThunk(
     }
 );
 
-/**
- * Search banks
- */
-export const searchBanks = createAsyncThunk(
-    "banks/search",
-    async ({ searchTerm, options = {} }, { rejectWithValue }) => {
-        try {
-            const response = await bankService.searchBanks(searchTerm, options);
-            return {
-                results: response.data,
-                pagination: response.pagination,
-                searchTerm,
-            };
-        } catch (error) {
-            return rejectWithValue(error.message);
-        }
-    }
-);
-
-/**
- * Get bank by name
- */
-export const fetchBankByName = createAsyncThunk(
-    "banks/fetchByName",
-    async (name, { rejectWithValue }) => {
-        try {
-            const response = await bankService.getBankByName(name);
-            return response.data;
-        } catch (error) {
-            return rejectWithValue(error.message);
-        }
-    }
-);
-
-/**
- * Check if bank exists by name
- */
-export const checkBankExistsByName = createAsyncThunk(
-    "banks/checkExistsByName",
-    async (name, { rejectWithValue }) => {
-        try {
-            const response = await bankService.checkBankExistsByName(name);
-            return { name, exists: response.exists };
-        } catch (error) {
-            return rejectWithValue(error.message);
-        }
-    }
-);
-
-/**
- * Check if bank exists by ID
- */
-export const checkBankExistsById = createAsyncThunk(
-    "banks/checkExistsById",
-    async (id, { rejectWithValue }) => {
-        try {
-            const response = await bankService.checkBankExistsById(id);
-            return { id, exists: response.exists };
-        } catch (error) {
-            return rejectWithValue(error.message);
-        }
-    }
-);
-
-/**
- * Get all banks sorted (for dropdowns)
- */
-export const fetchSortedBanks = createAsyncThunk(
-    "banks/fetchSorted",
-    async (_, { rejectWithValue }) => {
-        try {
-            const response = await bankService.getAllBanksSorted();
-            return response.data;
-        } catch (error) {
-            return rejectWithValue(error.message);
-        }
-    }
-);
-
-/**
- * Get banks count
- */
-export const fetchBanksCount = createAsyncThunk(
-    "banks/fetchCount",
-    async (_, { rejectWithValue }) => {
-        try {
-            const response = await bankService.getBanksCount();
-            return response.count;
-        } catch (error) {
-            return rejectWithValue(error.message);
-        }
-    }
-);
-
-/**
- * Bulk create banks
- */
-export const bulkCreateBanks = createAsyncThunk(
-    "banks/bulkCreate",
-    async (banksData, { rejectWithValue }) => {
-        try {
-            const response = await bankService.bulkCreateBanks(banksData);
-            return response.data;
-        } catch (error) {
-            return rejectWithValue(error.message);
-        }
-    }
-);
-
 // Bank Slice
 const bankSlice = createSlice({
     name: "banks",
@@ -239,16 +113,6 @@ const bankSlice = createSlice({
         },
         clearCurrentBank: (state) => {
             state.currentBank = null;
-        },
-        clearSearchResults: (state) => {
-            state.searchResults = [];
-            state.filters.searchTerm = "";
-        },
-        updateFilters: (state, action) => {
-            state.filters = { ...state.filters, ...action.payload };
-        },
-        updatePagination: (state, action) => {
-            state.pagination = { ...state.pagination, ...action.payload };
         },
         resetBankState: () => initialState,
         setCurrentBank: (state, action) => {
@@ -288,15 +152,14 @@ const bankSlice = createSlice({
                 state.lastAction = "create";
             })
 
-            // Fetch All Banks
+            // Fetch All Banks - simplified for all data
             .addCase(fetchAllBanks.pending, (state) => {
                 state.loading.fetchAll = true;
                 state.error = null;
             })
             .addCase(fetchAllBanks.fulfilled, (state, action) => {
                 state.loading.fetchAll = false;
-                state.banks = action.payload.banks;
-                state.pagination = action.payload.pagination;
+                state.banks = action.payload; // Direct assignment of banks array
                 state.lastAction = "fetchAll";
                 state.error = null;
             })
@@ -383,95 +246,6 @@ const bankSlice = createSlice({
                 state.loading.delete = false;
                 state.error = action.payload;
                 state.lastAction = "delete";
-            })
-
-            // Search Banks
-            .addCase(searchBanks.pending, (state) => {
-                state.loading.search = true;
-                state.error = null;
-            })
-            .addCase(searchBanks.fulfilled, (state, action) => {
-                state.loading.search = false;
-                state.searchResults = action.payload.results;
-                state.pagination = action.payload.pagination;
-                state.filters.searchTerm = action.payload.searchTerm;
-                state.lastAction = "search";
-                state.error = null;
-            })
-            .addCase(searchBanks.rejected, (state, action) => {
-                state.loading.search = false;
-                state.error = action.payload;
-                state.lastAction = "search";
-            })
-
-            // Fetch Bank by Name
-            .addCase(fetchBankByName.fulfilled, (state, action) => {
-                state.currentBank = action.payload;
-                state.lastAction = "fetchByName";
-                state.error = null;
-            })
-            .addCase(fetchBankByName.rejected, (state, action) => {
-                state.error = action.payload;
-                state.lastAction = "fetchByName";
-            })
-
-            // Check Bank Exists by Name
-            .addCase(checkBankExistsByName.fulfilled, (state, action) => {
-                state.lastAction = "checkExistsByName";
-                state.error = null;
-            })
-            .addCase(checkBankExistsByName.rejected, (state, action) => {
-                state.error = action.payload;
-                state.lastAction = "checkExistsByName";
-            })
-
-            // Check Bank Exists by ID
-            .addCase(checkBankExistsById.fulfilled, (state, action) => {
-                state.lastAction = "checkExistsById";
-                state.error = null;
-            })
-            .addCase(checkBankExistsById.rejected, (state, action) => {
-                state.error = action.payload;
-                state.lastAction = "checkExistsById";
-            })
-
-            // Fetch Sorted Banks
-            .addCase(fetchSortedBanks.fulfilled, (state, action) => {
-                state.banks = action.payload;
-                state.lastAction = "fetchSorted";
-                state.error = null;
-            })
-            .addCase(fetchSortedBanks.rejected, (state, action) => {
-                state.error = action.payload;
-                state.lastAction = "fetchSorted";
-            })
-
-            // Fetch Banks Count
-            .addCase(fetchBanksCount.fulfilled, (state, action) => {
-                state.pagination.total = action.payload;
-                state.lastAction = "fetchCount";
-                state.error = null;
-            })
-            .addCase(fetchBanksCount.rejected, (state, action) => {
-                state.error = action.payload;
-                state.lastAction = "fetchCount";
-            })
-
-            // Bulk Create Banks
-            .addCase(bulkCreateBanks.pending, (state) => {
-                state.loading.bulkCreate = true;
-                state.error = null;
-            })
-            .addCase(bulkCreateBanks.fulfilled, (state, action) => {
-                state.loading.bulkCreate = false;
-                state.banks = [...action.payload, ...state.banks];
-                state.lastAction = "bulkCreate";
-                state.error = null;
-            })
-            .addCase(bulkCreateBanks.rejected, (state, action) => {
-                state.loading.bulkCreate = false;
-                state.error = action.payload;
-                state.lastAction = "bulkCreate";
             });
     },
 });
@@ -480,9 +254,6 @@ const bankSlice = createSlice({
 export const {
     clearError,
     clearCurrentBank,
-    clearSearchResults,
-    updateFilters,
-    updatePagination,
     resetBankState,
     setCurrentBank,
     updateBankInList,
@@ -493,11 +264,8 @@ export const {
 // Selectors
 export const selectBanks = (state) => state.banks.banks;
 export const selectCurrentBank = (state) => state.banks.currentBank;
-export const selectSearchResults = (state) => state.banks.searchResults;
-export const selectPagination = (state) => state.banks.pagination;
 export const selectLoading = (state) => state.banks.loading;
 export const selectError = (state) => state.banks.error;
-export const selectFilters = (state) => state.banks.filters;
 export const selectLastAction = (state) => state.banks.lastAction;
 
 // Complex selectors
@@ -512,83 +280,5 @@ export const selectBanksByName = (name) => (state) =>
         bank.name.toLowerCase().includes(name.toLowerCase())
     );
 
-export const selectFormattedBanks = (state) => {
-    const service = new BankListService();
-    return service.formatBanksForDisplay(state.banks.banks);
-};
-
 // Export reducer
 export default bankSlice.reducer;
-
-// Usage Examples:
-/*
-// In your store configuration (store.js)
-import { configureStore } from '@reduxjs/toolkit';
-import bankReducer from './bankSlice';
-
-export const store = configureStore({
-  reducer: {
-    banks: bankReducer,
-  },
-});
-
-// In your React components
-import { useSelector, useDispatch } from 'react-redux';
-import {
-  fetchAllBanks,
-  createBank,
-  updateBank,
-  deleteBank,
-  searchBanks,
-  selectBanks,
-  selectLoading,
-  selectError,
-  clearError
-} from './bankSlice';
-
-function BankList() {
-  const dispatch = useDispatch();
-  const banks = useSelector(selectBanks);
-  const loading = useSelector(selectLoading);
-  const error = useSelector(selectError);
-
-  useEffect(() => {
-    dispatch(fetchAllBanks({ limit: 20, orderBy: 'name' }));
-  }, [dispatch]);
-
-  const handleCreateBank = (bankData) => {
-    dispatch(createBank(bankData));
-  };
-
-  const handleUpdateBank = (id, bankData) => {
-    dispatch(updateBank({ id, bankData }));
-  };
-
-  const handleDeleteBank = (id) => {
-    dispatch(deleteBank(id));
-  };
-
-  const handleSearch = (searchTerm) => {
-    dispatch(searchBanks({ searchTerm, options: { limit: 10 } }));
-  };
-
-  if (loading.fetchAll) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
-
-  return (
-    <div>
-      {banks.map(bank => (
-        <div key={bank.id}>
-          <h3>{bank.name}</h3>
-          <button onClick={() => handleUpdateBank(bank.id, { name: 'Updated Name' })}>
-            Update
-          </button>
-          <button onClick={() => handleDeleteBank(bank.id)}>
-            Delete
-          </button>
-        </div>
-      ))}
-    </div>
-  );
-}
-*/

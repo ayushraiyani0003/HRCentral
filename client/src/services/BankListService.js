@@ -52,19 +52,35 @@ class BankListService {
     }
 
     /**
-     * Get all banks with pagination and sorting
-     * @param {Object} options - Query options
+     * Get all banks - if options is empty/null, get all data without pagination
+     * @param {Object} options - Query options (optional)
      * @param {number} options.limit - Number of records to return (default: 10, max: 100)
      * @param {number} options.offset - Number of records to skip (default: 0)
      * @param {string} options.orderBy - Field to order by: id, name, created_at, updated_at
      * @param {string} options.orderDirection - Order direction ASC/DESC
-     * @returns {Promise<Object>} List of banks with pagination info
+     * @returns {Promise<Object>} List of banks with or without pagination info
      */
     async getAllBanks(options = {}) {
+        // Check if options is empty/null or has no meaningful values
+        const hasOptions =
+            options &&
+            (options.limit !== undefined ||
+                options.offset !== undefined ||
+                options.orderBy ||
+                options.orderDirection);
+
+        if (!hasOptions) {
+            // Simple request to get all data without query parameters
+            return await this._makeRequest(this.baseURL);
+        }
+
+        // Build query parameters only if options are provided
         const queryParams = new URLSearchParams();
 
-        if (options.limit) queryParams.append("limit", options.limit);
-        if (options.offset) queryParams.append("offset", options.offset);
+        if (options.limit !== undefined)
+            queryParams.append("limit", options.limit);
+        if (options.offset !== undefined)
+            queryParams.append("offset", options.offset);
         if (options.orderBy) queryParams.append("orderBy", options.orderBy);
         if (options.orderDirection)
             queryParams.append("orderDirection", options.orderDirection);
@@ -159,7 +175,7 @@ class BankListService {
     /**
      * Search banks by name (partial match, case-insensitive)
      * @param {string} searchTerm - Search term for bank name
-     * @param {Object} options - Query options
+     * @param {Object} options - Query options (optional)
      * @param {number} options.limit - Number of records to return (default: 10, max: 100)
      * @param {number} options.offset - Number of records to skip (default: 0)
      * @returns {Promise<Object>} List of matching banks with pagination info
@@ -172,16 +188,19 @@ class BankListService {
         const queryParams = new URLSearchParams();
         queryParams.append("q", searchTerm.trim());
 
-        if (options.limit) queryParams.append("limit", options.limit);
-        if (options.offset) queryParams.append("offset", options.offset);
+        // Only add pagination if options are provided
+        if (options.limit !== undefined)
+            queryParams.append("limit", options.limit);
+        if (options.offset !== undefined)
+            queryParams.append("offset", options.offset);
 
         const url = `${this.baseURL}/search?${queryParams.toString()}`;
         return await this._makeRequest(url);
     }
 
     /**
-     * Get all banks sorted by name (for dropdown lists)
-     * @returns {Promise<Object>} List of banks sorted by name
+     * Get all banks sorted by name (for dropdown lists) - always returns all data
+     * @returns {Promise<Object>} List of all banks sorted by name
      */
     async getAllBanksSorted() {
         return await this._makeRequest(`${this.baseURL}/sorted`);
@@ -273,6 +292,36 @@ export default BankListService;
 // Initialize the service
 const bankService = new BankListService();
 
+// Get ALL banks without any parameters (no pagination)
+try {
+    const result = await bankService.getAllBanks(); // Simple GET /api/bank-list
+    console.log('All Banks:', result.data);
+} catch (error) {
+    console.error('Error fetching all banks:', error.message);
+}
+
+// Get ALL banks with empty options (no pagination)
+try {
+    const result = await bankService.getAllBanks({}); // Simple GET /api/bank-list
+    console.log('All Banks:', result.data);
+} catch (error) {
+    console.error('Error fetching all banks:', error.message);
+}
+
+// Get banks WITH pagination (when options are provided)
+try {
+    const result = await bankService.getAllBanks({
+        limit: 20,
+        offset: 0,
+        orderBy: 'name',
+        orderDirection: 'ASC'
+    }); // GET /api/bank-list?limit=20&offset=0&orderBy=name&orderDirection=ASC
+    console.log('Paginated Banks:', result.data);
+    console.log('Pagination:', result.pagination);
+} catch (error) {
+    console.error('Error fetching paginated banks:', error.message);
+}
+
 // Create a new bank
 try {
     const result = await bankService.createBank({ name: 'Chase Bank' });
@@ -281,24 +330,18 @@ try {
     console.error('Error creating bank:', error.message);
 }
 
-// Get all banks with pagination
+// Search banks (with or without pagination)
 try {
-    const result = await bankService.getAllBanks({
-        limit: 20,
-        offset: 0,
-        orderBy: 'name',
-        orderDirection: 'ASC'
-    });
-    console.log('Banks:', result.data);
-    console.log('Pagination:', result.pagination);
+    const result = await bankService.searchBanks('Chase'); // All results
+    console.log('Search results:', result.data);
 } catch (error) {
-    console.error('Error fetching banks:', error.message);
+    console.error('Error searching banks:', error.message);
 }
 
-// Search banks
+// Search banks with pagination
 try {
     const result = await bankService.searchBanks('Chase', { limit: 10 });
-    console.log('Search results:', result.data);
+    console.log('Paginated search results:', result.data);
 } catch (error) {
     console.error('Error searching banks:', error.message);
 }
@@ -329,37 +372,11 @@ try {
     console.error('Error deleting bank:', error.message);
 }
 
-// Check if bank exists
-try {
-    const result = await bankService.checkBankExistsByName('Chase Bank');
-    console.log('Bank exists:', result.exists);
-} catch (error) {
-    console.error('Error checking bank existence:', error.message);
-}
-
-// Get sorted banks for dropdown
+// Get all banks sorted (always returns all data)
 try {
     const result = await bankService.getAllBanksSorted();
     console.log('Sorted banks:', result.data);
 } catch (error) {
     console.error('Error fetching sorted banks:', error.message);
-}
-
-// Bulk create banks
-try {
-    const result = await bankService.bulkCreateBanks([
-        { name: 'Bank 1' },
-        { name: 'Bank 2' },
-        { name: 'Bank 3' }
-    ]);
-    console.log('Bulk created banks:', result.data);
-} catch (error) {
-    console.error('Error bulk creating banks:', error.message);
-}
-
-// Client-side validation
-const validation = bankService.validateBankName('Test Bank');
-if (!validation.isValid) {
-    console.error('Validation errors:', validation.errors);
 }
 */

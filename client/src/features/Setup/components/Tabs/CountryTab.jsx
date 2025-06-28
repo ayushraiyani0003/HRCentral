@@ -29,6 +29,7 @@ function CountryTab({
         handleEdit,
         handleDelete,
         handleSearch,
+        stats,
         // CRUD handlers
         handleCreateCountry,
         handleUpdateCountry,
@@ -39,6 +40,9 @@ function CountryTab({
         setOpenAddEditModel,
         setModelType,
     });
+
+    console.log(stats);
+    console.log(filteredData);
 
     // Use ref to track if handlers have been set to avoid unnecessary calls
     const handlersSetRef = useRef(false);
@@ -166,7 +170,7 @@ function CountryTab({
             >
                 <CustomTable
                     columns={columns}
-                    data={filteredData}
+                    data={displayData}
                     searchable={false}
                     filterable={false}
                     filterableColumns={[]}

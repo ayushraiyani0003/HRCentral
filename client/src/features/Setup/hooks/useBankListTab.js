@@ -13,10 +13,8 @@ import {
     // Base selectors
     selectBanks,
     selectCurrentBank,
-    selectLoading,
     selectError,
     selectLastAction,
-    selectIsLoading,
 } from "../../../store/BankListSlice";
 
 // Derived selectors

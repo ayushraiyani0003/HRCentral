@@ -43,18 +43,14 @@ const useCompanyStructureTab = ({
     const pagination = useSelector(selectPagination);
     const filters = useSelector(selectFilters);
 
-    // ✅ Use regular selectors with proper memoization using useMemo
+    // ✅ Updated country selectors to match your slice structure
     const countries = useSelector(selectCountries);
     const countriesLoading = useSelector(selectCountriesLoading);
 
-    // ✅ Process countries data with useMemo to prevent unnecessary recalculations
+    // ✅ Updated to work with your slice structure (countries is already an array)
     const processedCountries = useMemo(() => {
         try {
-            // Handle the nested data structure from API response
-            if (countries?.data && Array.isArray(countries.data)) {
-                return countries.data;
-            }
-            // Fallback for direct array
+            // Your slice returns countries as an array directly
             if (Array.isArray(countries)) {
                 return countries;
             }
@@ -65,13 +61,14 @@ const useCompanyStructureTab = ({
         }
     }, [countries]);
 
-    // ✅ Process countries loading state with useMemo
+    // ✅ Updated to match your slice loading structure
     const processedCountriesLoading = useMemo(() => {
         try {
-            return countriesLoading || { fetch: false };
+            // Your slice has loading.fetch structure
+            return countriesLoading?.fetch || false;
         } catch (error) {
             console.warn("Error accessing countries loading:", error);
-            return { fetch: false };
+            return false;
         }
     }, [countriesLoading]);
 
@@ -203,21 +200,16 @@ const useCompanyStructureTab = ({
         filters,
     ]);
 
-    // Fetch countries when we have company structure data
+    // ✅ Updated countries fetching logic to match your slice
     useEffect(() => {
         // Always fetch countries if we don't have them and we have company structure data
         if (
             companyStructureData.length > 0 &&
             processedCountries.length === 0 &&
-            !processedCountriesLoading.fetch
+            !processedCountriesLoading
         ) {
-            // Fetch all countries - you might want to modify this based on your API
-            dispatch(
-                fetchCountries({
-                    limit: 1000, // Fetch a large number to get all countries
-                    page: 1,
-                })
-            ).catch((error) => {
+            // Fetch all countries - using your slice's fetchCountries thunk
+            dispatch(fetchCountries()).catch((error) => {
                 const errorMsg = error.message || "Failed to load country data";
                 const errorCode = error.code || error.status || "";
                 addToast(
@@ -231,7 +223,7 @@ const useCompanyStructureTab = ({
         dispatch,
         companyStructureData.length,
         processedCountries.length,
-        processedCountriesLoading.fetch,
+        processedCountriesLoading,
         addToast,
     ]);
 
@@ -455,7 +447,7 @@ const useCompanyStructureTab = ({
         [dispatch, pagination.pageSize, addToast]
     );
 
-    // Refresh data
+    // ✅ Updated refresh to match your country slice
     const handleRefresh = useCallback(() => {
         dispatch(
             fetchAllCompanyStructures({
@@ -479,20 +471,18 @@ const useCompanyStructureTab = ({
                 );
             });
 
-        // Also refresh countries if needed
+        // Also refresh countries if needed - updated to match your slice
         if (processedCountries.length === 0) {
-            dispatch(fetchCountries({ limit: 1000, page: 1 })).catch(
-                (error) => {
-                    const errorMsg =
-                        error.message || "Failed to refresh country data";
-                    const errorCode = error.code || error.status || "";
-                    addToast(
-                        `${errorCode ? `Error ${errorCode}: ` : ""}${errorMsg}`,
-                        "warning",
-                        6000
-                    );
-                }
-            );
+            dispatch(fetchCountries()).catch((error) => {
+                const errorMsg =
+                    error.message || "Failed to refresh country data";
+                const errorCode = error.code || error.status || "";
+                addToast(
+                    `${errorCode ? `Error ${errorCode}: ` : ""}${errorMsg}`,
+                    "warning",
+                    6000
+                );
+            });
         }
     }, [
         dispatch,
@@ -524,7 +514,7 @@ const useCompanyStructureTab = ({
         loading,
         isLoading: loading?.entities || false,
         isDeleting: loading?.delete || false,
-        countriesLoading: processedCountriesLoading?.fetch || false,
+        countriesLoading: processedCountriesLoading,
 
         // Error states
         errors,

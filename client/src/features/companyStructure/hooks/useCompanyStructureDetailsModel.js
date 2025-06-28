@@ -15,27 +15,19 @@ import {
     fetchCountries,
     selectCountries,
     selectLoading as selectCountriesLoading,
+    selectError as selectCountriesError,
 } from "../../../store/countrySlice";
 
-// Memoized selectors to prevent unnecessary re-renders
+// Simplified memoized selector since selectCountries already returns an array
 const selectMemoizedCountries = createSelector(
     [selectCountries],
-    (countryState) => {
-        try {
-            if (countryState?.data && Array.isArray(countryState.data)) {
-                return countryState.data;
-            }
-            if (Array.isArray(countryState)) {
-                return countryState;
-            }
-            return [];
-        } catch (error) {
-            console.warn("Error accessing countries:", error);
-            return [];
-        }
+    (countries) => {
+        // selectCountries already handles the data transformation and returns an array
+        return countries || [];
     }
 );
 
+// Memoized loading selector for countries
 const selectMemoizedCountriesLoading = createSelector(
     [selectCountriesLoading],
     (loadingState) => {
@@ -46,6 +38,12 @@ const selectMemoizedCountriesLoading = createSelector(
             return { fetch: false };
         }
     }
+);
+
+// Memoized error selector for countries
+const selectMemoizedCountriesError = createSelector(
+    [selectCountriesError],
+    (error) => error || null
 );
 
 const useCompanyStructureDetailsModel = ({
@@ -63,6 +61,7 @@ const useCompanyStructureDetailsModel = ({
     const errors = useSelector(selectErrors);
     const countries = useSelector(selectMemoizedCountries);
     const countriesLoading = useSelector(selectMemoizedCountriesLoading);
+    const countriesError = useSelector(selectMemoizedCountriesError);
 
     // Form state - backend compatible fields
     const [formData, setFormData] = useState({
@@ -246,10 +245,17 @@ const useCompanyStructureDetailsModel = ({
         [addToast]
     );
 
-    // Fetch countries on component mount
+    // Watch for countries errors and display them
+    useEffect(() => {
+        if (countriesError) {
+            displayErrorToast(countriesError, "Failed to load countries");
+        }
+    }, [countriesError, displayErrorToast]);
+
+    // Fetch countries on component mount - Updated to use simplified call
     useEffect(() => {
         if (countries.length === 0 && !countriesLoading.fetch) {
-            dispatch(fetchCountries({ limit: 1000, page: 1 }))
+            dispatch(fetchCountries())
                 .unwrap()
                 .then(() => {
                     // debug only
@@ -598,6 +604,7 @@ const useCompanyStructureDetailsModel = ({
 
         // Redux errors
         reduxErrors: errors,
+        countriesError,
 
         // Form handlers
         handleInputChange,

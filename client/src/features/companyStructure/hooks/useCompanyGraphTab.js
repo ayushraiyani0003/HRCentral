@@ -9,13 +9,13 @@ import {
     selectErrors,
     selectPagination,
     selectFilters,
-    clearError,
 } from "../../../store/CompanyStructureSlice";
 
 import {
     fetchCountries,
     selectCountries,
     selectLoading as selectCountriesLoading,
+    selectError as selectCountriesError,
 } from "../../../store/countrySlice";
 
 const useCompanyGraphTab = () => {
@@ -33,17 +33,13 @@ const useCompanyGraphTab = () => {
     // Countries data
     const countries = useSelector(selectCountries);
     const countriesLoading = useSelector(selectCountriesLoading);
+    const countriesError = useSelector(selectCountriesError);
 
     // Process countries data
     const processedCountries = useMemo(() => {
         try {
-            if (countries?.data && Array.isArray(countries.data)) {
-                return countries.data;
-            }
-            if (Array.isArray(countries)) {
-                return countries;
-            }
-            return [];
+            // selectCountries already returns an array, so we can use it directly
+            return Array.isArray(countries) ? countries : [];
         } catch (error) {
             console.warn("Error accessing countries:", error);
             return [];
@@ -228,29 +224,34 @@ const useCompanyGraphTab = () => {
         filters,
         addToast,
     ]);
-
+    useEffect(() => {
+        if (countriesError) {
+            const errorMsg = countriesError || "Failed to load countries";
+            addToast(`Country Error: ${errorMsg}`, "warning", 6000);
+        }
+    }, [countriesError, addToast]);
     // Fetch countries when we have company structure data
     useEffect(() => {
         if (
             companyStructureData.length > 0 &&
             processedCountries.length === 0 &&
-            !countriesLoading?.fetch
+            !countriesLoading?.fetch // Updated to use the correct loading property
         ) {
-            dispatch(
-                fetchCountries({
-                    limit: 1000,
-                    page: 1,
+            dispatch(fetchCountries())
+                .unwrap() // Use unwrap() for better error handling
+                .then(() => {
+                    console.log("Countries fetched successfully");
                 })
-            ).catch((error) => {
-                const errorMsg = error.message || "Failed to load country data";
-                addToast(errorMsg, "warning", 6000);
-            });
+                .catch((error) => {
+                    const errorMsg = error || "Failed to load country data";
+                    addToast(`Country Error: ${errorMsg}`, "warning", 6000);
+                });
         }
     }, [
         dispatch,
         companyStructureData.length,
         processedCountries.length,
-        countriesLoading,
+        countriesLoading?.fetch, // Updated property access
         addToast,
     ]);
 
@@ -547,6 +548,9 @@ const useCompanyGraphTab = () => {
         errors,
         hasData: companyData !== null,
         dataCount: companyStructureData?.length || 0,
+        // Add country-related returns if needed
+        countriesLoading: countriesLoading?.fetch || false,
+        countriesError,
     };
 };
 

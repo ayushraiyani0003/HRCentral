@@ -3,261 +3,257 @@
  * @version 1.0.0
  */
 
+/**
+ * SalutationService - Handles all client-side operations for Salutation API
+ * Base URL: /api/salutation
+ */
 class SalutationService {
-    constructor(baseURL = "/api") {
-        this.baseURL = baseURL;
-        this.endpoint = `${baseURL}/salutation`;
-    }
+    /**
+     * Base API URL for salutation endpoints
+     * @private
+     * @static
+     * @type {string}
+     */
+    static BASE_URL = "/api/salutation";
 
     /**
-     * Helper method to handle API requests
+     * Default headers for API requests
      * @private
+     * @static
+     * @type {Object}
      */
-    async _request(url, options = {}) {
-        const config = {
-            headers: {
-                "Content-Type": "application/json",
-                ...options.headers,
-            },
-            ...options,
-        };
+    static DEFAULT_HEADERS = {
+        "Content-Type": "application/json",
+    };
 
-        try {
-            const response = await fetch(url, config);
-            const data = await response.json();
+    /**
+     * Handle API response and error checking
+     * @private
+     * @static
+     * @param {Response} response - Fetch response object
+     * @returns {Promise<Object>} Parsed JSON response
+     * @throws {Error} API error with status and message
+     */
+    static async handleResponse(response) {
+        const data = await response.json();
 
-            if (!response.ok) {
-                throw new Error(
-                    data.message || `HTTP error! status: ${response.status}`
-                );
-            }
-
-            return {
-                success: true,
-                data,
-                status: response.status,
-            };
-        } catch (error) {
-            return {
-                success: false,
-                error: error.message,
-                status: error.status || 500,
-            };
+        if (!response.ok) {
+            const error = new Error(
+                data.message ||
+                    `HTTP ${response.status}: ${response.statusText}`
+            );
+            error.status = response.status;
+            error.data = data;
+            throw error;
         }
+
+        return data;
     }
 
     /**
      * Create a new salutation
-     * @param {Object} salutation - Salutation object
-     * @param {string} salutation.name - Salutation name (required, max 100 characters)
-     * @returns {Promise<Object>} API response with created salutation
+     * @static
+     * @param {Object} salutationData - Salutation data
+     * @param {string} salutationData.name - Salutation name (required, max 100 characters)
+     * @returns {Promise<Object>} Created salutation object
+     * @throws {Error} 400 - Bad request (validation error)
+     * @throws {Error} 409 - Conflict (name already exists)
+     * @example
+     * const newSalutation = await SalutationService.createSalutation({ name: 'Dr.' });
      */
-    async createSalutation(salutation) {
-        return await this._request(this.endpoint, {
-            method: "POST",
-            body: JSON.stringify(salutation),
-        });
+    static async createSalutation(salutationData) {
+        try {
+            const response = await fetch(this.BASE_URL, {
+                method: "POST",
+                headers: this.DEFAULT_HEADERS,
+                body: JSON.stringify(salutationData),
+            });
+
+            return await this.handleResponse(response);
+        } catch (error) {
+            console.error("Error creating salutation:", error);
+            throw error;
+        }
     }
 
     /**
-     * Get all salutations with pagination and filtering
-     * @param {Object} params - Query parameters
-     * @param {number} params.limit - Number of records to return (default: 10, max: 100)
-     * @param {number} params.offset - Number of records to skip (default: 0)
-     * @param {string} params.orderBy - Field to order by: id, name, createdAt, updatedAt
-     * @param {string} params.orderDirection - Order direction ASC/DESC
-     * @returns {Promise<Object>} API response with salutations list and pagination info
+     * Get all salutations with pagination
+     * @static
+     * @param {Object} [params={}] - Query parameters
+     * @param {number} [params.page] - Page number for pagination
+     * @param {number} [params.limit] - Number of items per page
+     * @param {string} [params.search] - Search term for filtering
+     * @param {string} [params.sortBy] - Field to sort by
+     * @param {string} [params.sortOrder] - Sort order (asc/desc)
+     * @returns {Promise<Object>} List of salutations with pagination info
+     * @throws {Error} 400 - Bad request (invalid parameters)
+     * @throws {Error} 500 - Internal server error
+     * @example
+     * const salutations = await SalutationService.getAllSalutations({ page: 1, limit: 10 });
      */
-    async getAllSalutations(params = {}) {
-        const queryString = new URLSearchParams(params).toString();
-        const url = queryString
-            ? `${this.endpoint}?${queryString}`
-            : this.endpoint;
+    static async getAllSalutations(params = {}) {
+        try {
+            const queryString = new URLSearchParams(
+                Object.entries(params).filter(
+                    ([_, value]) => value !== undefined && value !== null
+                )
+            ).toString();
 
-        return await this._request(url, {
-            method: "GET",
-        });
-    }
+            const url = queryString
+                ? `${this.BASE_URL}?${queryString}`
+                : this.BASE_URL;
 
-    /**
-     * Search salutations by name
-     * @param {string} searchTerm - Search term for salutation name (required)
-     * @param {Object} params - Additional query parameters
-     * @param {number} params.limit - Number of records to return
-     * @param {number} params.offset - Number of records to skip
-     * @returns {Promise<Object>} API response with matching salutations
-     */
-    async searchSalutations(searchTerm, params = {}) {
-        const queryParams = {
-            q: searchTerm,
-            ...params,
-        };
-        const queryString = new URLSearchParams(queryParams).toString();
-
-        return await this._request(`${this.endpoint}/search?${queryString}`, {
-            method: "GET",
-        });
-    }
-
-    /**
-     * Get all salutations sorted by name (for dropdown lists)
-     * @returns {Promise<Object>} API response with sorted salutations
-     */
-    async getAllSalutationsSorted() {
-        return await this._request(`${this.endpoint}/sorted`, {
-            method: "GET",
-        });
-    }
-
-    /**
-     * Get total count of salutations
-     * @returns {Promise<Object>} API response with salutations count
-     */
-    async getSalutationsCount() {
-        return await this._request(`${this.endpoint}/count`, {
-            method: "GET",
-        });
-    }
-
-    /**
-     * Bulk create salutations
-     * @param {Array} salutations - Array of salutation objects
-     * @returns {Promise<Object>} API response with created salutations
-     */
-    async bulkCreateSalutations(salutations) {
-        return await this._request(`${this.endpoint}/bulk`, {
-            method: "POST",
-            body: JSON.stringify({ salutations }),
-        });
-    }
-
-    /**
-     * Check if salutation exists by name
-     * @param {string} name - Salutation name to check
-     * @returns {Promise<Object>} API response with existence status
-     */
-    async checkSalutationExistsByName(name) {
-        const encodedName = encodeURIComponent(name);
-        return await this._request(
-            `${this.endpoint}/exists/name/${encodedName}`,
-            {
+            const response = await fetch(url, {
                 method: "GET",
-            }
-        );
-    }
+                headers: this.DEFAULT_HEADERS,
+            });
 
-    /**
-     * Check if salutation exists by ID
-     * @param {string} id - Salutation UUID to check
-     * @returns {Promise<Object>} API response with existence status
-     */
-    async checkSalutationExistsById(id) {
-        return await this._request(`${this.endpoint}/exists/id/${id}`, {
-            method: "GET",
-        });
-    }
-
-    /**
-     * Get salutation by name (case-insensitive)
-     * @param {string} name - Salutation name
-     * @returns {Promise<Object>} API response with salutation object
-     */
-    async getSalutationByName(name) {
-        const encodedName = encodeURIComponent(name);
-        return await this._request(`${this.endpoint}/name/${encodedName}`, {
-            method: "GET",
-        });
+            return await this.handleResponse(response);
+        } catch (error) {
+            console.error("Error fetching salutations:", error);
+            throw error;
+        }
     }
 
     /**
      * Get a specific salutation by ID
+     * @static
      * @param {string} id - Salutation UUID
-     * @returns {Promise<Object>} API response with salutation object
+     * @returns {Promise<Object>} Salutation object
+     * @throws {Error} 400 - Bad request (invalid UUID)
+     * @throws {Error} 404 - Salutation not found
+     * @throws {Error} 500 - Internal server error
+     * @example
+     * const salutation = await SalutationService.getSalutationById('123e4567-e89b-12d3-a456-426614174000');
      */
-    async getSalutationById(id) {
-        return await this._request(`${this.endpoint}/${id}`, {
-            method: "GET",
-        });
+    static async getSalutationById(id) {
+        try {
+            if (!id) {
+                throw new Error("Salutation ID is required");
+            }
+
+            const response = await fetch(`${this.BASE_URL}/${id}`, {
+                method: "GET",
+                headers: this.DEFAULT_HEADERS,
+            });
+
+            return await this.handleResponse(response);
+        } catch (error) {
+            console.error(`Error fetching salutation with ID ${id}:`, error);
+            throw error;
+        }
     }
 
     /**
      * Update a salutation by ID
+     * @static
      * @param {string} id - Salutation UUID
-     * @param {Object} salutation - Updated salutation data
-     * @param {string} salutation.name - Salutation name (required, max 100 characters)
-     * @returns {Promise<Object>} API response with updated salutation
+     * @param {Object} salutationData - Updated salutation data
+     * @param {string} salutationData.name - Salutation name (required, max 100 characters)
+     * @returns {Promise<Object>} Updated salutation object
+     * @throws {Error} 400 - Bad request (validation error or invalid UUID)
+     * @throws {Error} 404 - Salutation not found
+     * @throws {Error} 409 - Conflict (name already exists)
+     * @throws {Error} 500 - Internal server error
+     * @example
+     * const updatedSalutation = await SalutationService.updateSalutation('123e4567-e89b-12d3-a456-426614174000', { name: 'Prof.' });
      */
-    async updateSalutation(id, salutation) {
-        return await this._request(`${this.endpoint}/${id}`, {
-            method: "PUT",
-            body: JSON.stringify(salutation),
-        });
+    static async updateSalutation(id, salutationData) {
+        try {
+            if (!id) {
+                throw new Error("Salutation ID is required");
+            }
+
+            const response = await fetch(`${this.BASE_URL}/${id}`, {
+                method: "PUT",
+                headers: this.DEFAULT_HEADERS,
+                body: JSON.stringify(salutationData),
+            });
+
+            return await this.handleResponse(response);
+        } catch (error) {
+            console.error(`Error updating salutation with ID ${id}:`, error);
+            throw error;
+        }
     }
 
     /**
      * Delete a salutation by ID
+     * @static
      * @param {string} id - Salutation UUID
-     * @returns {Promise<Object>} API response with deletion success message
+     * @returns {Promise<Object>} Deletion success message
+     * @throws {Error} 400 - Bad request (invalid UUID)
+     * @throws {Error} 404 - Salutation not found
+     * @throws {Error} 500 - Internal server error
+     * @example
+     * const result = await SalutationService.deleteSalutation('123e4567-e89b-12d3-a456-426614174000');
      */
-    async deleteSalutation(id) {
-        return await this._request(`${this.endpoint}/${id}`, {
-            method: "DELETE",
-        });
+    static async deleteSalutation(id) {
+        try {
+            if (!id) {
+                throw new Error("Salutation ID is required");
+            }
+
+            const response = await fetch(`${this.BASE_URL}/${id}`, {
+                method: "DELETE",
+                headers: this.DEFAULT_HEADERS,
+            });
+
+            return await this.handleResponse(response);
+        } catch (error) {
+            console.error(`Error deleting salutation with ID ${id}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Check if a salutation name already exists
+     * @static
+     * @param {string} name - Salutation name to check
+     * @returns {Promise<boolean>} True if name exists, false otherwise
+     * @example
+     * const exists = await SalutationService.checkSalutationExists('Dr.');
+     */
+    static async checkSalutationExists(name) {
+        try {
+            const salutations = await this.getAllSalutations({ search: name });
+            return salutations.data.some(
+                (salutation) =>
+                    salutation.name.toLowerCase() === name.toLowerCase()
+            );
+        } catch (error) {
+            console.error("Error checking salutation existence:", error);
+            throw error;
+        }
+    }
+
+    /**
+     * Validate salutation data before sending to API
+     * @static
+     * @param {Object} salutationData - Salutation data to validate
+     * @param {string} salutationData.name - Salutation name
+     * @returns {Object} Validation result with isValid and errors
+     * @example
+     * const validation = SalutationService.validateSalutationData({ name: 'Dr.' });
+     */
+    static validateSalutationData(salutationData) {
+        const errors = [];
+
+        if (!salutationData.name) {
+            errors.push("Salutation name is required");
+        } else if (typeof salutationData.name !== "string") {
+            errors.push("Salutation name must be a string");
+        } else if (salutationData.name.trim().length === 0) {
+            errors.push("Salutation name cannot be empty");
+        } else if (salutationData.name.length > 100) {
+            errors.push("Salutation name cannot exceed 100 characters");
+        }
+
+        return {
+            isValid: errors.length === 0,
+            errors,
+        };
     }
 }
-
-// Usage Examples:
-
-// // Initialize the service
-// const salutationService = new SalutationService();
-
-// // Create a new salutation
-// const createExample = async () => {
-//     const result = await salutationService.createSalutation({ name: "Dr." });
-//     if (result.success) {
-//         console.log('Created:', result.data);
-//     } else {
-//         console.error('Error:', result.error);
-//     }
-// };
-
-// // Get all salutations with pagination
-// const getAllExample = async () => {
-//     const result = await salutationService.getAllSalutations({
-//         limit: 20,
-//         offset: 0,
-//         orderBy: 'name',
-//         orderDirection: 'ASC'
-//     });
-//     if (result.success) {
-//         console.log('Salutations:', result.data);
-//     }
-// };
-
-// // Search salutations
-// const searchExample = async () => {
-//     const result = await salutationService.searchSalutations('Dr', { limit: 10 });
-//     if (result.success) {
-//         console.log('Search results:', result.data);
-//     }
-// };
-
-// // Get sorted salutations for dropdown
-// const getSortedExample = async () => {
-//     const result = await salutationService.getAllSalutationsSorted();
-//     if (result.success) {
-//         console.log('Sorted salutations:', result.data);
-//     }
-// };
-
-// // Update a salutation
-// const updateExample = async () => {
-//     const result = await salutationService.updateSalutation('uuid-here', { name: "Doctor" });
-//     if (result.success) {
-//         console.log('Updated:', result.data);
-//     }
-// };
-
-// Export for module systems
 
 export default SalutationService;
