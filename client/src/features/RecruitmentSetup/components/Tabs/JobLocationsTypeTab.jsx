@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
     CustomTable,
     CustomButton,
@@ -18,15 +18,28 @@ function JobLocationsTypeTab({
     setRowData = () => {},
     setOpenAddEditModel = () => {},
     setModelType = () => {},
+    setCrudHandlers = () => {},
 }) {
     const {
-        searchValue,
+        // Data
         filteredData,
+
+        // State
+        searchValue,
+
+        // Modal handlers
         handleAddNew,
         handleView,
         handleEdit,
         handleDelete,
         handleSearch,
+
+        // CRUD operations
+        handleCreateJobLocationsTypes,
+        handleUpdateJobLocationsTypes,
+        handleDeleteJobLocationsTypes,
+
+        // Other handlers
     } = useJobLocationsTypeTab({
         setOpenDeleteModel,
         setRowData,
@@ -34,6 +47,21 @@ function JobLocationsTypeTab({
         setModelType,
     });
 
+    // Pass CRUD handlers to parent when component mounts or handlers change
+    useEffect(() => {
+        setCrudHandlers({
+            handleCreateJobLocationsTypes,
+            handleUpdateJobLocationsTypes,
+            handleDeleteJobLocationsTypes,
+        });
+    }, [
+        setCrudHandlers,
+        handleCreateJobLocationsTypes,
+        handleUpdateJobLocationsTypes,
+        handleDeleteJobLocationsTypes,
+    ]);
+
+    // Table columns configuration
     const columns = [
         {
             key: "name",
@@ -46,31 +74,33 @@ function JobLocationsTypeTab({
             key: "actions",
             header: "Actions",
             sortable: false,
-            cell: (row) => (
-                <div className="flex items-center space-x-4">
-                    <button
-                        onClick={() => handleView(row)}
-                        className="px-3 py-1 flex items-center rounded-md text-blue-600 bg-blue-50 text-xs font-medium border border-blue-600"
-                    >
-                        <ViewIcon className="mr-1 h-3.5 w-3.5" />
-                        View
-                    </button>
-                    <button
-                        onClick={() => handleEdit(row)}
-                        className="px-3 py-1 flex items-center rounded-md text-lime-600 bg-lime-50 text-xs font-medium border border-lime-600"
-                    >
-                        <EditIcon className="mr-1 h-3.5 w-3.5" />
-                        Edit
-                    </button>
-                    <button
-                        onClick={() => handleDelete(row)}
-                        className="px-3 py-1 flex items-center rounded-md text-[#d4380d] bg-[#fff2e8] text-xs font-medium border border-[#ffbb96]"
-                    >
-                        <DeleteIcon className="mr-1 h-3.5 w-3.5" />
-                        Delete
-                    </button>
-                </div>
-            ),
+            cell: (row) => {
+                return (
+                    <div className="flex items-center space-x-4">
+                        <button
+                            onClick={() => handleView(row)}
+                            className="px-3 py-1 flex flex-row items-center rounded-md text-blue-600 bg-blue-50 text-xs font-medium border border-blue-600"
+                        >
+                            <ViewIcon className="mr-1 h-3.5 w-3.5" />
+                            View
+                        </button>
+                        <button
+                            onClick={() => handleEdit(row)}
+                            className="px-3 py-1 flex flex-row items-center rounded-md text-lime-600 bg-lime-50 text-xs font-medium border border-lime-600"
+                        >
+                            <EditIcon className="mr-1 h-3.5 w-3.5" />
+                            Edit
+                        </button>
+                        <button
+                            onClick={() => handleDelete(row)}
+                            className="px-3 py-1 flex items-center rounded-md text-[#d4380d] bg-[#fff2e8] text-xs font-medium border border-[#ffbb96]"
+                        >
+                            <DeleteIcon className="mr-1 h-3.5 w-3.5" />
+                            Delete
+                        </button>
+                    </div>
+                );
+            },
         },
     ];
 
@@ -81,7 +111,7 @@ function JobLocationsTypeTab({
                 className="bg-white"
                 headerActionsClassName="w-full"
                 headerActions={
-                    <div className="flex items-center justify-between space-x-4 w-full">
+                    <div className="flex items-center w-full justify-between space-x-4">
                         <CustomButton
                             leftIcon={<AddIcon className="h-4 w-4" />}
                             onClick={handleAddNew}
@@ -91,7 +121,7 @@ function JobLocationsTypeTab({
                             Add New
                         </CustomButton>
                         <CustomSearchBar
-                            placeholder="Search job location types..."
+                            placeholder="Search Job Location Types..."
                             value={searchValue}
                             onChange={handleSearch}
                             onSearch={handleSearch}
@@ -115,7 +145,7 @@ function JobLocationsTypeTab({
                     tdClassName="!px-2 !py-2 text-sm"
                     thCustomStyles="px-3 py-2 text-xs font-semibold text-gray-700 uppercase tracking-wide"
                     className="border-0"
-                    emptyMessage="No job location types found"
+                    emptyMessage="No Job Location Type found"
                     tableControlClassName="!mb-0"
                     extraHeaderContent={null}
                 />

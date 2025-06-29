@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
     CustomTable,
     CustomButton,
@@ -18,21 +18,46 @@ function EducationLevelsTab({
     setRowData = () => {},
     setOpenAddEditModel = () => {},
     setModelType = () => {},
+    setCrudHandlers = () => {},
 }) {
     const {
-        searchValue,
+        // Data
         filteredData,
+
+        // State
+        searchValue,
+
+        // Modal handlers
         handleAddNew,
         handleView,
         handleEdit,
         handleDelete,
         handleSearch,
+
+        // CRUD operations
+        handleCreateEducationLevels,
+        handleUpdateEducationLevels,
+        handleDeleteEducationLevels,
     } = useEducationLevelsTab({
         setOpenDeleteModel,
         setRowData,
         setOpenAddEditModel,
         setModelType,
     });
+
+    // Pass CRUD handlers to parent when component mounts or handlers change
+    useEffect(() => {
+        setCrudHandlers({
+            handleCreateEducationLevels,
+            handleUpdateEducationLevels,
+            handleDeleteEducationLevels,
+        });
+    }, [
+        setCrudHandlers,
+        handleCreateEducationLevels,
+        handleUpdateEducationLevels,
+        handleDeleteEducationLevels,
+    ]);
 
     // Table columns configuration
     const columns = [

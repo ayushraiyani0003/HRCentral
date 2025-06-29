@@ -4,27 +4,75 @@ import {
     CustomTextInput,
     CustomModal,
 } from "../../../../components";
+import useDesignationsTab from "../../hooks/useDesignationsTab";
+import useSkillsTab from "../../hooks/useSkillsTab";
+import useEducationLevelsTab from "../../hooks/useEducationLevelsTab";
+import useHiringSourceTab from "../../hooks/useHiringSourceTab";
+import useWorkShiftTab from "../../hooks/useWorkShiftTab";
+import useEmployeeTypeTab from "../../hooks/useEmployeeTypeTab";
+import useExperienceLevelsTab from "../../hooks/useExperienceLevelsTab";
+import useJobLocationsTypeTab from "../../hooks/useJobLocationsTypeTab";
 
 function DeleteConfirmationModal({
     openDeleteModel,
     setOpenDeleteModel,
     rowData,
+    setupType,
 }) {
     // Debug only
     // console.log(rowData);
+    // console.log(openDeleteModel);
+
+    const { handleDeleteDesignations } = useDesignationsTab(setOpenDeleteModel);
+    const { handleDeleteSkills } = useSkillsTab(setOpenDeleteModel);
+    const { handleDeleteEducationLevels } =
+        useEducationLevelsTab(setOpenDeleteModel);
+    const { handleDeleteJobLocationType } =
+        useJobLocationsTypeTab(setOpenDeleteModel);
+    const { handleDeleteHiringSources } =
+        useHiringSourceTab(setOpenDeleteModel);
+    const { handleDeleteWorkShift } = useWorkShiftTab(setOpenDeleteModel);
+    const { handleDeleteEmployeeType } = useEmployeeTypeTab(setOpenDeleteModel);
+    const { handleDeleteExperienceLevels } =
+        useExperienceLevelsTab(setOpenDeleteModel);
 
     const handleDelete = () => {
-        // if (onConfirmDelete) {
-        //     onConfirmDelete(rowData);
-        // }
-        // setOpenDeleteModel(false);
+        switch (setupType) {
+            case "EmployeeType":
+                handleDeleteEmployeeType(rowData.id);
+                break;
+            case "JobLocationType":
+                handleDeleteJobLocationType(rowData.id);
+                break;
+            case "ExperienceLevels":
+                handleDeleteExperienceLevels(rowData.id);
+                break;
+            case "Designations":
+                handleDeleteDesignations(rowData.id);
+                break;
+            case "Skills":
+                handleDeleteSkills(rowData.id);
+                break;
+            case "EducationLevels":
+                handleDeleteEducationLevels(rowData.id);
+                break;
+            case "HiringSources":
+                handleDeleteHiringSources(rowData.id);
+                break;
+            case "WorkShift":
+                handleDeleteWorkShift(rowData.id);
+                break;
+            default:
+                break;
+        }
+        setOpenDeleteModel(false);
     };
 
     return (
         <CustomModal
             isOpen={openDeleteModel}
             onClose={() => setOpenDeleteModel(false)}
-            title={`Delete ${rowData.name}`}
+            title={`Delete ${rowData?.name || "delete"}`}
             size="medium"
             showCloseButton={true}
             closeOnOverlayClick={false}
@@ -49,6 +97,15 @@ function DeleteConfirmationModal({
                     </svg>
                 </div>
 
+                <div className="text-center mb-6">
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                        Are you sure you want to delete "{rowData?.name}"?
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                        This action cannot be undone.
+                    </p>
+                </div>
+
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-3 sm:justify-end">
                     <button
@@ -61,7 +118,7 @@ function DeleteConfirmationModal({
                         onClick={handleDelete}
                         className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
                     >
-                        Delete This
+                        Confirm Delete
                     </button>
                 </div>
             </div>

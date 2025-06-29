@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
     CustomTable,
     CustomButton,
@@ -18,21 +18,48 @@ function HiringSourceTab({
     setRowData = () => {},
     setOpenAddEditModel = () => {},
     setModelType = () => {},
+    setCrudHandlers = () => {},
 }) {
     const {
-        searchValue,
+        // Data
         filteredData,
+
+        // State
+        searchValue,
+
+        // Modal handlers
         handleAddNew,
         handleView,
         handleEdit,
         handleDelete,
         handleSearch,
+
+        // CRUD operations
+        handleCreateHiringSources,
+        handleUpdateHiringSources,
+        handleDeleteHiringSources,
+
+        // Other handlers
     } = useHiringSourceTab({
         setOpenDeleteModel,
         setRowData,
         setOpenAddEditModel,
         setModelType,
     });
+
+    // Pass CRUD handlers to parent when component mounts or handlers change
+    useEffect(() => {
+        setCrudHandlers({
+            handleCreateHiringSources,
+            handleUpdateHiringSources,
+            handleDeleteHiringSources,
+        });
+    }, [
+        setCrudHandlers,
+        handleCreateHiringSources,
+        handleUpdateHiringSources,
+        handleDeleteHiringSources,
+    ]);
 
     // Table columns configuration
     const columns = [
@@ -94,7 +121,7 @@ function HiringSourceTab({
                             Add New
                         </CustomButton>
                         <CustomSearchBar
-                            placeholder="Search hiring sources..."
+                            placeholder="Search Hiring Sources..."
                             value={searchValue}
                             onChange={handleSearch}
                             onSearch={handleSearch}
@@ -118,7 +145,7 @@ function HiringSourceTab({
                     tdClassName="!px-2 !py-2 text-sm"
                     thCustomStyles="px-3 py-2 text-xs font-semibold text-gray-700 uppercase tracking-wide"
                     className="border-0"
-                    emptyMessage="No hiring sources found"
+                    emptyMessage="No Hiring Source found"
                     tableControlClassName="!mb-0"
                     extraHeaderContent={null}
                 />

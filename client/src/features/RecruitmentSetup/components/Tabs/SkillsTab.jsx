@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
     CustomTable,
     CustomButton,
@@ -18,21 +18,46 @@ function SkillsTab({
     setRowData = () => {},
     setOpenAddEditModel = () => {},
     setModelType = () => {},
+    setCrudHandlers = () => {},
 }) {
     const {
-        searchValue,
+        // Data
         filteredData,
+
+        // State
+        searchValue,
+
+        // Modal handlers
         handleAddNew,
         handleView,
         handleEdit,
         handleDelete,
         handleSearch,
+
+        // CRUD operations
+        handleCreateSkills,
+        handleUpdateSkills,
+        handleDeleteSkills,
     } = useSkillsTab({
         setOpenDeleteModel,
         setRowData,
         setOpenAddEditModel,
         setModelType,
     });
+
+    // Pass CRUD handlers to parent
+    useEffect(() => {
+        setCrudHandlers({
+            handleCreateSkills,
+            handleUpdateSkills,
+            handleDeleteSkills,
+        });
+    }, [
+        setCrudHandlers,
+        handleCreateSkills,
+        handleUpdateSkills,
+        handleDeleteSkills,
+    ]);
 
     // Table columns configuration
     const columns = [

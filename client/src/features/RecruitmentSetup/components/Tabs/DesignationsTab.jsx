@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
     CustomTable,
     CustomButton,
@@ -18,21 +18,48 @@ function DesignationsTab({
     setRowData = () => {},
     setOpenAddEditModel = () => {},
     setModelType = () => {},
+    setCrudHandlers = () => {},
 }) {
     const {
-        searchValue,
+        // Data
         filteredData,
+
+        // State
+        searchValue,
+
+        // Modal handlers
         handleAddNew,
         handleView,
         handleEdit,
         handleDelete,
         handleSearch,
+
+        // CRUD operations
+        handleCreateDesignations,
+        handleUpdateDesignations,
+        handleDeleteDesignations,
+
+        // Other handlers
     } = useDesignationsTab({
         setOpenDeleteModel,
         setRowData,
         setOpenAddEditModel,
         setModelType,
     });
+
+    // Pass CRUD handlers to parent when component mounts or handlers change
+    useEffect(() => {
+        setCrudHandlers({
+            handleCreateDesignations,
+            handleUpdateDesignations,
+            handleDeleteDesignations,
+        });
+    }, [
+        setCrudHandlers,
+        handleCreateDesignations,
+        handleUpdateDesignations,
+        handleDeleteDesignations,
+    ]);
 
     // Table columns configuration
     const columns = [

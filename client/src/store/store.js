@@ -9,6 +9,13 @@ import countrySlice from "./countrySlice";
 import employeeTypeReducer from "./EmployeeTypeSlice";
 import bankReducer from "./BankListSlice";
 import salutationReducer from "./SalutationSlice";
+import designationsReducer from "./DesignationsSlice";
+import educationLevelsReducer from "./EducationLevelsSlice";
+import experienceLevelReducer from "./ExperienceLevelsSlice";
+import hiringSourceReducer from "./HiringSourceSlice";
+import jobLocationReducer from "./JobLocationTypeSlice";
+import skillsReducer from "./SkillsSlice";
+import workShiftReducer from "./WorkShiftSlice";
 
 const store = configureStore({
     reducer: {
@@ -21,6 +28,14 @@ const store = configureStore({
         employeeType: employeeTypeReducer,
         banks: bankReducer,
         salutations: salutationReducer,
+        designations: designationsReducer,
+        educationLevels: educationLevelsReducer,
+        employeeTypes: employeeTypeReducer,
+        experienceLevels: experienceLevelReducer,
+        hiringSource: hiringSourceReducer,
+        jobLocationTypes: jobLocationReducer,
+        skills: skillsReducer,
+        workShifts: workShiftReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({

@@ -1,279 +1,317 @@
+// EmployeeTypeService.js - Service for handling employee types API operations
+
 /**
- * EmployeeTypeService.js
- * Client-side service for handling Employee Type API requests
+ * @fileoverview Simple service for handling employee types API operations
+ * @version 1.0.1
  */
 
 class EmployeeTypeService {
-    constructor(baseURL = "/api") {
-        this.baseURL = baseURL;
-        this.endpoint = `${this.baseURL}/employee-types`;
+    constructor() {
+        this.baseUrl = "/api/employee-type";
     }
 
     /**
-     * Generic request handler with error handling
-     * @param {string} url - The URL to make the request to
-     * @param {object} options - Fetch options
-     * @returns {Promise<object>} - Response data
+     * Get auth token from storage
+     * @private
+     * @returns {string|null} Auth token
      */
-    async makeRequest(url, options = {}) {
+    _getToken() {
         try {
-            const defaultOptions = {
-                headers: {
-                    "Content-Type": "application/json",
-                    // Add authorization header if token exists
-                    ...(this.getAuthToken() && {
-                        Authorization: `Bearer ${this.getAuthToken()}`,
-                    }),
-                    ...options.headers,
-                },
+            // Note: Using in-memory storage instead of localStorage for compatibility
+            return window.authToken || null;
+        } catch (error) {
+            console.error("Error getting auth token:", error);
+            return null;
+        }
+    }
+
+    /**
+     * Make API request
+     * @private
+     * @param {string} url - Request URL
+     * @param {Object} options - Request options
+     * @returns {Promise<Object>} API response
+     */
+    async _makeRequest(url, options = {}) {
+        try {
+            const headers = {
+                "Content-Type": "application/json",
+                ...options.headers,
             };
 
-            const response = await fetch(url, {
-                ...defaultOptions,
-                ...options,
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(
-                    errorData.message ||
-                        `HTTP error! status: ${response.status}`
-                );
+            const token = this._getToken();
+            if (token) {
+                headers["Authorization"] = `Bearer ${token}`;
             }
 
-            return await response.json();
+            const config = {
+                ...options,
+                headers,
+            };
+
+            console.log(`Making ${config.method || "GET"} request to:`, url);
+
+            const response = await fetch(url, config);
+
+            if (!response.ok) {
+                let errorMessage = `HTTP Error: ${response.status}`;
+                try {
+                    const errorData = await response.json();
+                    // Handle both direct error and wrapped error responses
+                    errorMessage =
+                        errorData.result?.message ||
+                        errorData.result?.error ||
+                        errorData.message ||
+                        errorData.error ||
+                        errorMessage;
+                } catch (e) {
+                    errorMessage = e.message || errorMessage;
+                }
+                throw new Error(errorMessage);
+            }
+
+            const responseData = await response.json();
+            console.log("API Response:", responseData);
+
+            // Handle the wrapped response format: { success, data, message }
+            const result = responseData.result || responseData;
+
+            return {
+                success: result.success !== false, // Default to true if not specified
+                data: result.data,
+                message: result.message,
+            };
         } catch (error) {
-            console.error("API Request Error:", error);
-            throw error;
+            console.error(`API Error [${url}]:`, error);
+            return {
+                success: false,
+                error: error.message,
+            };
         }
     }
 
-    /**
-     * Get authentication token from localStorage or sessionStorage
-     * @returns {string|null} - Auth token
-     */
-    getAuthToken() {
-        // Adjust this based on where you store your auth token
-        return (
-            localStorage.getItem("authToken") ||
-            sessionStorage.getItem("authToken")
-        );
-    }
-
-    /**
-     * Create a new employee type
-     * @param {object} employeeTypeData - Employee type data
-     * @param {string} employeeTypeData.name - Name of the employee type
-     * @returns {Promise<object>} - Created employee type data
-     *
-     * @example
-     * const newEmployeeType = await employeeTypeService.createEmployeeType({ name: 'Full-time' });
-     */
-    async createEmployeeType(employeeTypeData) {
-        if (!employeeTypeData || !employeeTypeData.name) {
-            throw new Error("Employee type name is required");
-        }
-
-        const response = await this.makeRequest(this.endpoint, {
-            method: "POST",
-            body: JSON.stringify(employeeTypeData),
-        });
-
-        return response;
-    }
+    // ==============================
+    // Basic CRUD Operations
+    // ==============================
 
     /**
      * Get all employee types
-     * @returns {Promise<object>} - List of all employee types
-     *
-     * @example
-     * const employeeTypes = await employeeTypeService.getAllEmployeeTypes();
+     * @returns {Promise<Object>} API response with employee types
      */
     async getAllEmployeeTypes() {
-        const response = await this.makeRequest(this.endpoint, {
+        return await this._makeRequest(this.baseUrl, {
             method: "GET",
         });
-
-        return response;
     }
 
     /**
      * Get employee type by ID
-     * @param {string} id - UUID of the employee type
-     * @returns {Promise<object>} - Employee type data
-     *
-     * @example
-     * const employeeType = await employeeTypeService.getEmployeeTypeById('a1b2c3d4-e5f6-7890-abcd-ef1234567890');
+     * @param {string} employeeTypeId - Employee type UUID
+     * @returns {Promise<Object>} API response with employee type data
      */
-    async getEmployeeTypeById(id) {
-        if (!id) {
-            throw new Error("Employee type ID is required");
+    async getEmployeeTypeById(employeeTypeId) {
+        if (!employeeTypeId) {
+            return {
+                success: false,
+                error: "Employee type ID is required",
+            };
         }
 
-        const response = await this.makeRequest(`${this.endpoint}/${id}`, {
+        return await this._makeRequest(`${this.baseUrl}/${employeeTypeId}`, {
             method: "GET",
         });
-
-        return response;
     }
 
     /**
-     * Update employee type by ID
-     * @param {string} id - UUID of the employee type
-     * @param {object} updateData - Data to update
-     * @param {string} updateData.name - Updated name of the employee type
-     * @returns {Promise<object>} - Updated employee type data
-     *
-     * @example
-     * const updatedEmployeeType = await employeeTypeService.updateEmployeeType('a1b2c3d4-e5f6-7890-abcd-ef1234567890', { name: 'Part-time' });
+     * Create new employee type
+     * @param {Object} employeeTypeData - Employee type data
+     * @param {string} employeeTypeData.name - Employee type name (required, max 100 chars)
+     * @returns {Promise<Object>} API response with created employee type
      */
-    async updateEmployeeType(id, updateData) {
-        if (!id) {
-            throw new Error("Employee type ID is required");
-        }
-        if (!updateData || !updateData.name) {
-            throw new Error("Employee type name is required for update");
+    async createEmployeeType(employeeTypeData) {
+        if (!employeeTypeData || !employeeTypeData.name) {
+            return {
+                success: false,
+                error: "Employee type name is required",
+            };
         }
 
-        const response = await this.makeRequest(`${this.endpoint}/${id}`, {
-            method: "PUT",
-            body: JSON.stringify(updateData),
+        // Client-side validation
+        if (typeof employeeTypeData.name !== "string") {
+            return {
+                success: false,
+                error: "Employee type name must be a string",
+            };
+        }
+
+        if (employeeTypeData.name.trim().length === 0) {
+            return {
+                success: false,
+                error: "Employee type name cannot be empty",
+            };
+        }
+
+        if (employeeTypeData.name.length > 100) {
+            return {
+                success: false,
+                error: "Employee type name must not exceed 100 characters",
+            };
+        }
+
+        console.log("Creating employee type with data:", employeeTypeData);
+
+        return await this._makeRequest(this.baseUrl, {
+            method: "POST",
+            body: JSON.stringify({
+                name: employeeTypeData.name.trim(),
+            }),
         });
-
-        return response;
     }
 
     /**
-     * Delete employee type by ID
-     * @param {string} id - UUID of the employee type
-     * @returns {Promise<object>} - Deletion confirmation
-     *
-     * @example
-     * const result = await employeeTypeService.deleteEmployeeType('a1b2c3d4-e5f6-7890-abcd-ef1234567890');
+     * Update existing employee type
+     * @param {string} employeeTypeId - Employee type UUID
+     * @param {Object} employeeTypeData - Updated employee type data
+     * @param {string} employeeTypeData.name - Employee type name (required, max 100 chars)
+     * @returns {Promise<Object>} API response with updated employee type
      */
-    async deleteEmployeeType(id) {
-        if (!id) {
-            throw new Error("Employee type ID is required");
+    async updateEmployeeType(employeeTypeId, employeeTypeData) {
+        if (!employeeTypeId) {
+            return {
+                success: false,
+                error: "Employee type ID is required",
+            };
         }
 
-        const response = await this.makeRequest(`${this.endpoint}/${id}`, {
+        if (!employeeTypeData || !employeeTypeData.name) {
+            return {
+                success: false,
+                error: "Employee type name is required",
+            };
+        }
+
+        // Client-side validation
+        if (typeof employeeTypeData.name !== "string") {
+            return {
+                success: false,
+                error: "Employee type name must be a string",
+            };
+        }
+
+        if (employeeTypeData.name.trim().length === 0) {
+            return {
+                success: false,
+                error: "Employee type name cannot be empty",
+            };
+        }
+
+        if (employeeTypeData.name.length > 100) {
+            return {
+                success: false,
+                error: "Employee type name must not exceed 100 characters",
+            };
+        }
+
+        console.log(
+            "Updating employee type:",
+            employeeTypeId,
+            "with data:",
+            employeeTypeData
+        );
+
+        return await this._makeRequest(`${this.baseUrl}/${employeeTypeId}`, {
+            method: "PUT",
+            body: JSON.stringify({
+                name: employeeTypeData.name.trim(),
+            }),
+        });
+    }
+
+    /**
+     * Delete employee type
+     * @param {string} employeeTypeId - Employee type UUID
+     * @returns {Promise<Object>} API response confirming deletion
+     */
+    async deleteEmployeeType(employeeTypeId) {
+        if (!employeeTypeId) {
+            return {
+                success: false,
+                error: "Employee type ID is required",
+            };
+        }
+
+        console.log("Deleting employee type:", employeeTypeId);
+
+        return await this._makeRequest(`${this.baseUrl}/${employeeTypeId}`, {
             method: "DELETE",
         });
-
-        return response;
     }
 
-    /**
-     * Check if employee type exists by name
-     * @param {string} name - Name to check
-     * @returns {Promise<boolean>} - True if exists, false otherwise
-     *
-     * @example
-     * const exists = await employeeTypeService.employeeTypeExists('Full-time');
-     */
-    async employeeTypeExists(name) {
-        try {
-            const response = await this.getAllEmployeeTypes();
-            const employeeTypes = response.data || [];
-            return employeeTypes.some(
-                (type) => type.name.toLowerCase() === name.toLowerCase()
-            );
-        } catch (error) {
-            console.error("Error checking employee type existence:", error);
-            return false;
-        }
-    }
+    // ==============================
+    // Utility Methods
+    // ==============================
 
     /**
-     * Search employee types by name (client-side filtering)
-     * @param {string} searchTerm - Search term
-     * @returns {Promise<Array>} - Filtered employee types
-     *
-     * @example
-     * const searchResults = await employeeTypeService.searchEmployeeTypes('time');
+     * Search employee types by name
+     * @param {string} searchTerm - Search term for employee type name
+     * @returns {Promise<Object>} API response with filtered employee types
      */
     async searchEmployeeTypes(searchTerm) {
+        const result = await this.getAllEmployeeTypes();
+
+        if (!result.success || !result.data) {
+            return result;
+        }
+
+        // Client-side filtering by name
+        const filteredData = result.data.filter((employeeType) =>
+            employeeType.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+
+        return {
+            ...result,
+            data: filteredData,
+        };
+    }
+
+    /**
+     * Check if employee type name exists
+     * @param {string} name - Employee type name to check
+     * @param {string} excludeId - ID to exclude from check (for updates)
+     * @returns {Promise<boolean>} True if name exists, false otherwise
+     */
+    async isNameExists(name, excludeId = null) {
         try {
-            const response = await this.getAllEmployeeTypes();
-            const employeeTypes = response.data || [];
+            const result = await this.getAllEmployeeTypes();
 
-            if (!searchTerm) return employeeTypes;
+            if (!result.success || !result.data) {
+                return false;
+            }
 
-            return employeeTypes.filter((type) =>
-                type.name.toLowerCase().includes(searchTerm.toLowerCase())
+            return result.data.some(
+                (employeeType) =>
+                    employeeType.name.toLowerCase() === name.toLowerCase() &&
+                    employeeType.id !== excludeId
             );
         } catch (error) {
-            console.error("Error searching employee types:", error);
-            throw error;
+            console.error("Error checking if name exists:", error);
+            return false;
         }
     }
 }
 
-// Create and export a singleton instance
-const employeeTypeService = new EmployeeTypeService();
-
-// Export both the class and the instance
-export { EmployeeTypeService, employeeTypeService };
+// Create singleton instance
+let serviceInstance = null;
 
 /**
- * Usage Examples:
- *
- * // Import the service
- * import { employeeTypeService } from './services/EmployeeTypeService.js';
- *
- * // Create a new employee type
- * try {
- *   const newEmployeeType = await employeeTypeService.createEmployeeType({ name: 'Full-time' });
- *   console.log('Created:', newEmployeeType.data);
- * } catch (error) {
- *   console.error('Failed to create employee type:', error.message);
- * }
- *
- * // Get all employee types
- * try {
- *   const allTypes = await employeeTypeService.getAllEmployeeTypes();
- *   console.log('All employee types:', allTypes.data);
- * } catch (error) {
- *   console.error('Failed to fetch employee types:', error.message);
- * }
- *
- * // Get specific employee type
- * try {
- *   const employeeType = await employeeTypeService.getEmployeeTypeById('a1b2c3d4-e5f6-7890-abcd-ef1234567890');
- *   console.log('Employee type:', employeeType.data);
- * } catch (error) {
- *   console.error('Failed to fetch employee type:', error.message);
- * }
- *
- * // Update employee type
- * try {
- *   const updated = await employeeTypeService.updateEmployeeType('a1b2c3d4-e5f6-7890-abcd-ef1234567890', { name: 'Part-time' });
- *   console.log('Updated:', updated.data);
- * } catch (error) {
- *   console.error('Failed to update employee type:', error.message);
- * }
- *
- * // Delete employee type
- * try {
- *   const result = await employeeTypeService.deleteEmployeeType('a1b2c3d4-e5f6-7890-abcd-ef1234567890');
- *   console.log('Deleted:', result.message);
- * } catch (error) {
- *   console.error('Failed to delete employee type:', error.message);
- * }
- *
- * // Search employee types
- * try {
- *   const searchResults = await employeeTypeService.searchEmployeeTypes('time');
- *   console.log('Search results:', searchResults);
- * } catch (error) {
- *   console.error('Search failed:', error.message);
- * }
- *
- * // Check if employee type exists
- * try {
- *   const exists = await employeeTypeService.employeeTypeExists('Full-time');
- *   console.log('Employee type exists:', exists);
- * } catch (error) {
- *   console.error('Check failed:', error.message);
- * }
+ * Get service instance
+ * @returns {EmployeeTypeService} EmployeeTypeService instance
  */
+export const getEmployeeTypeService = () => {
+    if (!serviceInstance) {
+        serviceInstance = new EmployeeTypeService();
+    }
+    return serviceInstance;
+};
+
+export default getEmployeeTypeService();

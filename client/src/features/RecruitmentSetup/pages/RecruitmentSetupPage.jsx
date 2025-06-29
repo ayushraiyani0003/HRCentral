@@ -1,16 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { CustomTabs, CustomTextInput, CustomModal } from "../../../components";
-import {
-    Home,
-    Check,
-    AlertCircle,
-    User,
-    Settings,
-    Bell,
-    Mail,
-    Heart,
-    Lock,
-} from "lucide-react";
+import { CustomTabs } from "../../../components";
 import DesignationsTab from "../components/Tabs/DesignationsTab";
 import EducationLevelsTab from "../components/Tabs/EducationLevelsTab";
 import EmployeeTypeTab from "../components/Tabs/EmployeeTypeTab";
@@ -26,110 +15,141 @@ import RecruitmentSetupModal from "../components/models/recruitmentSetupModel";
 function RecruitmentSetupPage() {
     const [selectedTab, setSelectedTab] = useState(0);
     const [openDeleteModel, setOpenDeleteModel] = useState(false);
-    const [rowData, setRowData] = useState([]);
+    const [rowData, setRowData] = useState(null);
     const [openAddEditModel, setOpenAddEditModel] = useState(false);
     const [modelType, setModelType] = useState(""); // 'view', 'add', 'edit'
-
-    // const [uploadEmployeeModelOpen, setUploadEmployeeModelOpen] =
-    //     useState(false);
+    const [crudHandlers, setCrudHandlers] = useState({});
 
     const handleCloseStructureModel = useCallback(() => {
         setOpenAddEditModel(false);
-        setRowData([]);
+        setRowData(null);
         setModelType("");
     }, []);
 
-    // Basic tabs example
+    // Function to receive CRUD handlers from tabs - now merges instead of overriding
+    const setCrudHandlersForTab = useCallback((handlers) => {
+        setCrudHandlers((prevHandlers) => ({
+            ...prevHandlers,
+            ...(handlers || {}),
+        }));
+    }, []);
+
     const tabs = [
         {
+            id: "EmployeeType",
             label: "Employee Type",
+            setupType: "EmployeeType",
             content: (
                 <EmployeeTypeTab
                     setOpenDeleteModel={setOpenDeleteModel}
                     setOpenAddEditModel={setOpenAddEditModel}
                     setRowData={setRowData}
                     setModelType={setModelType}
+                    setCrudHandlers={setCrudHandlersForTab}
                 />
             ),
         },
         {
+            id: "ExperienceLevels",
             label: "Experience Levels",
+            setupType: "ExperienceLevels",
             content: (
                 <ExperienceLevelsTab
                     setOpenDeleteModel={setOpenDeleteModel}
                     setOpenAddEditModel={setOpenAddEditModel}
                     setRowData={setRowData}
                     setModelType={setModelType}
+                    setCrudHandlers={setCrudHandlersForTab}
                 />
             ),
         },
         {
+            id: "Designations",
             label: "Designations",
+            setupType: "Designations",
             content: (
                 <DesignationsTab
                     setOpenDeleteModel={setOpenDeleteModel}
                     setOpenAddEditModel={setOpenAddEditModel}
                     setRowData={setRowData}
                     setModelType={setModelType}
+                    setCrudHandlers={setCrudHandlersForTab}
                 />
             ),
         },
         {
+            id: "Skills",
             label: "Skills",
+            setupType: "Skills",
             content: (
                 <SkillsTab
                     setOpenDeleteModel={setOpenDeleteModel}
                     setOpenAddEditModel={setOpenAddEditModel}
                     setRowData={setRowData}
                     setModelType={setModelType}
+                    setCrudHandlers={setCrudHandlersForTab}
                 />
             ),
         },
         {
+            id: "EducationLevels",
             label: "Education Levels",
+            setupType: "EducationLevels",
             content: (
                 <EducationLevelsTab
                     setOpenDeleteModel={setOpenDeleteModel}
                     setOpenAddEditModel={setOpenAddEditModel}
                     setRowData={setRowData}
                     setModelType={setModelType}
+                    setCrudHandlers={setCrudHandlersForTab}
                 />
             ),
         },
         {
+            id: "HiringSource",
             label: "Hiring Source",
+            setupType: "HiringSources",
             content: (
                 <HiringSourceTab
                     setOpenDeleteModel={setOpenDeleteModel}
                     setOpenAddEditModel={setOpenAddEditModel}
                     setRowData={setRowData}
                     setModelType={setModelType}
+                    setCrudHandlers={setCrudHandlersForTab}
                 />
             ),
         },
         {
+            id: "WorkShift",
             label: "Work Shift",
+            setupType: "WorkShift",
             content: (
                 <WorkShiftTab
                     setOpenDeleteModel={setOpenDeleteModel}
                     setOpenAddEditModel={setOpenAddEditModel}
                     setRowData={setRowData}
                     setModelType={setModelType}
+                    setCrudHandlers={setCrudHandlersForTab}
                 />
             ),
         },
         {
+            id: "JobLocationsType",
             label: "Job Locations Type",
+            setupType: "JobLocationsTypes",
             content: (
                 <JobLocationsTypeTab
                     setOpenDeleteModel={setOpenDeleteModel}
                     setOpenAddEditModel={setOpenAddEditModel}
                     setRowData={setRowData}
                     setModelType={setModelType}
+                    setCrudHandlers={setCrudHandlersForTab}
                 />
             ),
         },
     ];
+
+    const currentSetupType = tabs[selectedTab].setupType;
 
     return (
         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
@@ -143,33 +163,22 @@ function RecruitmentSetupPage() {
                 contentStyle={{ marginTop: "0.2rem" }}
                 contentClassName={"min-h-[760px]"}
             />
+
+            <RecruitmentSetupModal
+                rowData={rowData}
+                openAddEditModel={openAddEditModel}
+                setOpenAddEditModel={setOpenAddEditModel}
+                modelType={modelType}
+                handleCloseModel={handleCloseStructureModel}
+                setupType={currentSetupType}
+                crudHandlers={crudHandlers}
+            />
+
             <DeleteConfirmationModel
                 openDeleteModel={openDeleteModel}
                 setOpenDeleteModel={setOpenDeleteModel}
                 rowData={rowData}
-            />
-            <RecruitmentSetupModal
-                companyStructure={rowData}
-                openAddEditModel={openAddEditModel}
-                setOpenAddEditModel={setOpenAddEditModel}
-                modelType={modelType}
-                existingStructures={[
-                    { name: "Company", id: "company" },
-                    { name: "Head Office", id: "head_office" },
-                    { name: "Regional Office", v: "regional_office" },
-                    { name: "Department", id: "department" },
-                    { name: "Unit", id: "unit" },
-                    { name: "Sub Unit", id: "sub_unit" },
-                ]} // Array of existing structures for parent dropdown
-                departmentHeads={[
-                    { name: "Company", id: "company" },
-                    { name: "Head Office", id: "head_office" },
-                    { name: "Regional Office", id: "regional_office" },
-                    { name: "Department", id: "department" },
-                    { name: "Unit", id: "unit" },
-                    { name: "Sub Unit", id: "sub_unit" },
-                ]} // Array of department heads
-                handleCloseStructureModel={handleCloseStructureModel}
+                setupType={currentSetupType}
             />
         </div>
     );

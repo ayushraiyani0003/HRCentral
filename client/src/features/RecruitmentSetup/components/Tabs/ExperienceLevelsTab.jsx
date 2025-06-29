@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
     CustomTable,
     CustomButton,
@@ -11,34 +11,61 @@ import {
     EditIcon,
     ViewIcon,
 } from "../../../../utils/SvgIcon";
-import useEmployeeTypeTab from "../../hooks/useExperienceLevelsTab";
+import useExperienceLevelsTab from "../../hooks/useExperienceLevelsTab";
 
 function ExperienceLevelsTab({
     setOpenDeleteModel,
     setRowData = () => {},
     setOpenAddEditModel = () => {},
     setModelType = () => {},
+    setCrudHandlers = () => {},
 }) {
     const {
-        searchValue,
+        // Data
         filteredData,
+
+        // State
+        searchValue,
+
+        // Modal handlers
         handleAddNew,
         handleView,
         handleEdit,
         handleDelete,
         handleSearch,
-    } = useEmployeeTypeTab({
+
+        // CRUD operations
+        handleCreateExperienceLevels,
+        handleUpdateExperienceLevels,
+        handleDeleteExperienceLevels,
+
+        // Other handlers
+    } = useExperienceLevelsTab({
         setOpenDeleteModel,
         setRowData,
         setOpenAddEditModel,
         setModelType,
     });
 
+    // Pass CRUD handlers to parent when component mounts or handlers change
+    useEffect(() => {
+        setCrudHandlers({
+            handleCreateExperienceLevels,
+            handleUpdateExperienceLevels,
+            handleDeleteExperienceLevels,
+        });
+    }, [
+        setCrudHandlers,
+        handleCreateExperienceLevels,
+        handleUpdateExperienceLevels,
+        handleDeleteExperienceLevels,
+    ]);
+
     // Table columns configuration
     const columns = [
         {
             key: "name",
-            header: "Employee Type",
+            header: "Experience Level",
             sortable: true,
             className: "font-medium text-gray-900",
             width: "320px",
@@ -94,7 +121,7 @@ function ExperienceLevelsTab({
                             Add New
                         </CustomButton>
                         <CustomSearchBar
-                            placeholder="Search employee types..."
+                            placeholder="Search Experience Levels..."
                             value={searchValue}
                             onChange={handleSearch}
                             onSearch={handleSearch}
@@ -118,7 +145,7 @@ function ExperienceLevelsTab({
                     tdClassName="!px-2 !py-2 text-sm"
                     thCustomStyles="px-3 py-2 text-xs font-semibold text-gray-700 uppercase tracking-wide"
                     className="border-0"
-                    emptyMessage="No employee types found"
+                    emptyMessage="No Experience Levels found"
                     tableControlClassName="!mb-0"
                     extraHeaderContent={null}
                 />

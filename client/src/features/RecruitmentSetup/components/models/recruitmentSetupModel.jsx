@@ -10,7 +10,10 @@ function RecruitmentSetupModal({
     openAddEditModel,
     setOpenAddEditModel,
     modelType,
-    setupType = "EmployeeType", // Default type
+    setupType = "EmployeeType",
+    handleCloseModel,
+    rowData,
+    crudHandlers = {}, // New: Consolidated handlers
 }) {
     const [formData, setFormData] = useState({
         name: "",
@@ -20,6 +23,7 @@ function RecruitmentSetupModal({
     });
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
+    console.log(crudHandlers);
 
     // Configuration for different setup types
     const setupConfig = {
@@ -78,23 +82,77 @@ function RecruitmentSetupModal({
             nameLabel: "Shift Name",
             namePlaceholder:
                 "Enter shift name (e.g., Morning Shift, Night Shift)",
+            timeFromLabel: "Start Time",
+            timeFromPlaceholder: "10:00 AM",
+            timeToLabel: "End Time",
+            timeToPlaceholder: "5:00 PM",
         },
     };
 
     const currentConfig = setupConfig[setupType] || setupConfig.EmployeeType;
 
-    // Reset form when modal opens or setup type changes
+    // Helper function to convert 24-hour time to 12-hour AM/PM format
+    const convertTo12HourFormat = (time24) => {
+        if (!time24) return "";
+
+        // Handle formats like "10:00:00" or "10:00"
+        const timeParts = time24.split(":");
+        let hours = parseInt(timeParts[0]);
+        const minutes = timeParts[1];
+
+        const ampm = hours >= 12 ? "PM" : "AM";
+        hours = hours % 12;
+        hours = hours ? hours : 12; // 0 should be 12
+
+        return `${hours}:${minutes} ${ampm}`;
+    };
+
     useEffect(() => {
         if (openAddEditModel) {
-            setFormData({
-                name: "",
-                shiftName: "",
-                timeFrom: "",
-                timeTo: "",
-            });
+            if (modelType === "add") {
+                setFormData({
+                    name: "",
+                    shiftName: "",
+                    timeFrom: "",
+                    timeTo: "",
+                });
+            } else if (
+                (modelType === "edit" || modelType === "view") &&
+                rowData
+            ) {
+                // Fixed: Handle WorkShift data loading properly
+                if (setupType === "WorkShift") {
+                    setFormData({
+                        name: rowData.name || "",
+                        shiftName: rowData.shiftName || rowData.name || "", // Try both shiftName and name
+                        timeFrom:
+                            convertTo12HourFormat(
+                                rowData.timeFrom || rowData.start_time
+                            ) || "", // Convert to 12-hour format
+                        timeTo:
+                            convertTo12HourFormat(
+                                rowData.timeTo || rowData.end_time
+                            ) || "", // Convert to 12-hour format
+                    });
+                } else {
+                    setFormData({
+                        name: rowData.name || "",
+                        shiftName: "",
+                        timeFrom: "",
+                        timeTo: "",
+                    });
+                }
+            }
             setErrors({});
         }
-    }, [openAddEditModel, setupType]);
+    }, [openAddEditModel, setupType, modelType, rowData]);
+
+    const handleInputChange = (field, value) => {
+        setFormData((prev) => ({ ...prev, [field]: value }));
+        if (errors[field]) {
+            setErrors((prev) => ({ ...prev, [field]: "" }));
+        }
+    };
 
     // Validation function for time format
     const validateTimeFormat = (time) => {
@@ -102,49 +160,28 @@ function RecruitmentSetupModal({
         return timeRegex.test(time);
     };
 
-    // Handle input changes
-    const handleInputChange = (field, value) => {
-        setFormData((prev) => ({
-            ...prev,
-            [field]: value,
-        }));
-
-        // Clear error when user starts typing
-        if (errors[field]) {
-            setErrors((prev) => ({
-                ...prev,
-                [field]: "",
-            }));
-        }
-    };
-
-    // Validate form
     const validateForm = () => {
         const newErrors = {};
 
-        if (
-            currentConfig.fields.includes("name") ||
-            currentConfig.fields.includes("shiftName")
-        ) {
-            const nameField = currentConfig.fields.includes("shiftName")
-                ? "shiftName"
-                : "name";
-            if (!formData[nameField]?.trim()) {
-                newErrors[nameField] = `${currentConfig.nameLabel} is required`;
+        currentConfig.fields.forEach((field) => {
+            if (!formData[field]?.trim()) {
+                const fieldLabels = {
+                    name: currentConfig.nameLabel,
+                    shiftName: currentConfig.nameLabel,
+                    timeFrom: currentConfig.timeFromLabel || "Start Time",
+                    timeTo: currentConfig.timeToLabel || "End Time",
+                };
+                newErrors[field] = `${fieldLabels[field]} is required`;
             }
-        }
+        });
 
+        // Additional validation for WorkShift time format
         if (setupType === "WorkShift") {
-            if (!formData.timeFrom?.trim()) {
-                newErrors.timeFrom = "Start time is required";
-            } else if (!validateTimeFormat(formData.timeFrom)) {
+            if (formData.timeFrom && !validateTimeFormat(formData.timeFrom)) {
                 newErrors.timeFrom =
                     "Invalid time format. Use format like '10:00 AM'";
             }
-
-            if (!formData.timeTo?.trim()) {
-                newErrors.timeTo = "End time is required";
-            } else if (!validateTimeFormat(formData.timeTo)) {
+            if (formData.timeTo && !validateTimeFormat(formData.timeTo)) {
                 newErrors.timeTo =
                     "Invalid time format. Use format like '5:00 PM'";
             }
@@ -159,13 +196,32 @@ function RecruitmentSetupModal({
 
         setIsLoading(true);
         try {
-            // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            const handlerMap = {
+                add: `handleCreate${setupType}`,
+                edit: `handleUpdate${setupType}`,
+            };
 
-            console.log("Form submitted:", formData);
-            setOpenAddEditModel(false);
+            const handlerKey = handlerMap[modelType];
+            const handler = crudHandlers[handlerKey];
+
+            if (!handler) {
+                console.error(`Handler not provided: ${handlerKey}`);
+                return;
+            }
+
+            const result =
+                modelType === "add"
+                    ? await handler({ ...formData })
+                    : await handler(rowData?.id, { ...formData });
+
+            if (result?.success) {
+                setOpenAddEditModel(false);
+                handleCloseModel?.();
+            } else {
+                console.error("Operation failed:", result?.error);
+            }
         } catch (error) {
-            console.error("Error submitting form:", error);
+            console.error("Unexpected error:", error);
         } finally {
             setIsLoading(false);
         }
@@ -173,6 +229,7 @@ function RecruitmentSetupModal({
 
     const handleCancel = () => {
         setOpenAddEditModel(false);
+        handleCloseModel?.();
     };
 
     // Render form fields based on setup type
@@ -184,35 +241,35 @@ function RecruitmentSetupModal({
                         label={currentConfig.nameLabel}
                         placeholder={currentConfig.namePlaceholder}
                         value={formData.shiftName}
-                        onChange={(e) =>
-                            handleInputChange("shiftName", e.target.value)
+                        onChange={(value) =>
+                            handleInputChange("shiftName", value)
                         }
-                        required
                         error={errors.shiftName}
+                        required
                         disabled={modelType === "view"}
                     />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <CustomTextInput
-                            label="Start Time"
-                            placeholder="10:00 AM"
+                            label={currentConfig.timeFromLabel}
+                            placeholder={currentConfig.timeFromPlaceholder}
                             value={formData.timeFrom}
-                            onChange={(e) =>
-                                handleInputChange("timeFrom", e.target.value)
+                            onChange={(value) =>
+                                handleInputChange("timeFrom", value)
                             }
-                            required
                             error={errors.timeFrom}
+                            required
                             disabled={modelType === "view"}
                             helperText="Format: 10:00 AM"
                         />
                         <CustomTextInput
-                            label="End Time"
-                            placeholder="5:00 PM"
+                            label={currentConfig.timeToLabel}
+                            placeholder={currentConfig.timeToPlaceholder}
                             value={formData.timeTo}
-                            onChange={(e) =>
-                                handleInputChange("timeTo", e.target.value)
+                            onChange={(value) =>
+                                handleInputChange("timeTo", value)
                             }
-                            required
                             error={errors.timeTo}
+                            required
                             disabled={modelType === "view"}
                             helperText="Format: 5:00 PM"
                         />
@@ -226,15 +283,14 @@ function RecruitmentSetupModal({
                 label={currentConfig.nameLabel}
                 placeholder={currentConfig.namePlaceholder}
                 value={formData.name}
-                onChange={(e) => handleInputChange("name", e.target.value)}
-                required
+                onChange={(value) => handleInputChange("name", value)}
                 error={errors.name}
+                required
                 disabled={modelType === "view"}
             />
         );
     };
 
-    // Footer buttons
     const modalFooter = (
         <div className="flex justify-end space-x-3 px-6 py-4 border-none">
             <CustomButton
@@ -243,16 +299,18 @@ function RecruitmentSetupModal({
                 disabled={isLoading}
                 className="px-6 py-2"
             >
-                Cancel
+                {modelType === "view" ? "Close" : "Cancel"}
             </CustomButton>
-            <CustomButton
-                variant="primary"
-                onClick={handleSubmit}
-                loading={isLoading}
-                className="px-6 py-2"
-            >
-                {modelType === "edit" ? "Update" : "Save"}
-            </CustomButton>
+            {modelType !== "view" && (
+                <CustomButton
+                    variant="primary"
+                    onClick={handleSubmit}
+                    loading={isLoading}
+                    className="px-6 py-2"
+                >
+                    {modelType === "edit" ? "Update" : "Save"}
+                </CustomButton>
+            )}
         </div>
     );
 
@@ -268,11 +326,11 @@ function RecruitmentSetupModal({
                     : "Add"
             } ${currentConfig.title}`}
             size="large"
-            showCloseButton={true}
+            showCloseButton
             closeOnOverlayClick={false}
-            closeOnEscape={true}
+            closeOnEscape
             bodyClassName="px-6 py-4"
-            footer={modelType !== "view" ? modalFooter : null}
+            footer={modalFooter}
         >
             <div className="space-y-4">{renderFormFields()}</div>
         </CustomModal>
