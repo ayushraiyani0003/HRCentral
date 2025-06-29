@@ -11,10 +11,10 @@ const DesignationController = require("../controllers/Designation.controller"); 
 // Routes for Designation Management
 // ==============================
 
-// the base route is /api/designations
+// the base route is /api/designation
 
 /**
- * @route POST /api/designations
+ * @route POST /api/designation
  * @desc Create a new designation
  * @body {Object} designation - Designation object with name property
  * @body {string} designation.name - Designation name (required)
@@ -24,15 +24,15 @@ const DesignationController = require("../controllers/Designation.controller"); 
 router.post("/", DesignationController.createDesignation);
 
 /**
- * @route GET /api/designations
- * @desc Get all designations
- * @returns {Object} 200 - List of designations with pagination info
+ * @route GET /api/designation
+ * @desc Get all designation
+ * @returns {Object} 200 - List of designation with pagination info
  * @returns {Object} 500 - Internal server error
  */
 router.get("/", DesignationController.getAllDesignations);
 
 /**
- * @route GET /api/designations/:id
+ * @route GET /api/designation/:id
  * @desc Get a specific designation by ID
  * @param {string} id - Designation UUID
  * @returns {Object} 200 - Designation object
@@ -43,7 +43,7 @@ router.get("/", DesignationController.getAllDesignations);
 router.get("/:id", DesignationController.getDesignationById);
 
 /**
- * @route PUT /api/designations/:id
+ * @route PUT /api/designation/:id
  * @desc Update a designation by ID
  * @param {string} id - Designation UUID
  * @body {Object} designation - Designation object with updated data
@@ -57,7 +57,7 @@ router.get("/:id", DesignationController.getDesignationById);
 router.put("/:id", DesignationController.updateDesignation);
 
 /**
- * @route DELETE /api/designations/:id
+ * @route DELETE /api/designation/:id
  * @desc Delete a designation by ID
  * @param {string} id - Designation UUID
  * @returns {Object} 200 - Deletion success message

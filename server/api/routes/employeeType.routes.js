@@ -5,7 +5,7 @@ const router = express.Router();
 const employeeTypeController = require("../controllers/EmployeeType.controller"); // Adjust path as needed
 
 /**
- * @route   POST /api/employee-types
+ * @route   POST /api/employee-type
  * @desc    Create a new employee type
  * @access  Private (add authentication middleware as needed)
  * @body    { name: string }
@@ -13,14 +13,14 @@ const employeeTypeController = require("../controllers/EmployeeType.controller")
 router.post("/", employeeTypeController.createEmployeeType);
 
 /**
- * @route   GET /api/employee-types
- * @desc    Get all employee types
+ * @route   GET /api/employee-type
+ * @desc    Get all employee type
  * @access  Private (add authentication middleware as needed)
  */
 router.get("/", employeeTypeController.getAllEmployeeTypes);
 
 /**
- * @route   GET /api/employee-types/:id
+ * @route   GET /api/employee-type/:id
  * @desc    Get employee type by ID
  * @access  Private (add authentication middleware as needed)
  * @param   id - UUID of the employee type
@@ -28,7 +28,7 @@ router.get("/", employeeTypeController.getAllEmployeeTypes);
 router.get("/:id", employeeTypeController.getEmployeeTypeById);
 
 /**
- * @route   PUT /api/employee-types/:id
+ * @route   PUT /api/employee-type/:id
  * @desc    Update employee type by ID
  * @access  Private (add authentication middleware as needed)
  * @param   id - UUID of the employee type
@@ -37,7 +37,7 @@ router.get("/:id", employeeTypeController.getEmployeeTypeById);
 router.put("/:id", employeeTypeController.updateEmployeeType);
 
 /**
- * @route   DELETE /api/employee-types/:id
+ * @route   DELETE /api/employee-type/:id
  * @desc    Delete employee type by ID
  * @access  Private (add authentication middleware as needed)
  * @param   id - UUID of the employee type

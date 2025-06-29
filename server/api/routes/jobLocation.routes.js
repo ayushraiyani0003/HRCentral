@@ -8,7 +8,7 @@ const router = express.Router();
 const JobLocationController = require("../controllers/JobLocation.controller");
 
 /**
- * @route POST /
+ * @route POST api/job-location/
  * @description Create a new job location
  * @access Public
  * @param {Object} req.body - Job location data
@@ -19,7 +19,7 @@ const JobLocationController = require("../controllers/JobLocation.controller");
 router.post("/", JobLocationController.create);
 
 /**
- * @route GET /
+ * @route GET api/job-location/
  * @description Get all job locations with pagination and search
  * @access Public
  * @param {number} req.query.limit - Limit of records to return
@@ -31,7 +31,7 @@ router.post("/", JobLocationController.create);
 router.get("/", JobLocationController.getAll);
 
 /**
- * @route GET /:id
+ * @route GET api/job-location/:id
  * @description Get job location by ID
  * @access Public
  * @param {string} req.params.id - Job location UUID
@@ -42,7 +42,7 @@ router.get("/", JobLocationController.getAll);
 router.get("/:id", JobLocationController.getById);
 
 /**
- * @route PUT /:id
+ * @route PUT api/job-location/:id
  * @description Update job location by ID
  * @access Public
  * @param {string} req.params.id - Job location UUID
@@ -54,7 +54,7 @@ router.get("/:id", JobLocationController.getById);
 router.put("/:id", JobLocationController.update);
 
 /**
- * @route DELETE /:id
+ * @route DELETE api/job-location/:id
  * @description Delete job location by ID
  * @access Public
  * @param {string} req.params.id - Job location UUID

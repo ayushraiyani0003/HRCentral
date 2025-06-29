@@ -16,18 +16,10 @@ class ExperienceLevelController {
             const result = await ExperienceLevelService.create(req.body);
 
             if (!result.success) {
-                return res.status(400).json({
-                    success: false,
-                    message: result.message,
-                    error: result.error || null,
-                });
+                return res.status(400).json(result);
             }
 
-            return res.status(201).json({
-                success: true,
-                data: result.data,
-                message: result.message,
-            });
+            return res.status(201).json(result);
         } catch (error) {
             return res.status(500).json({
                 success: false,
@@ -47,18 +39,10 @@ class ExperienceLevelController {
             const result = await ExperienceLevelService.getAll();
 
             if (!result.success) {
-                return res.status(500).json({
-                    success: false,
-                    message: result.message,
-                    error: result.error || null,
-                });
+                return res.status(500).json(result);
             }
 
-            return res.status(200).json({
-                success: true,
-                data: result.data,
-                message: result.message,
-            });
+            return res.status(200).json(result);
         } catch (error) {
             return res.status(500).json({
                 success: false,
@@ -87,18 +71,10 @@ class ExperienceLevelController {
             const result = await ExperienceLevelService.getById(id);
 
             if (!result.success) {
-                return res.status(404).json({
-                    success: false,
-                    message: result.message,
-                    error: result.error || null,
-                });
+                return res.status(404).json(result);
             }
 
-            return res.status(200).json({
-                success: true,
-                data: result.data,
-                message: result.message,
-            });
+            return res.status(200).json(result);
         } catch (error) {
             return res.status(500).json({
                 success: false,
@@ -127,18 +103,10 @@ class ExperienceLevelController {
             const result = await ExperienceLevelService.readByName(name);
 
             if (!result.success) {
-                return res.status(404).json({
-                    success: false,
-                    message: result.message,
-                    error: result.error || null,
-                });
+                return res.status(404).json(result);
             }
 
-            return res.status(200).json({
-                success: true,
-                data: result.data,
-                message: result.message,
-            });
+            return res.status(200).json(result);
         } catch (error) {
             return res.status(500).json({
                 success: false,
@@ -169,18 +137,10 @@ class ExperienceLevelController {
             if (!result.success) {
                 const statusCode =
                     result.message === "Experience level not found" ? 404 : 400;
-                return res.status(statusCode).json({
-                    success: false,
-                    message: result.message,
-                    error: result.error || null,
-                });
+                return res.status(statusCode).json(result);
             }
 
-            return res.status(200).json({
-                success: true,
-                data: result.data,
-                message: result.message,
-            });
+            return res.status(200).json(result);
         } catch (error) {
             return res.status(500).json({
                 success: false,
@@ -209,17 +169,10 @@ class ExperienceLevelController {
             const result = await ExperienceLevelService.delete(id);
 
             if (!result.success) {
-                return res.status(404).json({
-                    success: false,
-                    message: result.message,
-                    error: result.error || null,
-                });
+                return res.status(404).json(result);
             }
 
-            return res.status(200).json({
-                success: true,
-                message: result.message,
-            });
+            return res.status(200).json(result);
         } catch (error) {
             return res.status(500).json({
                 success: false,

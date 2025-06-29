@@ -8,7 +8,7 @@ const router = express.Router();
 const HiringSourceController = require("../controllers/HiringSource.controller");
 
 /**
- * @route POST /api/hiring-sources
+ * @route POST /api/hiring-source
  * @desc Create a new hiring source
  * @access Public
  * @param {Object} req.body - Request body containing hiring source data
@@ -34,7 +34,7 @@ const HiringSourceController = require("../controllers/HiringSource.controller")
 router.post("/", HiringSourceController.create);
 
 /**
- * @route GET /api/hiring-sources
+ * @route GET /api/hiring-source
  * @desc Get all hiring sources with optional pagination and search
  * @access Public
  * @param {number} [req.query.limit=10] - Maximum number of records to return
@@ -43,7 +43,7 @@ router.post("/", HiringSourceController.create);
  * @returns {Object} 200 - List of hiring sources
  * @returns {Object} 500 - Internal server error
  * @example
- * // Request: GET /api/hiring-sources?limit=5&offset=0&search=linkedin
+ * // Request: GET /api/hiring-source?limit=5&offset=0&search=linkedin
  *
  * // Response:
  * {
@@ -62,7 +62,7 @@ router.post("/", HiringSourceController.create);
 router.get("/", HiringSourceController.getAll);
 
 /**
- * @route GET /api/hiring-sources/:id
+ * @route GET /api/hiring-source/:id
  * @desc Get a specific hiring source by ID
  * @access Public
  * @param {string} req.params.id - Unique identifier of the hiring source
@@ -70,7 +70,7 @@ router.get("/", HiringSourceController.getAll);
  * @returns {Object} 404 - Not found
  * @returns {Object} 500 - Internal server error
  * @example
- * // Request: GET /api/hiring-sources/123
+ * // Request: GET /api/hiring-source/123
  *
  * // Response:
  * {
@@ -84,7 +84,7 @@ router.get("/", HiringSourceController.getAll);
 router.get("/:id", HiringSourceController.getById);
 
 /**
- * @route PUT /api/hiring-sources/:id
+ * @route PUT /api/hiring-source/:id
  * @desc Update a hiring source by ID
  * @access Public
  * @param {string} req.params.id - ID of the hiring source to update
@@ -95,7 +95,7 @@ router.get("/:id", HiringSourceController.getById);
  * @returns {Object} 404 - Not found
  * @returns {Object} 500 - Internal server error
  * @example
- * // Request: PUT /api/hiring-sources/123
+ * // Request: PUT /api/hiring-source/123
  * {
  *   "name": "Updated Name"
  * }
@@ -112,7 +112,7 @@ router.get("/:id", HiringSourceController.getById);
 router.put("/:id", HiringSourceController.update);
 
 /**
- * @route DELETE /api/hiring-sources/:id
+ * @route DELETE /api/hiring-source/:id
  * @desc Delete a hiring source by ID
  * @access Public
  * @param {string} req.params.id - ID of the hiring source to delete
@@ -120,7 +120,7 @@ router.put("/:id", HiringSourceController.update);
  * @returns {Object} 404 - Not found
  * @returns {Object} 500 - Internal server error
  * @example
- * // Request: DELETE /api/hiring-sources/123
+ * // Request: DELETE /api/hiring-source/123
  *
  * // Response:
  * {

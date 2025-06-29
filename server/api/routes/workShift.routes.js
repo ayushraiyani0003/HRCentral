@@ -8,7 +8,7 @@ const router = express.Router();
 const WorkShiftController = require("../controllers/WorkShift.controller");
 
 /**
- * @route POST /api/work-shifts
+ * @route POST /api/work-shift
  * @desc Create a new work shift
  * @access Public
  * @param {Object} req.body - Work shift details
@@ -28,7 +28,7 @@ const WorkShiftController = require("../controllers/WorkShift.controller");
 router.post("/", WorkShiftController.create);
 
 /**
- * @route GET /api/work-shifts
+ * @route GET /api/work-shift
  * @desc Get all work shifts with optional pagination and search
  * @access Public
  * @param {number} [req.query.limit=10] - Max number of records
@@ -40,7 +40,7 @@ router.post("/", WorkShiftController.create);
 router.get("/", WorkShiftController.getAll);
 
 /**
- * @route GET /api/work-shifts/:id
+ * @route GET /api/work-shift/:id
  * @desc Get a specific work shift by ID
  * @access Public
  * @param {string} req.params.id - Shift ID
@@ -51,7 +51,7 @@ router.get("/", WorkShiftController.getAll);
 router.get("/:id", WorkShiftController.getById);
 
 /**
- * @route PUT /api/work-shifts/:id
+ * @route PUT /api/work-shift/:id
  * @desc Update a work shift by ID
  * @access Public
  * @param {string} req.params.id - Shift ID
@@ -64,7 +64,7 @@ router.get("/:id", WorkShiftController.getById);
 router.put("/:id", WorkShiftController.update);
 
 /**
- * @route DELETE /api/work-shifts/:id
+ * @route DELETE /api/work-shift/:id
  * @desc Delete a work shift by ID
  * @access Public
  * @param {string} req.params.id - Shift ID

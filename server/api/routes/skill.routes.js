@@ -1,6 +1,6 @@
 /**
  * SkillRoutes - Express router for skill management endpoints
- * Defines RESTful API routes for CRUD operations and bulk operations on skills
+ * Defines RESTful API routes for CRUD operations and bulk operations on skill
  */
 
 const express = require("express");
@@ -8,7 +8,7 @@ const router = express.Router();
 const skillController = require("../controllers/Skill.controller"); // Adjust the path if needed
 
 /**
- * @route POST /api/skills
+ * @route POST /api/skill
  * @desc Create a new skill
  * @access Public
  * @param {Object} req.body - Request body containing skill data
@@ -34,16 +34,16 @@ const skillController = require("../controllers/Skill.controller"); // Adjust th
 router.post("/", skillController.createSkill);
 
 /**
- * @route GET /api/skills
- * @desc Get all skills with optional pagination and search
+ * @route GET /api/skill
+ * @desc Get all skill with optional pagination and search
  * @access Public
- * @param {number} [req.query.limit=10] - Maximum number of skills to return
- * @param {number} [req.query.offset=0] - Number of skills to skip
- * @param {string} [req.query.search=""] - Search term to filter skills by name
- * @returns {Object} 200 - Array of skills with pagination info
+ * @param {number} [req.query.limit=10] - Maximum number of skill to return
+ * @param {number} [req.query.offset=0] - Number of skill to skip
+ * @param {string} [req.query.search=""] - Search term to filter skill by name
+ * @returns {Object} 200 - Array of skill with pagination info
  * @returns {Object} 500 - Internal server error
  * @example
- * // Request: GET /api/skills?limit=5&offset=10&search=java
+ * // Request: GET /api/skill?limit=5&offset=10&search=java
  *
  * // Response:
  * {
@@ -62,7 +62,7 @@ router.post("/", skillController.createSkill);
 router.get("/", skillController.getAllSkills);
 
 /**
- * @route GET /api/skills/:id
+ * @route GET /api/skill/:id
  * @desc Get a specific skill by ID
  * @access Public
  * @param {string} req.params.id - Unique identifier of the skill
@@ -70,7 +70,7 @@ router.get("/", skillController.getAllSkills);
  * @returns {Object} 404 - Skill not found
  * @returns {Object} 500 - Internal server error
  * @example
- * // Request: GET /api/skills/123
+ * // Request: GET /api/skill/123
  *
  * // Response:
  * {
@@ -84,7 +84,7 @@ router.get("/", skillController.getAllSkills);
 router.get("/:id", skillController.getSkillById);
 
 /**
- * @route PUT /api/skills/:id
+ * @route PUT /api/skill/:id
  * @desc Update a skill by ID
  * @access Public
  * @param {string} req.params.id - Unique identifier of the skill to update
@@ -95,7 +95,7 @@ router.get("/:id", skillController.getSkillById);
  * @returns {Object} 404 - Skill not found
  * @returns {Object} 500 - Internal server error
  * @example
- * // Request: PUT /api/skills/123
+ * // Request: PUT /api/skill/123
  * // Request body:
  * {
  *   "name": "React.js"
@@ -113,7 +113,7 @@ router.get("/:id", skillController.getSkillById);
 router.put("/:id", skillController.updateSkill);
 
 /**
- * @route DELETE /api/skills/:id
+ * @route DELETE /api/skill/:id
  * @desc Delete a skill by ID
  * @access Public
  * @param {string} req.params.id - Unique identifier of the skill to delete
@@ -121,7 +121,7 @@ router.put("/:id", skillController.updateSkill);
  * @returns {Object} 404 - Skill not found
  * @returns {Object} 500 - Internal server error
  * @example
- * // Request: DELETE /api/skills/123
+ * // Request: DELETE /api/skill/123
  *
  * // Response:
  * {

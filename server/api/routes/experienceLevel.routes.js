@@ -3,7 +3,7 @@ const router = express.Router();
 const experienceLevelController = require("../controllers/ExperienceLevel.controller"); // Adjust path as needed
 
 /**
- * @route   POST /api/experience-levels
+ * @route   POST /api/experience-level
  * @desc    Create a new experience level
  * @access  Private
  * @body    {Object} req.body - Request body
@@ -30,13 +30,13 @@ const experienceLevelController = require("../controllers/ExperienceLevel.contro
 router.post("/", experienceLevelController.create);
 
 /**
- * @route   GET /api/experience-levels
+ * @route   GET /api/experience-level
  * @desc    Get all experience levels
  * @access  Public
  * @returns {Object} 200 - Array of experience levels
  * @returns {Object} 500 - Internal server error
  * @example
- * // GET /api/experience-levels
+ * // GET /api/experience-level
  * // Response (200):
  * {
  *   "success": true,
@@ -53,7 +53,7 @@ router.post("/", experienceLevelController.create);
 router.get("/", experienceLevelController.getAll);
 
 /**
- * @route   GET /api/experience-levels/:id
+ * @route   GET /api/experience-level/:id
  * @desc    Get a specific experience level by ID
  * @access  Public
  * @param   {string} id - Experience level ID (required)
@@ -61,7 +61,7 @@ router.get("/", experienceLevelController.getAll);
  * @returns {Object} 400 - Bad request error (ID is required)
  * @returns {Object} 404 - Experience level not found
  * @example
- * // GET /api/experience-levels/123
+ * // GET /api/experience-level/123
  * // Response (200):
  * {
  *   "success": true,
@@ -76,7 +76,7 @@ router.get("/", experienceLevelController.getAll);
 router.get("/:id", experienceLevelController.getById);
 
 /**
- * @route   PUT /api/experience-levels/:id
+ * @route   PUT /api/experience-level/:id
  * @desc    Update an existing experience level by ID
  * @access  Private
  * @param   {string} id - Experience level ID (required)
@@ -86,7 +86,7 @@ router.get("/:id", experienceLevelController.getById);
  * @returns {Object} 400 - Bad request error (validation failed or ID required)
  * @returns {Object} 404 - Experience level not found
  * @example
- * // PUT /api/experience-levels/123
+ * // PUT /api/experience-level/123
  * // Request body:
  * {
  *   "name": "Senior Developer"
@@ -106,7 +106,7 @@ router.get("/:id", experienceLevelController.getById);
 router.put("/:id", experienceLevelController.update);
 
 /**
- * @route   DELETE /api/experience-levels/:id
+ * @route   DELETE /api/experience-level/:id
  * @desc    Delete an experience level by ID
  * @access  Private
  * @param   {string} id - Experience level ID to delete (required)
@@ -114,7 +114,7 @@ router.put("/:id", experienceLevelController.update);
  * @returns {Object} 400 - Bad request error (ID is required)
  * @returns {Object} 404 - Experience level not found
  * @example
- * // DELETE /api/experience-levels/123
+ * // DELETE /api/experience-level/123
  * // Response (200):
  * {
  *   "success": true,
