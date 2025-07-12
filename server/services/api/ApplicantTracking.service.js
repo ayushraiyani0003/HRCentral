@@ -54,19 +54,21 @@ class ApplicantTrackingService {
    * Update applicant tracking record by ID
    * @param {String} id - The applicant tracking record ID
    * @param {Object} updateData - The data to update
+   * @param {Object} options - Transaction options
    * @returns {Promise<Object|null>} Updated applicant tracking record or null if not found
    */
-  async update(id, updateData) {
+  async update(id, updateData, options = {}) {
     try {
       const [updatedRowsCount] = await ApplicantTracking.update(updateData, {
         where: { id },
+        ...options, // This will include transaction if provided
       });
 
       if (updatedRowsCount === 0) {
         return null;
       }
 
-      const updatedApplicant = await ApplicantTracking.findByPk(id);
+      const updatedApplicant = await ApplicantTracking.findByPk(id, options);
       return updatedApplicant;
     } catch (error) {
       throw new Error(
