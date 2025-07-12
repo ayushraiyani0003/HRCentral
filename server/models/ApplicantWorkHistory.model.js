@@ -4,26 +4,17 @@ module.exports = (sequelize, DataTypes) => {
         "ApplicantWorkHistory",
         {
             id: {
-                type: DataTypes.INTEGER,
-                autoIncrement: true,
+                type: DataTypes.UUID,
+                defaultValue: DataTypes.UUIDV4,
                 primaryKey: true,
-                allowNull: false,
-            },
-            applicant_id: {
-                type: DataTypes.INTEGER,
-                allowNull: false,
-                references: {
-                    model: "ApplicantTrackings",
-                    key: "id",
-                },
-                onDelete: "CASCADE",
-            },
-            job_post: {
-                type: DataTypes.STRING(200),
                 allowNull: false,
             },
             company_name: {
                 type: DataTypes.STRING(200),
+                allowNull: false,
+            },
+            location: {
+                type: DataTypes.STRING(50),
                 allowNull: false,
             },
             start_month_year: {
@@ -34,24 +25,48 @@ module.exports = (sequelize, DataTypes) => {
             end_month_year: {
                 type: DataTypes.STRING(20),
                 allowNull: true,
+                defaultValue: null,
                 comment: "Format: MM/YYYY or Month YYYY",
             },
-            salary: {
+            salary_drawn: {
                 type: DataTypes.DECIMAL(10, 2),
                 allowNull: true,
+                defaultValue: null,
+            },
+            designation: {
+                type: DataTypes.STRING(200),
+                allowNull: false,
+            },
+            job_history: {
+                type: DataTypes.STRING(200),
+                allowNull: false,
             },
             reason_for_leave: {
                 type: DataTypes.TEXT,
+                allowNull: true,
+                defaultValue: null,
+            },
+
+            period_to_work: {
+                type: DataTypes.STRING(20),
+                allowNull: true,
+            },
+            department: {
+                type: DataTypes.STRING(20),
+                allowNull: true,
+            },
+            reporting_head: {
+                type: DataTypes.STRING(20),
+                allowNull: true,
+            },
+            reason_of_leaving: {
+                type: DataTypes.STRING(20),
                 allowNull: true,
             },
             remarks: {
                 type: DataTypes.TEXT,
                 allowNull: true,
-            },
-            is_current_work: {
-                type: DataTypes.BOOLEAN,
-                allowNull: false,
-                defaultValue: false,
+                defaultValue: null,
             },
         },
         {
@@ -60,28 +75,19 @@ module.exports = (sequelize, DataTypes) => {
             underscored: true,
             indexes: [
                 {
-                    name: "applicant_id_idx",
-                    fields: ["applicant_id"],
-                },
-                {
                     name: "company_name_idx",
                     fields: ["company_name"],
                 },
                 {
-                    name: "is_current_work_idx",
-                    fields: ["is_current_work"],
+                    name: "designation_idx",
+                    fields: ["designation"],
+                },
+                {
+                    name: "start_month_year_idx",
+                    fields: ["start_month_year"],
                 },
             ],
         }
     );
-
-    ApplicantWorkHistory.associate = (models) => {
-        // Association with ApplicantTracking model
-        ApplicantWorkHistory.belongsTo(models.ApplicantTracking, {
-            foreignKey: "applicant_id",
-            as: "applicant",
-        });
-    };
-
     return ApplicantWorkHistory;
 };

@@ -386,6 +386,8 @@ const useWorkShiftTab = ({
     // Update work shift - FIXED: Enhanced to handle time conversion with proper field mapping
     const handleUpdateWorkShift = useCallback(
         async (id, updateData) => {
+            console.log("Updating work shift:", id, updateData);
+
             if (!id || !updateData) {
                 return { success: false, error: "Invalid parameters provided" };
             }

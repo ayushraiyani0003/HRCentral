@@ -1,195 +1,98 @@
-// =================== services/ApplicantTrackingService.js ===================
+// =================== services/ApplicantTracking.service.js ===================
 const { ApplicantTracking } = require("../../models");
-const { Op } = require("sequelize");
-
-const {
-    ApplicantTracking,
-    ApplicantEducation,
-    ApplicantWorkHistory,
-} = require("../models");
-const { Op } = require("sequelize");
 
 class ApplicantTrackingService {
-    /**
-     * Create a new applicant
-     * @param {Object} applicantData - Applicant data
-     * @returns {Promise<Object>} Created applicant
-     */
-    async createApplicant(applicantData) {
-        try {
-            const applicant = await ApplicantTracking.create(applicantData);
-            return { success: true, data: applicant };
-        } catch (error) {
-            return { success: false, error: error.message };
-        }
+  /**
+   * Create a new applicant tracking record
+   * @param {Object} applicantData - The applicant data to create
+   * @returns {Promise<Object>} Created applicant tracking record
+   */
+  async create(applicantData) {
+    try {
+      const applicant = await ApplicantTracking.create(applicantData);
+      return applicant;
+    } catch (error) {
+      throw new Error(
+        `Error creating applicant tracking record: ${error.message}`
+      );
     }
+  }
 
-    /**
-     * Get all applicants with pagination and filters
-     * @param {Object} options - Query options
-     * @returns {Promise<Object>} Applicants list
-     */
-    async getAllApplicants(options = {}) {
-        try {
-            const {
-                page = 1,
-                limit = 10,
-                status,
-                department,
-                position,
-            } = options;
-            const offset = (page - 1) * limit;
+  /**
+   * Get all applicant tracking records
+   * @returns {Promise<Array>} Array of applicant tracking records
+   */
+  async getAll() {
+    try {
+      const applicants = await ApplicantTracking.findAll();
 
-            const whereClause = {};
-            if (status) whereClause.status = status;
-            if (department) whereClause.department = department;
-            if (position)
-                whereClause.position_applied = { [Op.like]: `%${position}%` };
-
-            const { count, rows } = await ApplicantTracking.findAndCountAll({
-                where: whereClause,
-                include: [
-                    { model: ApplicantEducation, as: "educations" },
-                    { model: ApplicantWorkHistory, as: "workHistories" },
-                ],
-                limit: parseInt(limit),
-                offset: parseInt(offset),
-                order: [["created_at", "DESC"]],
-            });
-
-            return {
-                success: true,
-                data: {
-                    applicants: rows,
-                    pagination: {
-                        currentPage: page,
-                        totalPages: Math.ceil(count / limit),
-                        totalItems: count,
-                        itemsPerPage: limit,
-                    },
-                },
-            };
-        } catch (error) {
-            return { success: false, error: error.message };
-        }
+      return applicants;
+    } catch (error) {
+      throw new Error(
+        `Error fetching applicant tracking records: ${error.message}`
+      );
     }
+  }
 
-    /**
-     * Get applicant by ID
-     * @param {number} id - Applicant ID
-     * @returns {Promise<Object>} Applicant data
-     */
-    async getApplicantById(id) {
-        try {
-            const applicant = await ApplicantTracking.findByPk(id, {
-                include: [
-                    { model: ApplicantEducation, as: "educations" },
-                    { model: ApplicantWorkHistory, as: "workHistories" },
-                ],
-            });
-
-            if (!applicant) {
-                return { success: false, error: "Applicant not found" };
-            }
-
-            return { success: true, data: applicant };
-        } catch (error) {
-            return { success: false, error: error.message };
-        }
+  /**
+   * Get applicant tracking record by ID
+   * @param {String} id - The applicant tracking record ID
+   * @returns {Promise<Object|null>} Applicant tracking record or null if not found
+   */
+  async getById(id) {
+    try {
+      const applicant = await ApplicantTracking.findByPk(id);
+      return applicant;
+    } catch (error) {
+      throw new Error(
+        `Error fetching applicant tracking record by ID: ${error.message}`
+      );
     }
+  }
 
-    /**
-     * Update applicant status
-     * @param {number} id - Applicant ID
-     * @param {string} status - New status
-     * @returns {Promise<Object>} Updated applicant
-     */
-    async updateApplicantStatus(id, status) {
-        try {
-            const [updatedRowsCount] = await ApplicantTracking.update(
-                { status },
-                { where: { id } }
-            );
+  /**
+   * Update applicant tracking record by ID
+   * @param {String} id - The applicant tracking record ID
+   * @param {Object} updateData - The data to update
+   * @returns {Promise<Object|null>} Updated applicant tracking record or null if not found
+   */
+  async update(id, updateData) {
+    try {
+      const [updatedRowsCount] = await ApplicantTracking.update(updateData, {
+        where: { id },
+      });
 
-            if (updatedRowsCount === 0) {
-                return { success: false, error: "Applicant not found" };
-            }
+      if (updatedRowsCount === 0) {
+        return null;
+      }
 
-            const updatedApplicant = await this.getApplicantById(id);
-            return updatedApplicant;
-        } catch (error) {
-            return { success: false, error: error.message };
-        }
+      const updatedApplicant = await ApplicantTracking.findByPk(id);
+      return updatedApplicant;
+    } catch (error) {
+      throw new Error(
+        `Error updating applicant tracking record: ${error.message}`
+      );
     }
+  }
 
-    /**
-     * Search applicants by name or mobile
-     * @param {string} searchTerm - Search term
-     * @returns {Promise<Object>} Search results
-     */
-    async searchApplicants(searchTerm) {
-        try {
-            const applicants = await ApplicantTracking.findAll({
-                where: {
-                    [Op.or]: [
-                        { first_name: { [Op.like]: `%${searchTerm}%` } },
-                        { surname: { [Op.like]: `%${searchTerm}%` } },
-                        { mobile_no_1: { [Op.like]: `%${searchTerm}%` } },
-                    ],
-                },
-                include: [
-                    { model: ApplicantEducation, as: "educations" },
-                    { model: ApplicantWorkHistory, as: "workHistories" },
-                ],
-            });
+  /**
+   * Delete applicant tracking record by ID
+   * @param {String} id - The applicant tracking record ID
+   * @returns {Promise<Boolean>} True if deleted, false if not found
+   */
+  async delete(id) {
+    try {
+      const deletedRowsCount = await ApplicantTracking.destroy({
+        where: { id },
+      });
 
-            return { success: true, data: applicants };
-        } catch (error) {
-            return { success: false, error: error.message };
-        }
+      return deletedRowsCount > 0;
+    } catch (error) {
+      throw new Error(
+        `Error deleting applicant tracking record: ${error.message}`
+      );
     }
-
-    /**
-     * Get applicants by department
-     * @param {number} departmentId - Department ID
-     * @returns {Promise<Object>} Applicants list
-     */
-    async getApplicantsByDepartment(departmentId) {
-        try {
-            const applicants = await ApplicantTracking.findAll({
-                where: { department: departmentId },
-                include: [
-                    { model: ApplicantEducation, as: "educations" },
-                    { model: ApplicantWorkHistory, as: "workHistories" },
-                ],
-            });
-
-            return { success: true, data: applicants };
-        } catch (error) {
-            return { success: false, error: error.message };
-        }
-    }
-
-    /**
-     * Delete applicant
-     * @param {number} id - Applicant ID
-     * @returns {Promise<Object>} Delete result
-     */
-    async deleteApplicant(id) {
-        try {
-            const deletedRowsCount = await ApplicantTracking.destroy({
-                where: { id },
-            });
-
-            if (deletedRowsCount === 0) {
-                return { success: false, error: "Applicant not found" };
-            }
-
-            return { success: true, message: "Applicant deleted successfully" };
-        } catch (error) {
-            return { success: false, error: error.message };
-        }
-    }
+  }
 }
 
 module.exports = new ApplicantTrackingService();

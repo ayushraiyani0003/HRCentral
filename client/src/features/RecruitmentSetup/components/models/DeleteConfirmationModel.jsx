@@ -22,12 +22,13 @@ function DeleteConfirmationModal({
     // Debug only
     // console.log(rowData);
     // console.log(openDeleteModel);
+    console.log(setupType);
 
     const { handleDeleteDesignations } = useDesignationsTab(setOpenDeleteModel);
     const { handleDeleteSkills } = useSkillsTab(setOpenDeleteModel);
     const { handleDeleteEducationLevels } =
         useEducationLevelsTab(setOpenDeleteModel);
-    const { handleDeleteJobLocationType } =
+    const { handleDeleteJobLocationsTypes } =
         useJobLocationsTypeTab(setOpenDeleteModel);
     const { handleDeleteHiringSources } =
         useHiringSourceTab(setOpenDeleteModel);
@@ -41,8 +42,8 @@ function DeleteConfirmationModal({
             case "EmployeeType":
                 handleDeleteEmployeeType(rowData.id);
                 break;
-            case "JobLocationType":
-                handleDeleteJobLocationType(rowData.id);
+            case "JobLocationsTypes":
+                handleDeleteJobLocationsTypes(rowData.id);
                 break;
             case "ExperienceLevels":
                 handleDeleteExperienceLevels(rowData.id);

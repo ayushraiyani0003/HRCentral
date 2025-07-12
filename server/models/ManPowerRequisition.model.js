@@ -1,368 +1,208 @@
 // =================== models/ManPowerRequisition.model.js ===================
-
 module.exports = (sequelize, DataTypes) => {
-    const ManPowerRequisitionModel = sequelize.define(
+    const ManPowerRequisition = sequelize.define(
         "ManPowerRequisition",
         {
-            // Primary Key - Auto Increment Integer
             id: {
-                type: DataTypes.INTEGER,
-                autoIncrement: true,
+                type: DataTypes.UUID,
+                defaultValue: DataTypes.UUIDV4,
                 primaryKey: true,
                 allowNull: false,
             },
-
-            // Unique request ID like req-01-0001 (generated via hooks)
-            requestId: {
-                type: DataTypes.STRING(15),
+            requested_date: {
+                type: DataTypes.DATEONLY,
                 allowNull: false,
-                unique: true,
-                validate: {
-                    len: [8, 15], // Minimum 8 characters
-                    is: /^[a-zA-Z0-9-]+$/, // Alphanumeric with hyphens
-                },
+                comment: "Date when the manpower requisition was requested",
             },
-
-            // TODO: Add Employee model and uncomment foreign key constraints
-            // User who requested - FK to Employee or User
-            requestedBy: {
+            requirement_for_department_id: {
+                type: DataTypes.UUID,
+                allowNull: false,
+                comment:
+                    "Foreign key reference to CompanyStructure table for department",
+            },
+            requirement_for_designation_id: {
+                type: DataTypes.UUID,
+                allowNull: false,
+                comment:
+                    "Foreign key reference to Designation table for job position",
+            },
+            number_of_positions: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
-                // references: {
-                //     model: 'Employees',
-                //     key: 'id'
-                // },
-                // onUpdate: 'CASCADE',
-                // onDelete: 'RESTRICT'
+                comment: "Number of positions required for this requisition",
             },
-
-            // TODO: Add Employee model and uncomment foreign key constraints for department
-            // Department the requirement is for - FK to CompanyStructure (ACTIVE)
-            requirementForDepartment: {
-                type: DataTypes.UUID, // UUID to match CompanyStructure
-                allowNull: false,
-                // references: {
-                //     model: "CompanyStructures",
-                //     key: "id",
-                // },
-                // onUpdate: "CASCADE",
-                // onDelete: "RESTRICT",
-            },
-
-            // TODO: Add Designation model and uncomment foreign key constraints
-            // Designation being requested - FK to Designation
-            requirementForDesignation: {
+            experience_required: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
-                // references: {
-                //     model: 'Designations',
-                //     key: 'id'
-                // },
-                // onUpdate: 'CASCADE',
-                // onDelete: 'RESTRICT'
+                defaultValue: 0,
+                comment: "Years of experience required for the position",
             },
-
-            // Number of open positions required
-            numberOfPositions: {
-                type: DataTypes.INTEGER,
+            requirement_category: {
+                type: DataTypes.ENUM("permanent", "technical", "FixedTerm"),
                 allowNull: false,
-                validate: {
-                    min: 1,
-                    max: 100, // Reasonable upper limit
-                },
+                comment:
+                    "Category of employment: permanent, technical, or fixed term",
             },
-
-            // Category of the requirement
-            requirementForCategory: {
-                type: DataTypes.ENUM("permanent", "technical", "fixed_term"),
-                allowNull: false,
-            },
-
-            // Type of requirement
-            requirementType: {
+            requirement_type: {
                 type: DataTypes.ENUM(
                     "replacement",
                     "additional",
                     "budgeted",
-                    "non_budgeted"
+                    "NonBudgeted"
                 ),
                 allowNull: false,
+                comment:
+                    "Type of requirement: replacement, additional, budgeted, or non-budgeted",
             },
-
-            // Expected Date of Joining
-            expectedDateOfJoining: {
+            expected_joining_date: {
                 type: DataTypes.DATEONLY,
                 allowNull: false,
-                validate: {
-                    isDate: true,
-                    isAfter: new Date().toISOString().split("T")[0], // Must be future date
-                },
+                comment: "Expected date when the candidate should join",
             },
-
-            // Experience required in months (more flexible than years)
-            experienceRequired: {
-                type: DataTypes.INTEGER,
-                allowNull: false,
-                defaultValue: 0,
-                validate: {
-                    min: 0,
-                    max: 600, // 50 years max
-                },
-            },
-
-            // Description of the job - optional longer text
-            jobDescription: {
+            job_description: {
                 type: DataTypes.TEXT,
+                allowNull: true,
+                comment: "Detailed job description and requirements",
+            },
+            requested_by_id: {
+                type: DataTypes.UUID,
                 allowNull: false,
-                validate: {
-                    len: [10, 5000], // Reasonable length limits
-                },
+                comment:
+                    "Foreign key reference to Employee who requested the manpower",
             },
-
-            // TODO: Add Employee model and uncomment foreign key constraints for approval flow
-            // Approval & review flow (nullable initially)
-            agreedBy: {
-                type: DataTypes.INTEGER,
+            approved_by_id: {
+                type: DataTypes.UUID,
                 allowNull: true,
-                // references: {
-                //     model: 'Employees',
-                //     key: 'id'
-                // },
-                // onUpdate: 'CASCADE',
-                // onDelete: 'SET NULL'
+                defaultValue: null,
+                comment:
+                    "Foreign key reference to Management who approved the request",
             },
-            approvedBy: {
-                type: DataTypes.INTEGER,
+            agreed_by_id: {
+                type: DataTypes.UUID,
                 allowNull: true,
-                // references: {
-                //     model: 'Employees',
-                //     key: 'id'
-                // },
-                // onUpdate: 'CASCADE',
-                // onDelete: 'SET NULL'
+                defaultValue: null,
+                comment:
+                    "Foreign key reference to Employee who agreed to the requisition",
             },
-            onHoldBy: {
-                type: DataTypes.INTEGER,
-                allowNull: true,
-                // references: {
-                //     model: 'Employees',
-                //     key: 'id'
-                // },
-                // onUpdate: 'CASCADE',
-                // onDelete: 'SET NULL'
-            },
-
-            // Lifecycle Dates
-            requestedDate: {
-                type: DataTypes.DATEONLY,
-                allowNull: false,
-                defaultValue: DataTypes.NOW,
-            },
-            requestCompletedDate: {
+            approved_date: {
                 type: DataTypes.DATEONLY,
                 allowNull: true,
+                defaultValue: null,
+                comment: "Date when the requisition was approved",
             },
-            dateOfJoining: {
-                type: DataTypes.DATEONLY,
-                allowNull: true,
-            },
-            approvedDate: {
-                type: DataTypes.DATEONLY,
-                allowNull: true,
-            },
-            agreedDate: {
-                type: DataTypes.DATEONLY,
-                allowNull: true,
-            },
-
-            // Status fields
-            approvalStatus: {
-                type: DataTypes.ENUM(
-                    "approved",
-                    "pending",
-                    "rejected",
-                    "on_hold"
-                ),
-                allowNull: false,
-                defaultValue: "pending",
-            },
-
-            requisitionStatus: {
+            requisition_status: {
                 type: DataTypes.ENUM(
                     "pending",
-                    "in_process",
-                    "on_hold",
+                    "InProcess",
+                    "OnHold",
                     "completed",
                     "cancelled"
                 ),
                 allowNull: false,
                 defaultValue: "pending",
+                comment: "Current status of the requisition process",
             },
-
-            // TODO: Add Employee model and uncomment foreign key constraints for audit
-            // Audit - track who last updated the record
-            lastChangedBy: {
-                type: DataTypes.INTEGER,
+            approval_status: {
+                type: DataTypes.ENUM(
+                    "selected",
+                    "pending",
+                    "rejected",
+                    "OnHold"
+                ),
                 allowNull: false,
-                // references: {
-                //     model: 'Employees',
-                //     key: 'id'
-                // },
-                // onUpdate: 'CASCADE',
-                // onDelete: 'RESTRICT'
-            },
-
-            // Soft delete flag // if user delete then make it false otherwise true
-            isActive: {
-                type: DataTypes.BOOLEAN,
-                allowNull: false,
-                defaultValue: true,
+                defaultValue: "pending",
+                comment: "Approval status of the requisition",
             },
         },
         {
             tableName: "ManPowerRequisition",
             timestamps: true,
             underscored: true,
-            paranoid: true, // Enables soft delete
             indexes: [
                 {
-                    name: "request_id_unique_idx",
-                    unique: true,
-                    fields: ["request_id"], // Use snake_case because underscored: true
+                    name: "requirement_for_department_id_idx",
+                    fields: ["requirement_for_department_id"],
                 },
                 {
-                    name: "requested_by_idx",
-                    fields: ["requested_by"], // Use snake_case
+                    name: "requirement_for_designation_id_idx",
+                    fields: ["requirement_for_designation_id"],
                 },
                 {
-                    name: "requirement_for_department_idx",
-                    fields: ["requirement_for_department"], // Use snake_case
+                    name: "requested_by_id_idx",
+                    fields: ["requested_by_id"],
                 },
                 {
-                    name: "requirement_for_designation_idx",
-                    fields: ["requirement_for_designation"], // Use snake_case
+                    name: "approved_by_id_idx",
+                    fields: ["approved_by_id"],
                 },
                 {
-                    name: "approval_status_idx",
-                    fields: ["approval_status"], // Use snake_case
+                    name: "agreed_by_id_idx",
+                    fields: ["agreed_by_id"],
                 },
                 {
                     name: "requisition_status_idx",
-                    fields: ["requisition_status"], // Use snake_case
+                    fields: ["requisition_status"],
+                },
+                {
+                    name: "approval_status_idx",
+                    fields: ["approval_status"],
                 },
                 {
                     name: "requested_date_idx",
-                    fields: ["requested_date"], // Use snake_case
+                    fields: ["requested_date"],
+                },
+                {
+                    name: "expected_joining_date_idx",
+                    fields: ["expected_joining_date"],
                 },
             ],
-            hooks: {
-                beforeCreate: async (requisition, options) => {
-                    // Auto-generate requestId if not provided
-                    if (!requisition.requestId) {
-                        const year = new Date()
-                            .getFullYear()
-                            .toString()
-                            .slice(-2);
-                        const month = String(
-                            new Date().getMonth() + 1
-                        ).padStart(2, "0");
-
-                        // Get the next sequence number
-                        const lastReq = await ManPowerRequisitionModel.findOne({
-                            where: {
-                                requestId: {
-                                    [sequelize.Sequelize.Op
-                                        .like]: `req-${year}${month}-%`,
-                                },
-                            },
-                            order: [["requestId", "DESC"]],
-                        });
-
-                        let sequence = "0001";
-                        if (lastReq) {
-                            const lastSequence = parseInt(
-                                lastReq.requestId.split("-")[2]
-                            );
-                            sequence = String(lastSequence + 1).padStart(
-                                4,
-                                "0"
-                            );
-                        }
-
-                        requisition.requestId = `req-${year}${month}-${sequence}`;
-                    }
-                },
-                beforeUpdate: (requisition, options) => {
-                    // Update status dates automatically
-                    if (requisition.changed("approvalStatus")) {
-                        if (requisition.approvalStatus === "approved") {
-                            requisition.approvedDate = new Date();
-                        }
-                    }
-
-                    if (requisition.changed("requisitionStatus")) {
-                        if (requisition.requisitionStatus === "completed") {
-                            requisition.requestCompletedDate = new Date();
-                        }
-                    }
-                },
-            },
-            validate: {
-                // Model-level validations
-                statusConsistency() {
-                    if (
-                        this.requisitionStatus === "completed" &&
-                        this.approvalStatus !== "approved"
-                    ) {
-                        throw new Error(
-                            "Requisition cannot be completed without approval"
-                        );
-                    }
-                },
-            },
         }
     );
 
-    // Associations
-    ManPowerRequisitionModel.associate = (models) => {
-        // TODO: Add CompanyStructure model and uncomment foreign key constraints for department
-        // Department (ACTIVE ASSOCIATION)
-        // ManPowerRequisitionModel.belongsTo(models.CompanyStructure, {
-        //     foreignKey: "requirementForDepartment",
-        //     as: "department",
-        //     targetKey: "id", // Explicitly specify the target key (UUID)
-        // });
-        // TODO: Uncomment when Employee model is created
-        // // Requester
-        // ManPowerRequisitionModel.belongsTo(models.Employee, {
-        //     foreignKey: "requestedBy",
-        //     as: "requester",
-        // });
-        // TODO: Uncomment when Designation model is created
-        // // Designation
-        // ManPowerRequisitionModel.belongsTo(models.Designation, {
-        //     foreignKey: "requirementForDesignation",
-        //     as: "designation",
-        // });
-        // TODO: Uncomment when Employee model is created
-        // // Approval flow
-        // ManPowerRequisitionModel.belongsTo(models.Employee, {
-        //     foreignKey: "agreedBy",
-        //     as: "agreementPerson",
-        // });
-        // ManPowerRequisitionModel.belongsTo(models.Employee, {
-        //     foreignKey: "approvedBy",
-        //     as: "approver",
-        // });
-        // ManPowerRequisitionModel.belongsTo(models.Employee, {
-        //     foreignKey: "onHoldBy",
-        //     as: "holdPerson",
-        // });
-        // ManPowerRequisitionModel.belongsTo(models.Employee, {
-        //     foreignKey: "lastChangedBy",
-        //     as: "lastChanger",
-        // });
+    // Define associations
+    ManPowerRequisition.associate = (models) => {
+        // Department association
+        if (models.CompanyStructure) {
+            ManPowerRequisition.belongsTo(models.CompanyStructure, {
+                foreignKey: "requirement_for_department_id",
+                as: "department",
+                constraints: false, // Disable until CompanyStructure table is created
+            });
+        }
+
+        // Designation association
+        if (models.Designation) {
+            ManPowerRequisition.belongsTo(models.Designation, {
+                foreignKey: "requirement_for_designation_id",
+                as: "designation",
+                constraints: false, // Disable until Designation table is created
+            });
+        }
+
+        // Employee associations
+        if (models.Employee) {
+            ManPowerRequisition.belongsTo(models.Employee, {
+                foreignKey: "requested_by_id",
+                as: "requested_by",
+                constraints: false, // Disable until Employee table is created
+            });
+
+            ManPowerRequisition.belongsTo(models.Employee, {
+                foreignKey: "agreed_by_id",
+                as: "agreed_by",
+                constraints: false, // Disable until Employee table is created
+            });
+        }
+
+        // Management association
+        if (models.Management) {
+            ManPowerRequisition.belongsTo(models.Management, {
+                foreignKey: "approved_by_id",
+                as: "approved_by",
+                constraints: false, // Disable until Management table is created
+            });
+        }
     };
 
-    return ManPowerRequisitionModel;
+    return ManPowerRequisition;
 };

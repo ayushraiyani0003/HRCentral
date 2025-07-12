@@ -1,564 +1,935 @@
-/**
- * ManPowerRequisition Service
- * Handles all business logic for manpower requisition operations
- */
-
+// =================== services/ManPowerRequisition.service.js ===================
 const { Op } = require("sequelize");
-const { ManPowerRequisition } = require("../../models"); // Adjust path as needed
+const db = require("../../models");
+const ManPowerRequisition = db.ManPowerRequisition;
+const ApplicantTracking = db.ApplicantTracking;
+const CompanyStructure = db.CompanyStructure;
+const Designation = db.Designation;
+const Employee = db.Employee;
+const Management = db.Management;
 
 class ManPowerRequisitionService {
-    constructor() {
-        this.model = db.ManPowerRequisition;
-    }
-
     /**
      * Create a new manpower requisition
      * @param {Object} requisitionData - The requisition data
-     * @param {number} userId - ID of the user creating the requisition
-     * @returns {Promise<Object>} Created requisition
+     * @returns {Promise<Object>} - Created requisition with associations
      */
-    async createRequisition(requisitionData, userId) {
+    async createRequisition(requisitionData) {
         try {
-            const requisition = await this.model.create({
-                ...requisitionData,
-                requestedBy: userId,
-                lastChangedBy: userId,
-            });
-
-            return {
-                success: true,
-                data: requisition,
-                message: "Manpower requisition created successfully",
-            };
+            const requisition = await ManPowerRequisition.create(
+                requisitionData
+            );
+            return await this.getRequisitionById(requisition.id);
         } catch (error) {
-            throw new Error(`Failed to create requisition: ${error.message}`);
+            throw new Error(
+                `Error creating manpower requisition: ${error.message}`
+            );
         }
     }
 
     /**
-     * Get all requisitions with filtering and pagination
+     * Get all manpower requisitions with optional filtering and pagination
      * @param {Object} options - Query options
-     * @param {number} options.page - Page number
-     * @param {number} options.limit - Items per page
-     * @param {Object} options.filters - Filter criteria
-     * @returns {Promise<Object>} Paginated requisitions
+     * @returns {Promise<Object>} - Paginated requisitions with associations
      */
     async getAllRequisitions(options = {}) {
         try {
             const {
                 page = 1,
                 limit = 10,
-                filters = {},
-                sortBy = "requestedDate",
-                sortOrder = "DESC",
+                search = "",
+                department_id,
+                designation_id,
+                requisition_status,
+                approval_status,
+                requirement_category,
+                requirement_type,
+                requested_by_id,
+                approved_by_id,
+                sort_by = "requested_date",
+                sort_order = "DESC",
             } = options;
 
             const offset = (page - 1) * limit;
-            const where = this._buildWhereClause(filters);
+            const whereClause = {};
 
-            const { rows: requisitions, count: total } =
-                await this.model.findAndCountAll({
-                    where,
-                    limit: parseInt(limit),
-                    offset: parseInt(offset),
-                    order: [[sortBy, sortOrder]],
-                    include: [
-                        // TODO: Uncomment when models are available
-                        // {
-                        //     model: db.Employee,
-                        //     as: 'requester',
-                        //     attributes: ['id', 'firstName', 'lastName', 'email']
-                        // },
-                        // {
-                        //     model: db.CompanyStructure,
-                        //     as: 'department',
-                        //     attributes: ['id', 'name', 'code']
-                        // },
-                        // {
-                        //     model: db.Designation,
-                        //     as: 'designation',
-                        //     attributes: ['id', 'title', 'code']
-                        // }
-                    ],
-                });
+            // Add search functionality
+            if (search) {
+                whereClause[Op.or] = [
+                    { job_description: { [Op.iLike]: `%${search}%` } },
+                    { "$department.name$": { [Op.iLike]: `%${search}%` } },
+                    { "$designation.name$": { [Op.iLike]: `%${search}%` } },
+                ];
+            }
+
+            // Add filters
+            if (department_id)
+                whereClause.requirement_for_department_id = department_id;
+            if (designation_id)
+                whereClause.requirement_for_designation_id = designation_id;
+            if (requisition_status)
+                whereClause.requisition_status = requisition_status;
+            if (approval_status) whereClause.approval_status = approval_status;
+            if (requirement_category)
+                whereClause.requirement_category = requirement_category;
+            if (requirement_type)
+                whereClause.requirement_type = requirement_type;
+            if (requested_by_id) whereClause.requested_by_id = requested_by_id;
+            if (approved_by_id) whereClause.approved_by_id = approved_by_id;
+
+            const { count, rows } = await ManPowerRequisition.findAndCountAll({
+                where: whereClause,
+                include: this._getIncludeOptions(),
+                limit: parseInt(limit),
+                offset: parseInt(offset),
+                order: [[sort_by, sort_order.toUpperCase()]],
+                distinct: true,
+            });
 
             return {
-                success: true,
-                data: {
-                    requisitions,
-                    pagination: {
-                        currentPage: parseInt(page),
-                        totalPages: Math.ceil(total / limit),
-                        totalItems: total,
-                        itemsPerPage: parseInt(limit),
-                    },
+                requisitions: rows,
+                pagination: {
+                    current_page: parseInt(page),
+                    per_page: parseInt(limit),
+                    total: count,
+                    total_pages: Math.ceil(count / limit),
+                    has_next: page < Math.ceil(count / limit),
+                    has_prev: page > 1,
                 },
             };
         } catch (error) {
-            throw new Error(`Failed to fetch requisitions: ${error.message}`);
+            throw new Error(
+                `Error fetching manpower requisitions: ${error.message}`
+            );
         }
     }
 
     /**
-     * Get requisition by ID
-     * @param {number} id - Requisition ID
-     * @returns {Promise<Object>} Requisition details
+     * Get a specific manpower requisition by ID
+     * @param {string} id - Requisition ID
+     * @returns {Promise<Object>} - Requisition with associations
      */
     async getRequisitionById(id) {
         try {
-            const requisition = await this.model.findByPk(id, {
-                include: [
-                    // TODO: Uncomment when models are available
-                    // {
-                    //     model: db.Employee,
-                    //     as: 'requester',
-                    //     attributes: ['id', 'firstName', 'lastName', 'email']
-                    // },
-                    // {
-                    //     model: db.CompanyStructure,
-                    //     as: 'department',
-                    //     attributes: ['id', 'name', 'code']
-                    // },
-                    // {
-                    //     model: db.Designation,
-                    //     as: 'designation',
-                    //     attributes: ['id', 'title', 'code']
-                    // },
-                    // {
-                    //     model: db.Employee,
-                    //     as: 'approver',
-                    //     attributes: ['id', 'firstName', 'lastName']
-                    // }
-                ],
+            const requisition = await ManPowerRequisition.findByPk(id, {
+                include: this._getIncludeOptions(),
             });
 
             if (!requisition) {
-                return {
-                    success: false,
-                    message: "Requisition not found",
-                };
+                throw new Error("Manpower requisition not found");
             }
 
-            return {
-                success: true,
-                data: requisition,
-            };
+            return requisition;
         } catch (error) {
-            throw new Error(`Failed to fetch requisition: ${error.message}`);
+            throw new Error(
+                `Error fetching manpower requisition: ${error.message}`
+            );
         }
     }
 
     /**
-     * Get requisition by request ID
-     * @param {string} requestId - Request ID (e.g., req-25-06-0001)
-     * @returns {Promise<Object>} Requisition details
-     */
-    async getRequisitionByRequestId(requestId) {
-        try {
-            const requisition = await this.model.findOne({
-                where: { requestId },
-                include: [
-                    // TODO: Add includes when models are available
-                ],
-            });
-
-            if (!requisition) {
-                return {
-                    success: false,
-                    message: "Requisition not found",
-                };
-            }
-
-            return {
-                success: true,
-                data: requisition,
-            };
-        } catch (error) {
-            throw new Error(`Failed to fetch requisition: ${error.message}`);
-        }
-    }
-
-    /**
-     * Update requisition
-     * @param {number} id - Requisition ID
+     * Update a manpower requisition
+     * @param {string} id - Requisition ID
      * @param {Object} updateData - Data to update
-     * @param {number} userId - ID of user making the update
-     * @returns {Promise<Object>} Updated requisition
+     * @returns {Promise<Object>} - Updated requisition with associations
      */
-    async updateRequisition(id, updateData, userId) {
+    async updateRequisition(id, updateData) {
         try {
-            const requisition = await this.model.findByPk(id);
-
+            const requisition = await ManPowerRequisition.findByPk(id);
             if (!requisition) {
-                return {
-                    success: false,
-                    message: "Requisition not found",
-                };
+                throw new Error("Manpower requisition not found");
             }
 
-            await requisition.update({
-                ...updateData,
-                lastChangedBy: userId,
-            });
-
-            return {
-                success: true,
-                data: requisition,
-                message: "Requisition updated successfully",
-            };
+            await requisition.update(updateData);
+            return await this.getRequisitionById(id);
         } catch (error) {
-            throw new Error(`Failed to update requisition: ${error.message}`);
+            throw new Error(
+                `Error updating manpower requisition: ${error.message}`
+            );
         }
     }
 
     /**
-     * Approve requisition
-     * @param {number} id - Requisition ID
-     * @param {number} approverId - ID of approver
-     * @returns {Promise<Object>} Updated requisition
+     * Delete a manpower requisition
+     * @param {string} id - Requisition ID
+     * @returns {Promise<boolean>} - Success status
      */
-    async approveRequisition(id, approverId) {
+    async deleteRequisition(id) {
         try {
-            const requisition = await this.model.findByPk(id);
-
+            const requisition = await ManPowerRequisition.findByPk(id);
             if (!requisition) {
-                return {
-                    success: false,
-                    message: "Requisition not found",
-                };
+                throw new Error("Manpower requisition not found");
             }
 
-            if (requisition.approvalStatus === "approved") {
-                return {
-                    success: false,
-                    message: "Requisition is already approved",
-                };
-            }
-
-            await requisition.update({
-                approvalStatus: "approved",
-                approvedBy: approverId,
-                approvedDate: new Date(),
-                requisitionStatus: "in_process",
-                lastChangedBy: approverId,
-            });
-
-            return {
-                success: true,
-                data: requisition,
-                message: "Requisition approved successfully",
-            };
-        } catch (error) {
-            throw new Error(`Failed to approve requisition: ${error.message}`);
-        }
-    }
-
-    /**
-     * Reject requisition
-     * @param {number} id - Requisition ID
-     * @param {number} rejectorId - ID of person rejecting
-     * @returns {Promise<Object>} Updated requisition
-     */
-    async rejectRequisition(id, rejectorId) {
-        try {
-            const requisition = await this.model.findByPk(id);
-
-            if (!requisition) {
-                return {
-                    success: false,
-                    message: "Requisition not found",
-                };
-            }
-
-            await requisition.update({
-                approvalStatus: "rejected",
-                requisitionStatus: "cancelled",
-                lastChangedBy: rejectorId,
-            });
-
-            return {
-                success: true,
-                data: requisition,
-                message: "Requisition rejected successfully",
-            };
-        } catch (error) {
-            throw new Error(`Failed to reject requisition: ${error.message}`);
-        }
-    }
-
-    /**
-     * Put requisition on hold
-     * @param {number} id - Requisition ID
-     * @param {number} holderId - ID of person putting on hold
-     * @returns {Promise<Object>} Updated requisition
-     */
-    async holdRequisition(id, holderId) {
-        try {
-            const requisition = await this.model.findByPk(id);
-
-            if (!requisition) {
-                return {
-                    success: false,
-                    message: "Requisition not found",
-                };
-            }
-
-            await requisition.update({
-                approvalStatus: "on_hold",
-                requisitionStatus: "on_hold",
-                onHoldBy: holderId,
-                lastChangedBy: holderId,
-            });
-
-            return {
-                success: true,
-                data: requisition,
-                message: "Requisition put on hold successfully",
-            };
-        } catch (error) {
-            throw new Error(`Failed to hold requisition: ${error.message}`);
-        }
-    }
-
-    /**
-     * Complete requisition
-     * @param {number} id - Requisition ID
-     * @param {Object} completionData - Completion data including dateOfJoining
-     * @param {number} userId - ID of user completing
-     * @returns {Promise<Object>} Updated requisition
-     */
-    async completeRequisition(id, completionData, userId) {
-        try {
-            const requisition = await this.model.findByPk(id);
-
-            if (!requisition) {
-                return {
-                    success: false,
-                    message: "Requisition not found",
-                };
-            }
-
-            if (requisition.approvalStatus !== "approved") {
-                return {
-                    success: false,
-                    message: "Requisition must be approved before completion",
-                };
-            }
-
-            await requisition.update({
-                requisitionStatus: "completed",
-                requestCompletedDate: new Date(),
-                dateOfJoining: completionData.dateOfJoining,
-                lastChangedBy: userId,
-            });
-
-            return {
-                success: true,
-                data: requisition,
-                message: "Requisition completed successfully",
-            };
-        } catch (error) {
-            throw new Error(`Failed to complete requisition: ${error.message}`);
-        }
-    }
-
-    /**
-     * Soft delete requisition
-     * @param {number} id - Requisition ID
-     * @param {number} userId - ID of user deleting
-     * @returns {Promise<Object>} Result
-     */
-    async deleteRequisition(id, userId) {
-        try {
-            const requisition = await this.model.findByPk(id);
-
-            if (!requisition) {
-                return {
-                    success: false,
-                    message: "Requisition not found",
-                };
-            }
-
-            await requisition.update({
-                isActive: false,
-                lastChangedBy: userId,
-            });
-
-            // Also perform paranoid delete
             await requisition.destroy();
-
-            return {
-                success: true,
-                message: "Requisition deleted successfully",
-            };
+            return true;
         } catch (error) {
-            throw new Error(`Failed to delete requisition: ${error.message}`);
+            throw new Error(
+                `Error deleting manpower requisition: ${error.message}`
+            );
         }
     }
 
     /**
-     * Get dashboard statistics
-     * @returns {Promise<Object>} Dashboard stats
+     * Update requisition status
+     * @param {string} id - Requisition ID
+     * @param {string} status - New status
+     * @returns {Promise<Object>} - Updated requisition
      */
-    async getDashboardStats() {
+    async updateRequisitionStatus(id, status) {
         try {
-            const [
-                totalRequisitions,
-                pendingApproval,
-                approved,
-                inProcess,
-                completed,
-                onHold,
-                rejected,
-            ] = await Promise.all([
-                this.model.count({ where: { isActive: true } }),
-                this.model.count({
-                    where: { approvalStatus: "pending", isActive: true },
-                }),
-                this.model.count({
-                    where: { approvalStatus: "approved", isActive: true },
-                }),
-                this.model.count({
-                    where: { requisitionStatus: "in_process", isActive: true },
-                }),
-                this.model.count({
-                    where: { requisitionStatus: "completed", isActive: true },
-                }),
-                this.model.count({
-                    where: { requisitionStatus: "on_hold", isActive: true },
-                }),
-                this.model.count({
-                    where: { approvalStatus: "rejected", isActive: true },
-                }),
-            ]);
+            const validStatuses = [
+                "pending",
+                "InProcess",
+                "OnHold",
+                "completed",
+                "cancelled",
+            ];
+            if (!validStatuses.includes(status)) {
+                throw new Error("Invalid requisition status");
+            }
 
-            return {
-                success: true,
-                data: {
-                    totalRequisitions,
-                    pendingApproval,
-                    approved,
-                    inProcess,
-                    completed,
-                    onHold,
-                    rejected,
-                },
-            };
+            return await this.updateRequisition(id, {
+                requisition_status: status,
+            });
         } catch (error) {
-            throw new Error(`Failed to get dashboard stats: ${error.message}`);
+            throw new Error(
+                `Error updating requisition status: ${error.message}`
+            );
+        }
+    }
+
+    /**
+     * Update approval status
+     * @param {string} id - Requisition ID
+     * @param {string} status - New approval status
+     * @param {string} approved_by_id - ID of approver
+     * @returns {Promise<Object>} - Updated requisition
+     */
+    async updateApprovalStatus(id, status, approved_by_id = null) {
+        try {
+            const validStatuses = ["selected", "pending", "rejected", "OnHold"];
+            if (!validStatuses.includes(status)) {
+                throw new Error("Invalid approval status");
+            }
+
+            const updateData = {
+                approval_status: status,
+                approved_date: status === "selected" ? new Date() : null,
+            };
+
+            if (approved_by_id) {
+                updateData.approved_by_id = approved_by_id;
+            }
+
+            return await this.updateRequisition(id, updateData);
+        } catch (error) {
+            throw new Error(`Error updating approval status: ${error.message}`);
         }
     }
 
     /**
      * Get requisitions by department
-     * @param {string} departmentId - Department UUID
-     * @returns {Promise<Object>} Department requisitions
+     * @param {string} departmentId - Department ID
+     * @param {Object} options - Query options
+     * @returns {Promise<Object>} - Filtered requisitions
      */
-    async getRequisitionsByDepartment(departmentId) {
+    async getRequisitionsByDepartment(departmentId, options = {}) {
         try {
-            const requisitions = await this.model.findAll({
-                where: {
-                    requirementForDepartment: departmentId,
-                    isActive: true,
-                },
-                order: [["requestedDate", "DESC"]],
+            return await this.getAllRequisitions({
+                ...options,
+                department_id: departmentId,
             });
-
-            return {
-                success: true,
-                data: requisitions,
-            };
         } catch (error) {
             throw new Error(
-                `Failed to fetch department requisitions: ${error.message}`
+                `Error fetching requisitions by department: ${error.message}`
             );
         }
     }
 
     /**
-     * Get requisitions by user
-     * @param {number} userId - User ID
-     * @returns {Promise<Object>} User's requisitions
+     * Get requisitions by designation
+     * @param {string} designationId - Designation ID
+     * @param {Object} options - Query options
+     * @returns {Promise<Object>} - Filtered requisitions
      */
-    async getRequisitionsByUser(userId) {
+    async getRequisitionsByDesignation(designationId, options = {}) {
         try {
-            const requisitions = await this.model.findAll({
-                where: {
-                    requestedBy: userId,
-                    isActive: true,
-                },
-                order: [["requestedDate", "DESC"]],
+            return await this.getAllRequisitions({
+                ...options,
+                designation_id: designationId,
             });
-
-            return {
-                success: true,
-                data: requisitions,
-            };
         } catch (error) {
             throw new Error(
-                `Failed to fetch user requisitions: ${error.message}`
+                `Error fetching requisitions by designation: ${error.message}`
             );
         }
     }
 
     /**
-     * Build where clause for filtering
-     * @param {Object} filters - Filter object
-     * @returns {Object} Sequelize where clause
+     * Get requisitions by requester
+     * @param {string} requesterId - Requester ID
+     * @param {Object} options - Query options
+     * @returns {Promise<Object>} - Filtered requisitions
      */
-    _buildWhereClause(filters) {
-        const where = { isActive: true };
-
-        if (filters.approvalStatus) {
-            where.approvalStatus = filters.approvalStatus;
+    async getRequisitionsByRequester(requesterId, options = {}) {
+        try {
+            return await this.getAllRequisitions({
+                ...options,
+                requested_by_id: requesterId,
+            });
+        } catch (error) {
+            throw new Error(
+                `Error fetching requisitions by requester: ${error.message}`
+            );
         }
+    }
 
-        if (filters.requisitionStatus) {
-            where.requisitionStatus = filters.requisitionStatus;
+    /**
+     * Get pending requisitions
+     * @param {Object} options - Query options
+     * @returns {Promise<Object>} - Pending requisitions
+     */
+    async getPendingRequisitions(options = {}) {
+        try {
+            return await this.getAllRequisitions({
+                ...options,
+                requisition_status: "pending",
+            });
+        } catch (error) {
+            throw new Error(
+                `Error fetching pending requisitions: ${error.message}`
+            );
         }
+    }
 
-        if (filters.requirementForDepartment) {
-            where.requirementForDepartment = filters.requirementForDepartment;
+    /**
+     * Get requisitions requiring approval
+     * @param {Object} options - Query options
+     * @returns {Promise<Object>} - Requisitions needing approval
+     */
+    async getRequisitionsForApproval(options = {}) {
+        try {
+            return await this.getAllRequisitions({
+                ...options,
+                approval_status: "pending",
+            });
+        } catch (error) {
+            throw new Error(
+                `Error fetching requisitions for approval: ${error.message}`
+            );
         }
+    }
 
-        if (filters.requirementForDesignation) {
-            where.requirementForDesignation = filters.requirementForDesignation;
-        }
+    /**
+     * Get requisition statistics
+     * @returns {Promise<Object>} - Statistics data
+     */
+    async getRequisitionStatistics() {
+        try {
+            const stats = await ManPowerRequisition.findAll({
+                attributes: [
+                    "requisition_status",
+                    "approval_status",
+                    "requirement_category",
+                    "requirement_type",
+                    [db.sequelize.fn("COUNT", db.sequelize.col("id")), "count"],
+                ],
+                group: [
+                    "requisition_status",
+                    "approval_status",
+                    "requirement_category",
+                    "requirement_type",
+                ],
+                raw: true,
+            });
 
-        if (filters.requirementType) {
-            where.requirementType = filters.requirementType;
-        }
-
-        if (filters.requirementForCategory) {
-            where.requirementForCategory = filters.requirementForCategory;
-        }
-
-        if (filters.requestedBy) {
-            where.requestedBy = filters.requestedBy;
-        }
-
-        if (filters.dateFrom && filters.dateTo) {
-            where.requestedDate = {
-                [Op.between]: [filters.dateFrom, filters.dateTo],
+            // Transform the data for better readability
+            const transformedStats = {
+                by_requisition_status: {},
+                by_approval_status: {},
+                by_requirement_category: {},
+                by_requirement_type: {},
+                total_requisitions: 0,
             };
-        } else if (filters.dateFrom) {
-            where.requestedDate = {
-                [Op.gte]: filters.dateFrom,
+
+            stats.forEach((stat) => {
+                const count = parseInt(stat.count);
+                transformedStats.total_requisitions += count;
+
+                if (
+                    !transformedStats.by_requisition_status[
+                        stat.requisition_status
+                    ]
+                ) {
+                    transformedStats.by_requisition_status[
+                        stat.requisition_status
+                    ] = 0;
+                }
+                transformedStats.by_requisition_status[
+                    stat.requisition_status
+                ] += count;
+
+                if (
+                    !transformedStats.by_approval_status[stat.approval_status]
+                ) {
+                    transformedStats.by_approval_status[
+                        stat.approval_status
+                    ] = 0;
+                }
+                transformedStats.by_approval_status[stat.approval_status] +=
+                    count;
+
+                if (
+                    !transformedStats.by_requirement_category[
+                        stat.requirement_category
+                    ]
+                ) {
+                    transformedStats.by_requirement_category[
+                        stat.requirement_category
+                    ] = 0;
+                }
+                transformedStats.by_requirement_category[
+                    stat.requirement_category
+                ] += count;
+
+                if (
+                    !transformedStats.by_requirement_type[stat.requirement_type]
+                ) {
+                    transformedStats.by_requirement_type[
+                        stat.requirement_type
+                    ] = 0;
+                }
+                transformedStats.by_requirement_type[stat.requirement_type] +=
+                    count;
+            });
+
+            return transformedStats;
+        } catch (error) {
+            throw new Error(
+                `Error fetching requisition statistics: ${error.message}`
+            );
+        }
+    }
+
+    /**
+     * Bulk update requisitions
+     * @param {Array} requisitionIds - Array of requisition IDs
+     * @param {Object} updateData - Data to update
+     * @returns {Promise<Array>} - Updated requisitions
+     */
+    async bulkUpdateRequisitions(requisitionIds, updateData) {
+        try {
+            await ManPowerRequisition.update(updateData, {
+                where: {
+                    id: { [Op.in]: requisitionIds },
+                },
+            });
+
+            // Return updated requisitions
+            return await ManPowerRequisition.findAll({
+                where: {
+                    id: { [Op.in]: requisitionIds },
+                },
+                include: this._getIncludeOptions(),
+            });
+        } catch (error) {
+            throw new Error(
+                `Error bulk updating requisitions: ${error.message}`
+            );
+        }
+    }
+
+    /**
+     * Get overdue requisitions (past expected joining date)
+     * @param {Object} options - Query options
+     * @returns {Promise<Object>} - Overdue requisitions
+     */
+    async getOverdueRequisitions(options = {}) {
+        try {
+            const whereClause = {
+                expected_joining_date: {
+                    [Op.lt]: new Date(),
+                },
+                requisition_status: {
+                    [Op.notIn]: ["completed", "cancelled"],
+                },
             };
-        } else if (filters.dateTo) {
-            where.requestedDate = {
-                [Op.lte]: filters.dateTo,
+
+            const { page = 1, limit = 10 } = options;
+            const offset = (page - 1) * limit;
+
+            const { count, rows } = await ManPowerRequisition.findAndCountAll({
+                where: whereClause,
+                include: this._getIncludeOptions(),
+                limit: parseInt(limit),
+                offset: parseInt(offset),
+                order: [["expected_joining_date", "ASC"]],
+                distinct: true,
+            });
+
+            return {
+                overdue_requisitions: rows,
+                pagination: {
+                    current_page: parseInt(page),
+                    per_page: parseInt(limit),
+                    total: count,
+                    total_pages: Math.ceil(count / limit),
+                },
             };
+        } catch (error) {
+            throw new Error(
+                `Error fetching overdue requisitions: ${error.message}`
+            );
+        }
+    }
+
+    /**
+     * Process applicant selection and update position count
+     * @param {string} applicantTrackingId - ApplicantTracking ID
+     * @param {string} selection - "accepted" or "Not_Interested"
+     * @returns {Promise<Object>} - Updated requisition with position changes
+     */
+    async processApplicantSelection(applicantTrackingId, selection) {
+        const transaction = await db.sequelize.transaction();
+
+        try {
+            // Get applicant tracking details
+            const applicant = await ApplicantTracking.findByPk(
+                applicantTrackingId,
+                {
+                    attributes: [
+                        "id",
+                        "applicant_department_id",
+                        "applicant_designation_id",
+                        "applicant_by_selection",
+                        "manpower_requisition_id",
+                    ],
+                    transaction,
+                }
+            );
+
+            if (!applicant) {
+                throw new Error("Applicant tracking record not found");
+            }
+
+            // Validate selection values
+            const validSelections = ["accepted", "Not_Interested"];
+            if (!validSelections.includes(selection)) {
+                throw new Error(
+                    "Invalid selection. Must be 'accepted' or 'Not_Interested'"
+                );
+            }
+
+            // Get the related manpower requisition
+            const requisition = await ManPowerRequisition.findByPk(
+                applicant.manpower_requisition_id,
+                { transaction }
+            );
+
+            if (!requisition) {
+                throw new Error("Associated manpower requisition not found");
+            }
+
+            // Store previous selection for comparison
+            const previousSelection = applicant.applicant_by_selection;
+
+            // Update applicant selection
+            await applicant.update(
+                { applicant_by_selection: selection },
+                { transaction }
+            );
+
+            // Apply position logic based on business rules
+            await this._applyPositionLogic(
+                requisition,
+                applicant,
+                selection,
+                previousSelection,
+                transaction
+            );
+
+            await transaction.commit();
+
+            // Return updated requisition with associations
+            return await this.getRequisitionById(requisition.id);
+        } catch (error) {
+            await transaction.rollback();
+            throw new Error(
+                `Error processing applicant selection: ${error.message}`
+            );
+        }
+    }
+
+    /**
+     * Apply position decrease/increase logic based on business rules
+     * @param {Object} requisition - ManPowerRequisition instance
+     * @param {Object} applicant - ApplicantTracking instance
+     * @param {string} newSelection - New selection value
+     * @param {string} previousSelection - Previous selection value
+     * @param {Object} transaction - Database transaction
+     * @returns {Promise<void>}
+     */
+    async _applyPositionLogic(
+        requisition,
+        applicant,
+        newSelection,
+        previousSelection,
+        transaction
+    ) {
+        try {
+            // Position Decrease Logic
+            if (
+                this._shouldDecreasePosition(
+                    requisition,
+                    applicant,
+                    newSelection
+                )
+            ) {
+                await this._decreasePosition(requisition, transaction);
+            }
+
+            // Position Increase Logic
+            if (
+                this._shouldIncreasePosition(
+                    requisition,
+                    applicant,
+                    newSelection,
+                    previousSelection
+                )
+            ) {
+                await this._increasePosition(requisition, transaction);
+            }
+        } catch (error) {
+            throw new Error(`Error applying position logic: ${error.message}`);
+        }
+    }
+
+    /**
+     * Check if position should be decreased
+     * @param {Object} requisition - ManPowerRequisition instance
+     * @param {Object} applicant - ApplicantTracking instance
+     * @param {string} newSelection - New selection value
+     * @returns {boolean}
+     */
+    _shouldDecreasePosition(requisition, applicant, newSelection) {
+        return (
+            requisition.number_of_positions > 0 &&
+            requisition.requirement_for_department_id ===
+                applicant.applicant_department_id &&
+            requisition.requirement_for_designation_id ===
+                applicant.applicant_designation_id &&
+            requisition.approval_status === "selected" &&
+            newSelection === "accepted"
+        );
+    }
+
+    /**
+     * Check if position should be increased
+     * @param {Object} requisition - ManPowerRequisition instance
+     * @param {Object} applicant - ApplicantTracking instance
+     * @param {string} newSelection - New selection value
+     * @param {string} previousSelection - Previous selection value
+     * @returns {boolean}
+     */
+    _shouldIncreasePosition(
+        requisition,
+        applicant,
+        newSelection,
+        previousSelection
+    ) {
+        return (
+            requisition.requirement_for_department_id ===
+                applicant.applicant_department_id &&
+            requisition.requirement_for_designation_id ===
+                applicant.applicant_designation_id &&
+            requisition.approval_status === "selected" &&
+            previousSelection === "accepted" &&
+            newSelection === "Not_Interested"
+        );
+    }
+
+    /**
+     * Decrease position count
+     * @param {Object} requisition - ManPowerRequisition instance
+     * @param {Object} transaction - Database transaction
+     * @returns {Promise<void>}
+     */
+    async _decreasePosition(requisition, transaction) {
+        const newPositionCount = requisition.number_of_positions - 1;
+        await requisition.update(
+            { number_of_positions: newPositionCount },
+            { transaction }
+        );
+    }
+
+    /**
+     * Increase position count
+     * @param {Object} requisition - ManPowerRequisition instance
+     * @param {Object} transaction - Database transaction
+     * @returns {Promise<void>}
+     */
+    async _increasePosition(requisition, transaction) {
+        const newPositionCount = requisition.number_of_positions + 1;
+        await requisition.update(
+            { number_of_positions: newPositionCount },
+            { transaction }
+        );
+    }
+
+    /**
+     * Get applicant tracking data for a requisition
+     * @param {string} requisitionId - Requisition ID
+     * @param {Object} options - Query options
+     * @returns {Promise<Object>} - Applicant tracking data with pagination
+     */
+    async getApplicantTrackingForRequisition(requisitionId, options = {}) {
+        try {
+            const { page = 1, limit = 10, applicant_by_selection } = options;
+            const offset = (page - 1) * limit;
+
+            const whereClause = { manpower_requisition_id: requisitionId };
+
+            if (applicant_by_selection) {
+                whereClause.applicant_by_selection = applicant_by_selection;
+            }
+
+            const { count, rows } = await ApplicantTracking.findAndCountAll({
+                where: whereClause,
+                include: [
+                    {
+                        model: CompanyStructure,
+                        as: "applicant_department",
+                        attributes: ["id", "name", "code"],
+                        required: false,
+                    },
+                    {
+                        model: Designation,
+                        as: "applicant_designation",
+                        attributes: ["id", "name", "code"],
+                        required: false,
+                    },
+                ],
+                limit: parseInt(limit),
+                offset: parseInt(offset),
+                order: [["created_at", "DESC"]],
+                distinct: true,
+            });
+
+            return {
+                applicants: rows,
+                pagination: {
+                    current_page: parseInt(page),
+                    per_page: parseInt(limit),
+                    total: count,
+                    total_pages: Math.ceil(count / limit),
+                },
+            };
+        } catch (error) {
+            throw new Error(
+                `Error fetching applicant tracking: ${error.message}`
+            );
+        }
+    }
+
+    /**
+     * Get requisition with position tracking summary
+     * @param {string} requisitionId - Requisition ID
+     * @returns {Promise<Object>} - Requisition with position tracking details
+     */
+    async getRequisitionWithPositionTracking(requisitionId) {
+        try {
+            const requisition = await this.getRequisitionById(requisitionId);
+
+            // Get applicant statistics
+            const applicantStats = await ApplicantTracking.findAll({
+                where: { manpower_requisition_id: requisitionId },
+                attributes: [
+                    "applicant_by_selection",
+                    [db.sequelize.fn("COUNT", db.sequelize.col("id")), "count"],
+                ],
+                group: ["applicant_by_selection"],
+                raw: true,
+            });
+
+            const positionTracking = {
+                original_positions: requisition.number_of_positions,
+                current_positions: requisition.number_of_positions,
+                accepted_count: 0,
+                not_interested_count: 0,
+                pending_count: 0,
+                total_applicants: 0,
+            };
+
+            applicantStats.forEach((stat) => {
+                const count = parseInt(stat.count);
+                positionTracking.total_applicants += count;
+
+                switch (stat.applicant_by_selection) {
+                    case "accepted":
+                        positionTracking.accepted_count = count;
+                        break;
+                    case "Not_Interested":
+                        positionTracking.not_interested_count = count;
+                        break;
+                    default:
+                        positionTracking.pending_count = count;
+                        break;
+                }
+            });
+
+            return {
+                ...requisition.toJSON(),
+                position_tracking: positionTracking,
+            };
+        } catch (error) {
+            throw new Error(
+                `Error fetching requisition with position tracking: ${error.message}`
+            );
+        }
+    }
+
+    /**
+     * Bulk process applicant selections
+     * @param {Array} applicantSelections - Array of {applicantTrackingId, selection}
+     * @returns {Promise<Array>} - Results of each processing
+     */
+    async bulkProcessApplicantSelections(applicantSelections) {
+        const results = [];
+
+        for (const { applicantTrackingId, selection } of applicantSelections) {
+            try {
+                const result = await this.processApplicantSelection(
+                    applicantTrackingId,
+                    selection
+                );
+                results.push({
+                    applicantTrackingId,
+                    success: true,
+                    data: result,
+                });
+            } catch (error) {
+                results.push({
+                    applicantTrackingId,
+                    success: false,
+                    error: error.message,
+                });
+            }
         }
 
-        if (filters.search) {
-            where[Op.or] = [
-                { requestId: { [Op.like]: `%${filters.search}%` } },
-                { jobDescription: { [Op.like]: `%${filters.search}%` } },
-            ];
-        }
+        return results;
+    }
 
-        return where;
+    /**
+     * Get requisitions with position discrepancies
+     * @returns {Promise<Array>} - Requisitions where positions might be inconsistent
+     */
+    async getRequisitionsWithPositionDiscrepancies() {
+        try {
+            const requisitions = await ManPowerRequisition.findAll({
+                where: {
+                    approval_status: "selected",
+                    requisition_status: {
+                        [Op.notIn]: ["completed", "cancelled"],
+                    },
+                },
+                include: [
+                    {
+                        model: ApplicantTracking,
+                        as: "applicant_trackings",
+                        attributes: ["id", "applicant_by_selection"],
+                        required: false,
+                    },
+                    ...this._getIncludeOptions(),
+                ],
+            });
+
+            const discrepancies = [];
+
+            for (const requisition of requisitions) {
+                const acceptedCount =
+                    requisition.applicant_trackings?.filter(
+                        (at) => at.applicant_by_selection === "accepted"
+                    ).length || 0;
+
+                const expectedPositions =
+                    requisition.number_of_positions + acceptedCount;
+
+                if (expectedPositions !== requisition.number_of_positions) {
+                    discrepancies.push({
+                        requisition: requisition.toJSON(),
+                        accepted_applicants: acceptedCount,
+                        expected_positions: expectedPositions,
+                        current_positions: requisition.number_of_positions,
+                        discrepancy:
+                            expectedPositions - requisition.number_of_positions,
+                    });
+                }
+            }
+
+            return discrepancies;
+        } catch (error) {
+            throw new Error(
+                `Error finding position discrepancies: ${error.message}`
+            );
+        }
+    }
+
+    /**
+     * Private method to get include options for associations
+     * @returns {Array} - Include options
+     */
+    _getIncludeOptions() {
+        return [
+            {
+                model: CompanyStructure,
+                as: "department",
+                attributes: ["id", "name", "code", "type"],
+                required: false,
+            },
+            {
+                model: Designation,
+                as: "designation",
+                attributes: ["id", "name", "code", "level"],
+                required: false,
+            },
+            {
+                model: Employee,
+                as: "requested_by",
+                attributes: [
+                    "id",
+                    "first_name",
+                    "last_name",
+                    "email",
+                    "employee_code",
+                ],
+                required: false,
+            },
+            {
+                model: Employee,
+                as: "agreed_by",
+                attributes: [
+                    "id",
+                    "first_name",
+                    "last_name",
+                    "email",
+                    "employee_code",
+                ],
+                required: false,
+            },
+            {
+                model: Management,
+                as: "approved_by",
+                attributes: [
+                    "id",
+                    "first_name",
+                    "last_name",
+                    "email",
+                    "position",
+                ],
+                required: false,
+            },
+        ];
     }
 }
 

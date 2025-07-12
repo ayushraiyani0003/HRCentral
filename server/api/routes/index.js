@@ -22,7 +22,7 @@ const EducationLevelRoutes = require("./educationLevel.routes");
 const HiringSourceRoutes = require("./hiringSource.routes");
 const WorkShiftRoutes = require("./workShift.routes");
 const JobLocationRoutes = require("./jobLocation.routes");
-
+const ApplicantTrackingRoutes = require("./applicantTracking.routes");
 // Uncomment when ready to use
 // const salaryRoutes = require('./salary.routes');
 // const employeeRoutes = require('./employee.routes');
@@ -47,6 +47,7 @@ router.use("/education-level", EducationLevelRoutes);
 router.use("/hiring-source", HiringSourceRoutes);
 router.use("/work-shift", WorkShiftRoutes);
 router.use("/job-location", JobLocationRoutes);
+router.use("/applicant-tracking", ApplicantTrackingRoutes);
 
 // Uncomment when ready to use
 // router.use('/salary', salaryRoutes);
@@ -77,6 +78,7 @@ router.get("/", (req, res) => {
             hiringSource: "/api/hiring-source",
             workShift: "/api/work-shift",
             jobLocation: "/api/job-location",
+            applicantTracking: "/api/applicant-tracking",
 
             // Uncomment when ready to use
             // salary: '/api/salary',
@@ -88,3 +90,4 @@ router.get("/", (req, res) => {
 });
 
 module.exports = router;
+// todo: i add this to over network

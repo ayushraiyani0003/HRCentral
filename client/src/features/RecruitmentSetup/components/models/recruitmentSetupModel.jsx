@@ -55,14 +55,14 @@ function RecruitmentSetupModal({
             namePlaceholder:
                 "Enter experience level (e.g., Entry Level, Mid Level, Senior)",
         },
-        HiringSource: {
+        HiringSources: {
             title: "Hiring Source",
             fields: ["name"],
             nameLabel: "Hiring Source",
             namePlaceholder:
                 "Enter hiring source (e.g., Job Portal, Referral, Campus)",
         },
-        JobLocation: {
+        JobLocationsTypes: {
             title: "Job Location",
             fields: ["name"],
             nameLabel: "Location Name",
@@ -148,7 +148,17 @@ function RecruitmentSetupModal({
     }, [openAddEditModel, setupType, modelType, rowData]);
 
     const handleInputChange = (field, value) => {
-        setFormData((prev) => ({ ...prev, [field]: value }));
+        setFormData((prev) => {
+            const newFormData = { ...prev, [field]: value };
+
+            // FIXED: Synchronize name and shiftName for WorkShift
+            if (setupType === "WorkShift" && field === "shiftName") {
+                newFormData.name = value; // Keep name in sync with shiftName
+            }
+
+            return newFormData;
+        });
+
         if (errors[field]) {
             setErrors((prev) => ({ ...prev, [field]: "" }));
         }
@@ -209,10 +219,20 @@ function RecruitmentSetupModal({
                 return;
             }
 
+            // FIXED: Prepare data with synchronized name and shiftName for WorkShift
+            const submitData = { ...formData };
+            if (setupType === "WorkShift") {
+                // Ensure both name and shiftName have the same value
+                submitData.name = formData.shiftName;
+                submitData.shiftName = formData.shiftName;
+            }
+
+            console.log("Original update data:", submitData);
+
             const result =
                 modelType === "add"
-                    ? await handler({ ...formData })
-                    : await handler(rowData?.id, { ...formData });
+                    ? await handler(submitData)
+                    : await handler(rowData?.id, submitData);
 
             if (result?.success) {
                 setOpenAddEditModel(false);

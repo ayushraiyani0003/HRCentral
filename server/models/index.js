@@ -20,14 +20,16 @@ const ApplicantTracking = require("./ApplicantTracking.model");
 const ApplicantWorkHistory = require("./ApplicantWorkHistory.model");
 const RolesList = require("./RolesList.model");
 const UserList = require("./UserList.model");
-const Employee = require("./EmployeeList.model");
+const Employee = require("./Employee.model");
 const Country = require("./Country.model");
 const AssetType = require("./AssetType.model");
 const LoanType = require("./LoanType.model");
 const Language = require("./Language.model");
 const Salutation = require("./Salutation.model");
 const BankList = require("./BankList.model");
-
+const Documents = require("./Documents.model");
+const Interview = require("./Interview.model");
+const Management = require("./Management.model");
 // const EmployeeModel = require("./Employee.model"); // Add when ready
 
 // Initialize models - pass sequelize instance and DataTypes
@@ -59,7 +61,9 @@ models.LoanType = LoanType(sequelize, Sequelize.DataTypes);
 models.Language = Language(sequelize, Sequelize.DataTypes);
 models.Salutation = Salutation(sequelize, Sequelize.DataTypes);
 models.BankList = BankList(sequelize, Sequelize.DataTypes);
-
+models.Documents = Documents(sequelize, Sequelize.DataTypes);
+models.Interview = Interview(sequelize, Sequelize.DataTypes);
+models.Management = Management(sequelize, Sequelize.DataTypes);
 // models.Employee = EmployeeModel(sequelize, Sequelize.DataTypes); // Add when ready
 
 // Setup associations after all models are loaded

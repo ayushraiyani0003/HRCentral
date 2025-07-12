@@ -21,14 +21,14 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: false,
             },
             /**
-             * Foreign key reference to employee
-             * @type {number}
+             * Foreign key reference to employee (UUID)
+             * @type {string} UUID
              */
             employeeId: {
-                type: DataTypes.INTEGER,
+                type: DataTypes.UUID, // Changed from INTEGER to UUID
                 allowNull: false,
                 references: {
-                    model: "Employees", // Adjust table name as needed
+                    model: "Employees", // Make sure this matches your Employee table name
                     key: "id",
                 },
             },

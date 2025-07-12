@@ -9,47 +9,25 @@ module.exports = (sequelize, DataTypes) => {
                 primaryKey: true,
                 allowNull: false,
             },
-            applicant_id: {
-                type: DataTypes.INTEGER,
-                allowNull: false,
-                references: {
-                    model: "ApplicantTrackings",
-                    key: "id",
-                },
-                onDelete: "CASCADE",
-            },
-            education_training: {
-                type: DataTypes.STRING(200),
-                allowNull: false,
-            },
-            institution: {
-                type: DataTypes.STRING(200),
-                allowNull: false,
-            },
             degree_diploma: {
                 type: DataTypes.STRING(200),
                 allowNull: false,
             },
-            start_year: {
+            medium_of_studies: {
+                type: DataTypes.STRING(200),
+                allowNull: false,
+            },
+            year_of_passing: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
-                validate: {
-                    min: 1950,
-                    max: new Date().getFullYear(),
-                },
-            },
-            end_year: {
-                type: DataTypes.INTEGER,
-                allowNull: true,
                 validate: {
                     min: 1950,
                     max: new Date().getFullYear() + 10,
                 },
             },
-            is_current_study: {
-                type: DataTypes.BOOLEAN,
+            institution: {
+                type: DataTypes.STRING(200),
                 allowNull: false,
-                defaultValue: false,
             },
             result: {
                 type: DataTypes.STRING(50),
@@ -61,29 +39,20 @@ module.exports = (sequelize, DataTypes) => {
             },
         },
         {
-            tableName: "ApplicantEducations",
+            tableName: "ApplicantEducation",
             timestamps: true,
             underscored: true,
             indexes: [
                 {
-                    name: "applicant_id_idx",
-                    fields: ["applicant_id"],
+                    name: "year_of_passing_idx",
+                    fields: ["year_of_passing"],
                 },
                 {
-                    name: "start_year_idx",
-                    fields: ["start_year"],
+                    name: "degree_diploma_idx",
+                    fields: ["degree_diploma"],
                 },
             ],
         }
     );
-
-    ApplicantEducation.associate = (models) => {
-        // Association with ApplicantTracking model
-        ApplicantEducation.belongsTo(models.ApplicantTracking, {
-            foreignKey: "applicant_id",
-            as: "applicant",
-        });
-    };
-
     return ApplicantEducation;
 };

@@ -1,4 +1,3 @@
-// =================== services/ApplicantWorkHistoryService.js ===================
 const { ApplicantWorkHistory } = require("../../models");
 const { Op } = require("sequelize");
 
@@ -20,26 +19,8 @@ class ApplicantWorkHistoryService {
     }
 
     /**
-     * Get work history records by applicant ID
-     * @param {number} applicantId - Applicant ID
-     * @returns {Promise<Object>} Work history records
-     */
-    async getWorkHistoryByApplicantId(applicantId) {
-        try {
-            const workHistories = await ApplicantWorkHistory.findAll({
-                where: { applicant_id: applicantId },
-                order: [["start_month_year", "DESC"]],
-            });
-
-            return { success: true, data: workHistories };
-        } catch (error) {
-            return { success: false, error: error.message };
-        }
-    }
-
-    /**
      * Update work history record
-     * @param {number} id - Work history ID
+     * @param {string} id - Work History UUID
      * @param {Object} updateData - Update data
      * @returns {Promise<Object>} Updated work history record
      */
@@ -66,7 +47,7 @@ class ApplicantWorkHistoryService {
 
     /**
      * Delete work history record
-     * @param {number} id - Work history ID
+     * @param {string} id - Work History UUID
      * @returns {Promise<Object>} Delete result
      */
     async deleteWorkHistory(id) {
@@ -92,20 +73,55 @@ class ApplicantWorkHistoryService {
     }
 
     /**
-     * Get current work details for applicant
-     * @param {number} applicantId - Applicant ID
-     * @returns {Promise<Object>} Current work details
+     * Get work history record by ID
+     * @param {string} id - Work History UUID
+     * @returns {Promise<Object>} Work history record
      */
-    async getCurrentWork(applicantId) {
+    async getWorkHistoryById(id) {
         try {
-            const currentWork = await ApplicantWorkHistory.findOne({
-                where: {
-                    applicant_id: applicantId,
-                    is_current_work: true,
-                },
+            const workHistory = await ApplicantWorkHistory.findByPk(id);
+
+            if (!workHistory) {
+                return {
+                    success: false,
+                    error: "Work history record not found",
+                };
+            }
+
+            return { success: true, data: workHistory };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Get all work history records
+     * @returns {Promise<Object>} All work history records
+     */
+    async getAllWorkHistories() {
+        try {
+            const workHistories = await ApplicantWorkHistory.findAll({
+                order: [["start_month_year", "DESC"]],
             });
 
-            return { success: true, data: currentWork };
+            return { success: true, data: workHistories };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Get current work history records (where end_month_year is null)
+     * @returns {Promise<Object>} Current work history records
+     */
+    async getCurrentWorkHistories() {
+        try {
+            const workHistories = await ApplicantWorkHistory.findAll({
+                where: { end_month_year: null },
+                order: [["start_month_year", "DESC"]],
+            });
+
+            return { success: true, data: workHistories };
         } catch (error) {
             return { success: false, error: error.message };
         }

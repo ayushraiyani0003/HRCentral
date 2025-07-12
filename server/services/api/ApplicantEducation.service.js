@@ -1,4 +1,3 @@
-// =================== services/ApplicantEducationService.js ===================
 const { ApplicantEducation } = require("../../models");
 const { Op } = require("sequelize");
 
@@ -9,6 +8,8 @@ class ApplicantEducationService {
      * @returns {Promise<Object>} Created education record
      */
     async addEducation(educationData) {
+        console.log(educationData);
+
         try {
             const education = await ApplicantEducation.create(educationData);
             return { success: true, data: education };
@@ -18,26 +19,8 @@ class ApplicantEducationService {
     }
 
     /**
-     * Get education records by applicant ID
-     * @param {number} applicantId - Applicant ID
-     * @returns {Promise<Object>} Education records
-     */
-    async getEducationByApplicantId(applicantId) {
-        try {
-            const educations = await ApplicantEducation.findAll({
-                where: { applicant_id: applicantId },
-                order: [["start_year", "DESC"]],
-            });
-
-            return { success: true, data: educations };
-        } catch (error) {
-            return { success: false, error: error.message };
-        }
-    }
-
-    /**
      * Update education record
-     * @param {number} id - Education ID
+     * @param {string} id - Education UUID
      * @param {Object} updateData - Update data
      * @returns {Promise<Object>} Updated education record
      */
@@ -61,7 +44,7 @@ class ApplicantEducationService {
 
     /**
      * Delete education record
-     * @param {number} id - Education ID
+     * @param {string} id - Education UUID
      * @returns {Promise<Object>} Delete result
      */
     async deleteEducation(id) {
@@ -78,6 +61,41 @@ class ApplicantEducationService {
                 success: true,
                 message: "Education record deleted successfully",
             };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Get education record by ID
+     * @param {string} id - Education UUID
+     * @returns {Promise<Object>} Education record
+     */
+    async getEducationById(id) {
+        try {
+            const education = await ApplicantEducation.findByPk(id);
+
+            if (!education) {
+                return { success: false, error: "Education record not found" };
+            }
+
+            return { success: true, data: education };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Get all education records
+     * @returns {Promise<Object>} All education records
+     */
+    async getAllEducations() {
+        try {
+            const educations = await ApplicantEducation.findAll({
+                order: [["year_of_passing", "DESC"]],
+            });
+
+            return { success: true, data: educations };
         } catch (error) {
             return { success: false, error: error.message };
         }
