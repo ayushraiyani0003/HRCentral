@@ -217,7 +217,18 @@ class ApplicantTrackingController {
    */
   getAllApplicants = async (req, res) => {
     try {
+      const { id } = req.params;
+
+      //Get all applicant record
       const result = await ApplicantTrackingService.getAll();
+
+      if (!result) {
+        return res.status(404).json({
+          success: false,
+          message: "Applicant not found",
+          data: null,
+        });
+      }
 
       res.status(200).json({
         success: true,
@@ -324,9 +335,17 @@ class ApplicantTrackingController {
             }
 
             if (!workHistoryResult.success) {
+              console.warn(
+                `Failed to update/create work history: ${workHistoryResult.error}`
+              );
+              // Continue Processing - work history is optional
+            } else {
+              workHistoryIds.push(workHistoryResult.data.id);
             }
           }
-        } catch {}
+        } catch (error) {
+          consol;
+        }
       }
     } catch {}
   };
