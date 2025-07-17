@@ -245,25 +245,27 @@ class ApplicantTrackingController {
     }
   };
 
-  /**
+  /*
    * Update applicant with related data
    * PUT /api/applicant-tracking/:id
    */
   updateApplicant = async (req, res) => {
-    //start transaction for rollback capability
+    // Start transaction for rollback capability
     const transaction = await sequelize.transaction();
+
     try {
       const { id } = req.params;
       const {
         educationData,
         workHistoryData,
         interviewData,
-        languages, //Array of language UUIDs: ["uuid1","uuid2"]
-        referenceEmployee, // Single reference employee UUID : "uuid"
+        languages, // Array of language UUIDs: ["uuid1", "uuid2"]
+        referenceEmployee, // Single reference employee UUID: "uuid"
         hiringSource, // Single hiring source ID from hiring source table
-        ...applicationData
+        ...applicantData
       } = req.body;
-      //check if applicant exists
+
+      // Check if applicant exists
       const existingApplicant = await ApplicantTrackingService.getById(id);
       if (!existingApplicant) {
         await transaction.rollback();
@@ -273,24 +275,26 @@ class ApplicantTrackingController {
           data: null,
         });
       }
+
       let educationIds = [];
       let workHistoryIds = [];
       let interviewIds = [];
 
-      //update education records if provided (optional)
+      // Update education records if provided (optional)
       if (educationData && Array.isArray(educationData)) {
         try {
           for (const education of educationData) {
             let educationResult;
+
             if (education.id) {
-              //update existing education
-              educationResult = await ApplicantEducationService.updateEducation(
+              // Update existing education
+              educationResult = await ApplicantEducationService.update(
                 education.id,
                 education,
                 { transaction }
               );
             } else {
-              //create ne education record
+              // Create new education
               educationResult = await ApplicantEducationService.addEducation(
                 education,
                 { transaction }
@@ -301,7 +305,7 @@ class ApplicantTrackingController {
               console.warn(
                 `Failed to update/create education: ${educationResult.error}`
               );
-              //continue processing - education is optional
+              // Continue processing - education is optional
             } else {
               educationIds.push(educationResult.data.id);
             }
@@ -312,7 +316,7 @@ class ApplicantTrackingController {
         }
       }
 
-      // Update work history records if provided(optional)
+      // Update work history records if provided (optional)
       if (workHistoryData && Array.isArray(workHistoryData)) {
         try {
           for (const workHistory of workHistoryData) {
@@ -320,14 +324,13 @@ class ApplicantTrackingController {
 
             if (workHistory.id) {
               // Update existing work history
-              workHistoryResult =
-                await ApplicantWorkHistoryService.updateWorkHistory(
-                  workHistory.id,
-                  workHistory,
-                  { transaction }
-                );
+              workHistoryResult = await ApplicantWorkHistoryService.update(
+                workHistory.id,
+                workHistory,
+                { transaction }
+              );
             } else {
-              // create new work history record
+              // Create new work history
               workHistoryResult =
                 await ApplicantWorkHistoryService.addWorkHistory(workHistory, {
                   transaction,
@@ -338,17 +341,145 @@ class ApplicantTrackingController {
               console.warn(
                 `Failed to update/create work history: ${workHistoryResult.error}`
               );
-              // Continue Processing - work history is optional
+              // Continue processing - work history is optional
             } else {
               workHistoryIds.push(workHistoryResult.data.id);
             }
           }
         } catch (error) {
-          consol;
+          console.warn(`Work history update failed: ${error.message}`);
+          // Continue processing - work history is optional
         }
       }
-    } catch {}
+
+      // Update interview records if provided (optional)
+      if (interviewData && Array.isArray(interviewData)) {
+        try {
+          for (const interview of interviewData) {
+            let interviewResult;
+
+            if (interview.id) {
+              // Update existing interview
+              interviewResult = await InterviewService.update(
+                interview.id,
+                interview,
+                { transaction }
+              );
+            } else {
+              // Create new interview
+              interviewResult = await InterviewService.create(interview, {
+                transaction,
+              });
+            }
+
+            if (!interviewResult.success) {
+              console.warn(
+                `Failed to update/create interview: ${interviewResult.error}`
+              );
+              // Continue processing - interview is optional
+            } else {
+              interviewIds.push(interviewResult.data.id);
+            }
+          }
+        } catch (error) {
+          console.warn(`Interview update failed: ${error.message}`);
+          // Continue processing - interview is optional
+        }
+      }
+
+      // Process language IDs if provided (optional)
+      // No validation needed - just accept the array as input
+
+      // Process reference employee ID if provided (optional)
+      // No validation needed - just accept the UUID as input
+
+      // Process hiring source ID if provided (optional)
+      // No validation needed - just accept the ID from hiring source table as input
+
+      // Prepare applicant data with all foreign key references
+      const applicantDataWithReferences = {
+        ...applicantData,
+        education_id:
+          educationIds.length > 0
+            ? JSON.stringify(educationIds)
+            : educationData === null
+            ? null
+            : existingApplicant.education_id,
+        work_id:
+          workHistoryIds.length > 0
+            ? JSON.stringify(workHistoryIds)
+            : workHistoryData === null
+            ? null
+            : existingApplicant.work_id,
+        interview_id:
+          interviewIds.length > 0
+            ? JSON.stringify(interviewIds)
+            : interviewData === null
+            ? null
+            : existingApplicant.interview_id,
+        language_id:
+          languages && languages.length > 0
+            ? JSON.stringify(languages)
+            : languages === null
+            ? null
+            : existingApplicant.language_id,
+        reference_employee_id:
+          referenceEmployee !== undefined
+            ? referenceEmployee
+            : existingApplicant.reference_employee_id,
+        hiring_source_id:
+          hiringSource !== undefined
+            ? hiringSource
+            : existingApplicant.hiring_source_id,
+      };
+
+      // Update main applicant record (failure should rollback)
+      const result = await ApplicantTrackingService.update(
+        id,
+        applicantDataWithReferences,
+        { transaction }
+      );
+
+      if (!result) {
+        await transaction.rollback(); //hard stop
+        return res.status(400).json({
+          success: false,
+          message: "Failed to update applicant",
+          data: null,
+        });
+      }
+
+      // Commit transaction
+      await transaction.commit();
+
+      // Return success response with all updated data
+      res.status(200).json({
+        success: true,
+        message: "Applicant updated successfully with all related records",
+        data: {
+          applicant: result,
+          updated_records: {
+            education_count: educationIds.length,
+            work_history_count: workHistoryIds.length,
+            interview_count: interviewIds.length,
+            language_count: languages ? languages.length : 0,
+            reference_employee_updated: referenceEmployee !== undefined,
+            hiring_source_updated: hiringSource !== undefined,
+          },
+        },
+      });
+    } catch (error) {
+      // Rollback transaction on any error
+      await transaction.rollback();
+      console.error("Error in updateApplicant:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message,
+        data: null,
+      });
+    }
   };
+
   /**
    * Delete applicant and all related records
    * DELETE /api/applicant-tracking/:id

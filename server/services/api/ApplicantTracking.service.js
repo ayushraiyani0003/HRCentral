@@ -37,25 +37,39 @@ class ApplicantTrackingService {
   /**
    * Get applicant tracking record by ID
    * @param {String} id - The applicant tracking record ID
-   * @returns {Promise<Object|null>} Applicant tracking record or null if not found
+   * @returns {Promise<Object>} Response object with success flag and data
    */
   async getById(id) {
     try {
       const applicant = await ApplicantTracking.findByPk(id);
-      return applicant;
+
+      if (!applicant) {
+        return {
+          success: false,
+          message: "Applicant not found",
+          data: null,
+        };
+      }
+
+      return {
+        success: true,
+        message: "Applicant found successfully",
+        data: applicant.toJSON(), // Convert Sequelize instance to plain object
+      };
     } catch (error) {
-      throw new Error(
-        `Error fetching applicant tracking record by ID: ${error.message}`
-      );
+      return {
+        success: false,
+        message: `Error fetching applicant tracking record by ID: ${error.message}`,
+        data: null,
+      };
     }
   }
-
   /**
    * Update applicant tracking record by ID
    * @param {String} id - The applicant tracking record ID
    * @param {Object} updateData - The data to update
    * @param {Object} options - Transaction options
-   * @returns {Promise<Object|null>} Updated applicant tracking record or null if not found
+   * @returns {Promise<Object>} Response object with success flag and data
    */
   async update(id, updateData, options = {}) {
     try {
@@ -65,15 +79,34 @@ class ApplicantTrackingService {
       });
 
       if (updatedRowsCount === 0) {
-        return null;
+        return {
+          success: false,
+          message: "Applicant not found or no changes made",
+          data: null,
+        };
       }
 
       const updatedApplicant = await ApplicantTracking.findByPk(id, options);
-      return updatedApplicant;
+
+      if (!updatedApplicant) {
+        return {
+          success: false,
+          message: "Applicant not found after update",
+          data: null,
+        };
+      }
+
+      return {
+        success: true,
+        message: "Applicant updated successfully",
+        data: updatedApplicant.toJSON(), // Convert Sequelize instance to plain object
+      };
     } catch (error) {
-      throw new Error(
-        `Error updating applicant tracking record: ${error.message}`
-      );
+      return {
+        success: false,
+        message: `Error updating applicant tracking record: ${error.message}`,
+        data: null,
+      };
     }
   }
 
