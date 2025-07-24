@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: DataTypes.NOW,
       },
       position_applied: {
-        type: DataTypes.STRING(200),
+        type: DataTypes.STRING(100),
         allowNull: false,
       },
       first_name: {
@@ -57,7 +57,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       mobile_no_2: {
         type: DataTypes.STRING(15),
-        allowNull: false,
+        allowNull: true,
         validate: {
           isNumeric: true,
           len: [10, 15],
@@ -65,7 +65,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       whatsapp_no: {
         type: DataTypes.STRING(15),
-        allowNull: true,
+        allowNull: false,
         validate: {
           isNumeric: true,
           len: [10, 15],

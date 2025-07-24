@@ -186,7 +186,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
       },
       account_number: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT, // integer is not working
         allowNull: true,
       },
       ifsc_code: {
@@ -213,7 +213,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
       },
       uan_no: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT, // integer is not working
         allowNull: true,
       },
       restrict_pf: {
@@ -235,7 +235,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
       },
       esi_no: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT, // integer is not working
         allowNull: true,
       },
       esi_dispensary: {
@@ -265,16 +265,15 @@ module.exports = (sequelize, DataTypes) => {
       // ====================== DOCUMENTS SECTION ======================
       // === GOVERNMENT IDs ===
       adhaar_number: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT, // integer is not working
         allowNull: true,
       },
       pan_number: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT, // integer is not working
         allowNull: true,
       },
       voter_id: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
+        type: DataTypes.BIGINT, // integer is not working
       },
 
       // === PASSPORT & VISA ===
@@ -437,7 +436,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
       },
       official_email_id: {
-        type: DataTypes.STRING(20),
+        type: DataTypes.STRING(30),
         allowNull: true,
       },
       std_code: {

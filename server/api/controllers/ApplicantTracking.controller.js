@@ -258,7 +258,7 @@ class ApplicantTrackingController {
       const {
         educationData,
         workHistoryData,
-        interviewData,
+        interviewData, // Array of interview UUIDs: ["uuid1", "uuid2"]
         languages, // Array of language UUIDs: ["uuid1", "uuid2"]
         referenceEmployee, // Single reference employee UUID: "uuid"
         hiringSource, // Single hiring source ID from hiring source table
@@ -365,6 +365,15 @@ class ApplicantTrackingController {
                 interview,
                 { transaction }
               );
+
+              if (!interviewResult.success) {
+                console.warn(
+                  `Failed to update interview: ${interviewResult.error}`
+                );
+              } else {
+                // Use the original ID, not the result ID
+                interviewIds.push(interview.id);
+              }
             } else {
               // Create new interview
               interviewResult = await InterviewService.create(interview, {
@@ -378,7 +387,10 @@ class ApplicantTrackingController {
               );
               // Continue processing - interview is optional
             } else {
-              interviewIds.push(interviewResult.data.id);
+              // Only push new interviews
+              if (!interview.id || interview.id !== interviewResult.data.id) {
+                interviewIds.push(interviewResult.data.id);
+              }
             }
           }
         } catch (error) {

@@ -92,7 +92,7 @@ class EmployeeController {
           { transaction }
         );
 
-        if (!employeeDetailsResult) {
+        if (!employeeDetailsResult || !employeeDetailsResult.success) {
           await transaction.rollback();
           return res.status(400).json({
             success: false,
@@ -102,7 +102,7 @@ class EmployeeController {
         }
 
         // Add employeeDetails_id to the employee data
-        employeeDataToCopy.employeeDetails_id = employeeDetailsResult.id; // Todo: only ID will be passed
+        employeeDataToCopy.employeeDetails_id = employeeDetailsResult.data.id;
       }
 
       // Create employee record
@@ -110,7 +110,7 @@ class EmployeeController {
         transaction,
       });
 
-      if (!employeeResult) {
+      if (!employeeResult || !employeeResult.success) {
         await transaction.rollback();
         return res.status(400).json({
           success: false,
@@ -133,8 +133,10 @@ class EmployeeController {
         success: true,
         message: "Employee created successfully from applicant data",
         data: {
-          employee: employeeResult,
-          employeeDetails: employeeDetailsResult,
+          employee: employeeResult.data,
+          employeeDetails: employeeDetailsResult
+            ? employeeDetailsResult.data
+            : null,
           copied_from_applicant: applicant_id,
           applicant_status_updated: true,
           fields_copied_from_applicant: Object.keys(applicantData).filter(
@@ -200,26 +202,21 @@ class EmployeeController {
             let educationResult;
 
             if (education.id) {
-              // Update existing education - pass transaction
               educationResult = await ApplicantEducationService.updateEducation(
                 education.id,
                 education,
-                { transaction } // Make sure your service accepts this
+                { transaction }
               );
             } else {
-              // Create new education - pass transaction
               educationResult = await ApplicantEducationService.addEducation(
                 education,
-                { transaction } // Make sure your service accepts this
+                { transaction }
               );
             }
 
-            //console.log("education result is:", educationResult);
-
-            // Check if result exists and has expected structure
             if (!educationResult) {
               console.warn("Education service returned undefined/null result");
-              continue; // Skip this education record
+              continue;
             }
 
             if (!educationResult.success) {
@@ -228,14 +225,12 @@ class EmployeeController {
                   educationResult.error || "Unknown error"
                 }`
               );
-              // Continue processing - education is optional
             } else if (educationResult.data && educationResult.data.id) {
               educationIds.push(educationResult.data.id);
             }
           }
         } catch (error) {
           console.warn(`Education update failed: ${error.message}`);
-          // Continue processing - education is optional
         }
       }
 
@@ -246,30 +241,24 @@ class EmployeeController {
             let workHistoryResult;
 
             if (workHistory.id) {
-              // Update existing work history - pass transaction
               workHistoryResult =
                 await ApplicantWorkHistoryService.updateWorkHistory(
                   workHistory.id,
                   workHistory,
-                  { transaction } // Make sure your service accepts this
+                  { transaction }
                 );
             } else {
-              // Create new work history - pass transaction
               workHistoryResult =
-                await ApplicantWorkHistoryService.addWorkHistory(
-                  workHistory,
-                  { transaction } // Make sure your service accepts this
-                );
+                await ApplicantWorkHistoryService.addWorkHistory(workHistory, {
+                  transaction,
+                });
             }
 
-            //console.log("work history result is:", workHistoryResult);
-
-            // Check if result exists and has expected structure
             if (!workHistoryResult) {
               console.warn(
                 "Work history service returned undefined/null result"
               );
-              continue; // Skip this work history record
+              continue;
             }
 
             if (!workHistoryResult.success) {
@@ -278,19 +267,19 @@ class EmployeeController {
                   workHistoryResult.error || "Unknown error"
                 }`
               );
-              // Continue processing - work history is optional
             } else if (workHistoryResult.data && workHistoryResult.data.id) {
               workHistoryIds.push(workHistoryResult.data.id);
             }
           }
         } catch (error) {
           console.warn(`Work history update failed: ${error.message}`);
-          // Continue processing - work history is optional
         }
       }
 
       // Update employee details if provided (optional)
       let employeeDetailsResult = null;
+      let cleanDetails = null;
+
       if (employeeDetailsData && employee.employeeDetails_id) {
         try {
           employeeDetailsResult = await EmployeeDetailsService.update(
@@ -299,40 +288,33 @@ class EmployeeController {
             { transaction }
           );
 
-          // Handle the different return pattern for EmployeeDetailsService
-          if (!employeeDetailsResult) {
-            console.warn("Failed to update employee details: Record not found");
-            // Continue processing - employee details is optional
+          if (!employeeDetailsResult || !employeeDetailsResult.success) {
+            console.warn("Failed to update employee details");
           } else {
-            // EmployeeDetailsService.update returns the record directly, not wrapped in success object
-            employeeDetailsResult = {
-              success: true,
-              data: employeeDetailsResult,
-            };
+            const { employeeDetails_id, ...restDetails } =
+              employeeDetailsResult.data;
+            cleanDetails = restDetails;
           }
         } catch (error) {
           console.warn(`Employee details update failed: ${error.message}`);
-          // Continue processing - employee details is optional
         }
       } else if (employeeDetailsData && !employee.employeeDetails_id) {
-        // Create new employee details if data provided but no existing record
         try {
           const newEmployeeDetails = await EmployeeDetailsService.create(
             employeeDetailsData,
             { transaction }
           );
 
-          if (newEmployeeDetails) {
-            employeeDetailsResult = {
-              success: true,
-              data: newEmployeeDetails,
-            };
-            // Add the new employeeDetails_id to employee data
-            employeeData.employeeDetails_id = newEmployeeDetails.id;
+          if (newEmployeeDetails && newEmployeeDetails.success) {
+            employeeDetailsResult = newEmployeeDetails;
+            employeeData.employeeDetails_id = newEmployeeDetails.data.id;
+
+            const { employeeDetails_id, ...restDetails } =
+              newEmployeeDetails.data;
+            cleanDetails = restDetails;
           }
         } catch (error) {
           console.warn(`Employee details creation failed: ${error.message}`);
-          // Continue processing - employee details is optional
         }
       }
 
@@ -372,10 +354,7 @@ class EmployeeController {
         { transaction }
       );
 
-      //console.log("Employee update result:", result);
-
-      // Handle the different return pattern for EmployeeService
-      if (!result) {
+      if (!result || !result.success) {
         await transaction.rollback();
         return res.status(404).json({
           success: false,
@@ -383,12 +362,6 @@ class EmployeeController {
           data: null,
         });
       }
-
-      // EmployeeService.update returns the record directly, not wrapped in success object
-      const employeeUpdateResult = {
-        success: true,
-        data: result,
-      };
 
       // Commit transaction
       await transaction.commit();
@@ -398,10 +371,8 @@ class EmployeeController {
         success: true,
         message: "Employee updated successfully with all related records",
         data: {
-          employee: employeeUpdateResult.data,
-          employeeDetails: employeeDetailsResult
-            ? employeeDetailsResult.data
-            : null,
+          employee: result.data,
+          employeeDetails: cleanDetails,
           updated_records: {
             education_count: educationIds.length,
             work_history_count: workHistoryIds.length,
@@ -423,6 +394,7 @@ class EmployeeController {
       });
     }
   };
+
   /**
    * Get all employee records with merged employee details
    * @param {Object} req - Express request object
@@ -432,40 +404,58 @@ class EmployeeController {
   async getAllEmployees(req, res) {
     try {
       // Get all employees from EmployeeService
-      const employees = await EmployeeService.getAll();
+      const employeesResult = await EmployeeService.getAll();
+
+      if (!employeesResult || !employeesResult.success) {
+        return res.status(500).json({
+          success: false,
+          message: employeesResult
+            ? employeesResult.message
+            : "Error fetching employees",
+          data: null,
+        });
+      }
 
       // Get all employee details from EmployeeDetailsService
-      const employeeDetails = await EmployeeDetailsService.getAll();
+      const employeeDetailsResult = await EmployeeDetailsService.getAll();
+
+      if (!employeeDetailsResult || !employeeDetailsResult.success) {
+        return res.status(500).json({
+          success: false,
+          message: employeeDetailsResult
+            ? employeeDetailsResult.message
+            : "Error fetching employee details",
+          data: null,
+        });
+      }
+
+      const employees = employeesResult.data;
+      const employeeDetails = employeeDetailsResult.data;
 
       // Create a map of employee details by their ID
       const detailsMap = new Map();
       employeeDetails.forEach((detail) => {
-        const detailObj = detail.toJSON ? detail.toJSON() : detail;
-        detailsMap.set(String(detailObj.id), detailObj);
+        detailsMap.set(String(detail.id), detail);
       });
 
-      // console.log("DetailsMap keys:", Array.from(detailsMap.keys()));
-      // console.log("DetailsMap size:", detailsMap.size);
-
       const mergedEmployees = employees.map((employee) => {
-        const employeeObj = employee.toJSON ? employee.toJSON() : employee;
-
         // Use the correct field name from the employee object
-        const employeeDetailsId = employeeObj.employeeDetails_id;
-
-        // console.log("Employee ID:", employeeObj.id);
-        // console.log("Employee details ID:", employeeDetailsId);
+        const employeeDetailsId = employee.employeeDetails_id;
 
         // Look up employee details
         const details = employeeDetailsId
           ? detailsMap.get(String(employeeDetailsId))
           : null;
 
-        // console.log("Found details:", details ? "Yes" : "No");
-
+        //Remove the employeeDetails_id from the details object to avoid duplication
+        let cleanDetails = null;
+        if (details) {
+          const { employeeDetails_id, ...restDetails } = details;
+          cleanDetails = restDetails;
+        }
         return {
-          ...employeeObj,
-          employeeDetails: details || null,
+          ...employee,
+          employeeDetails: cleanDetails,
         };
       });
 
@@ -500,48 +490,74 @@ class EmployeeController {
           success: false,
           message: "Employee ID is required",
           data: null,
+          count: 0,
         });
       }
 
       // Get employee from EmployeeService
-      const employee = await EmployeeService.getById(id);
+      const employeeResult = await EmployeeService.getById(id);
 
-      if (!employee) {
+      if (!employeeResult || !employeeResult.success) {
         return res.status(404).json({
           success: false,
           message: "Employee not found",
           data: null,
+          count: 0,
         });
       }
 
-      // Convert employee to plain object
-      const employeeObj = employee.toJSON ? employee.toJSON() : employee;
+      const employee = employeeResult.data;
 
       // Get the employeeDetails_id from the employee record
-      const employeeDetailsId = employeeObj.employeeDetails_id;
+      const employeeDetailsId = employee.employeeDetails_id;
 
-      // Get employee details using the employeeDetails_id (not the employee ID)
-      const employeeDetails = employeeDetailsId
-        ? await EmployeeDetailsService.getById(employeeDetailsId)
-        : null;
+      let detailsObj = null;
 
-      // Convert employee details to plain object if it exists
-      const detailsObj = employeeDetails
-        ? employeeDetails.toJSON
-          ? employeeDetails.toJSON()
-          : employeeDetails
-        : null;
+      if (employeeDetailsId) {
+        // Try to get employee details using the employeeDetails_id
+        const employeeDetailsResult = await EmployeeDetailsService.getById(
+          employeeDetailsId
+        );
+
+        // Extract employee details data if successful
+        if (employeeDetailsResult && employeeDetailsResult.success) {
+          detailsObj = employeeDetailsResult.data;
+        }
+      }
+
+      // If still null, try the fallback approach like in getAllEmployees
+      if (!detailsObj && employeeDetailsId) {
+        const allEmployeeDetailsResult = await EmployeeDetailsService.getAll();
+
+        if (allEmployeeDetailsResult && allEmployeeDetailsResult.success) {
+          const detailsMap = new Map();
+
+          allEmployeeDetailsResult.data.forEach((detail) => {
+            detailsMap.set(String(detail.id), detail);
+          });
+
+          detailsObj = detailsMap.get(String(employeeDetailsId)) || null;
+        }
+      }
+
+      // Remove the employeeDetails_id from the details object to avoid duplication
+      let cleanDetails = null;
+      if (detailsObj) {
+        const { employeeDetails_id, ...restDetails } = detailsObj;
+        cleanDetails = restDetails;
+      }
 
       // Merge employee with employee details into single JSON
       const mergedData = {
-        ...employeeObj,
-        employeeDetails: detailsObj,
+        ...employee,
+        employeeDetails: cleanDetails,
       };
 
       return res.status(200).json({
         success: true,
         message: "Employee found successfully",
         data: mergedData,
+        count: 1, // Always 1 for a single employee record
       });
     } catch (error) {
       console.error("Error in getEmployeeById:", error);
@@ -549,6 +565,7 @@ class EmployeeController {
         success: false,
         message: `Error fetching employee record by ID: ${error.message}`,
         data: null,
+        count: 0,
       });
     }
   }
@@ -572,9 +589,9 @@ class EmployeeController {
       }
 
       // First, get the employee to check if it exists and get employeeDetails_id
-      const employee = await EmployeeService.getById(id);
+      const employeeResult = await EmployeeService.getById(id);
 
-      if (!employee) {
+      if (!employeeResult || !employeeResult.success) {
         return res.status(404).json({
           success: false,
           message: "Employee not found",
@@ -582,9 +599,8 @@ class EmployeeController {
         });
       }
 
-      // Convert employee to plain object to get employeeDetails_id
-      const employeeObj = employee.toJSON ? employee.toJSON() : employee;
-      const employeeDetailsId = employeeObj.employeeDetails_id;
+      const employee = employeeResult.data;
+      const employeeDetailsId = employee.employeeDetails_id;
 
       // Delete employee details first (if exists) to maintain referential integrity
       if (employeeDetailsId) {
@@ -592,7 +608,15 @@ class EmployeeController {
       }
 
       // Delete the employee record
-      await EmployeeService.delete(id);
+      const deleteResult = await EmployeeService.delete(id);
+
+      if (!deleteResult || !deleteResult.success) {
+        return res.status(500).json({
+          success: false,
+          message: "Failed to delete employee",
+          data: null,
+        });
+      }
 
       return res.status(200).json({
         success: true,

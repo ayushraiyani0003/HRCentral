@@ -9,6 +9,18 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         allowNull: false,
       },
+      requisition_id: {
+        type: DataTypes.STRING(12),
+        allowNull: false,
+        unique: true,
+        comment:
+          "Unique identifier with max 12 characters(req01) which can later entered in applicant tracking",
+      },
+      applicant_id: {
+        type: DataTypes.UUID,
+        allowNull: true,
+        comment: "Applicant ids and reference from employee table",
+      },
       requested_date: {
         type: DataTypes.DATEONLY,
         allowNull: false,
@@ -26,11 +38,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.UUID,
         allowNull: false,
         comment: "Foreign key reference to Designation table for job position",
-      },
-      applicant_id: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-        comment: "Applicant ids and reference from employee table",
       },
       number_of_positions: {
         type: DataTypes.INTEGER,

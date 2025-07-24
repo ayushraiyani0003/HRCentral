@@ -34,6 +34,23 @@ class ManPowerRequisitionService {
   }
 
   /**
+   * Get the last manpower requisition (most recent by creation date)
+   * @returns {Promise<Object|null>} - Last requisition or null if none exists
+   */
+  async getLastRequisition() {
+    try {
+      const lastRequisition = await ManPowerRequisition.findOne({
+        order: [["createdAt", "DESC"]],
+        attributes: ["requisition_id"],
+      });
+
+      return lastRequisition;
+    } catch (error) {
+      throw new Error(`Error fetching last requisition: ${error.message}`);
+    }
+  }
+
+  /**
    * Get a specific manpower requisition by ID
    * @param {string} id - Requisition ID
    * @returns {Promise<Object>} - Requisition with associations

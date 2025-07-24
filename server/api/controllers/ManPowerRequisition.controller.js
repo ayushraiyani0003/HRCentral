@@ -2,7 +2,6 @@
  * @fileoverview ManPowerRequisition Controller - Handles HTTP requests for manpower requisition operations
  * @version 1.0.0
  */
-const { JSON } = require("sequelize");
 const ManPowerRequisitionService = require("../../services/api/ManPowerRequisition.service");
 
 /**
@@ -12,6 +11,40 @@ const ManPowerRequisitionService = require("../../services/api/ManPowerRequisiti
  */
 
 class ManPowerRequisitionController {
+  constructor() {
+    this.createManPowerRequisition = this.createManPowerRequisition.bind(this);
+    this.generateRequisitionId = this.generateRequisitionId.bind(this);
+  }
+
+  /**
+   * Generate next requisition ID
+   * @returns {Promise<string>} Generated requisition ID in format req01, req02, etc.
+   */
+  async generateRequisitionId() {
+    try {
+      console.log("Generating requisition ID...");
+
+      // Get the last requisition to determine the next sequential number
+      const lastRequisition =
+        await ManPowerRequisitionService.getLastRequisition();
+      console.log(lastRequisition);
+
+      let nextNumber = 1;
+
+      if (lastRequisition && lastRequisition.requisition_id) {
+        //Extract number from requisition_id
+        const lastIdNumber = lastRequisition.requisition_id.replace("req", "");
+        nextNumber = parseInt(lastIdNumber, 10) + 1;
+      }
+
+      // Formate number with leading zeros
+      const formattedNumber = nextNumber.toString().padStart(4, "0");
+
+      return `req${formattedNumber}`;
+    } catch (error) {
+      throw new Error(`Failed to generate requisition ID: ${error.message}`);
+    }
+  }
   /**
    * Create a new manpower requisition
    * @param {Object} req - E xpress request object
@@ -37,6 +70,12 @@ class ManPowerRequisitionController {
   async createManPowerRequisition(req, res) {
     try {
       const requisitionData = req.body;
+      console.log(requisitionData);
+
+      // Generate unique requisition_id
+      requisitionData.requisition_id = await this.generateRequisitionId();
+      console.log(requisitionData.requisition_id);
+
       const requisition = await ManPowerRequisitionService.create(
         requisitionData
       );

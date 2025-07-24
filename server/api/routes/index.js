@@ -25,6 +25,7 @@ const JobLocationRoutes = require("./jobLocation.routes");
 const ApplicantTrackingRoutes = require("./applicantTracking.routes");
 const ManPowerRequisitionRoutes = require("./manPowerRequisition.routes");
 const Employee = require("./employee.routes");
+const Management = require("./management.routes");
 // Uncomment when ready to use
 // const salaryRoutes = require('./salary.routes');
 // const employeeRoutes = require('./employee.routes');
@@ -52,6 +53,7 @@ router.use("/job-location", JobLocationRoutes);
 router.use("/applicant-tracking", ApplicantTrackingRoutes);
 router.use("/manpower-requisition", ManPowerRequisitionRoutes);
 router.use("/employees", Employee);
+router.use("/management", Management);
 // Uncomment when ready to use
 // router.use('/salary', salaryRoutes);
 // router.use('/employee', employeeRoutes);
@@ -84,6 +86,7 @@ router.get("/", (req, res) => {
       applicantTracking: "/api/applicant-tracking",
       manPowerRequisition: "/api/manpower-requisition",
       employee: "/api/employees",
+      management: "/api/management",
       // Uncomment when ready to use
       // salary: '/api/salary',
       // employee: '/api/employee',tu
